@@ -10,6 +10,7 @@
     }
     .chart svg circle{
       z-index: 5;
+      cursor: pointer;
     }
     .chart .axis {
       font-size: 12px;
@@ -21,6 +22,15 @@
         fill: none;
         stroke: #dedede;
         shape-rendering: crispEdges;
+    }
+    .tooltip {
+      position: absolute;
+      background-color: #3f3f3f;
+      border: #9f9f9f;
+      border-radius: 5px;
+      padding: 5px;
+      color: #efefef;
+      pointer-events: none; /* Trick when the tooltip was moved above other points */
     }
 
   </style>

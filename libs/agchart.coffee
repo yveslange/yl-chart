@@ -20,6 +20,7 @@ class AgChart
         ySize: undefined
     @_DATA = args.data
     @_CANVAS = undefined
+    @_TOOLTIP = undefined
     @_SCALE =
       x: undefined
       y: undefined
@@ -112,9 +113,12 @@ class AgChart
       .call(axisY)
 
   renderPoints: ->
-    _canvas = @_CONF.canvas
+    _conf = @_CONF
+    _canvas = _conf.canvas
     scaleW = @_SCALE.width
     scaleH = @_SCALE.height
+    tooltipCallback = _conf.tooltip
+    _tooltip = @_TOOLTIP
     if _canvas.render == 'dots'
       @_CANVAS.selectAll('circle')
         .data(@_DATA)
@@ -122,18 +126,50 @@ class AgChart
           .append('circle')
           .attr('cx', (d) -> scaleW(d[0]))
           .attr('cy', (d) -> scaleH(d[1]))
-          .attr('r', @_CONF.point.r)
-          .attr('stroke', @_CONF.point.stroke.color)
-          .attr('stroke-width', @_CONF.point.stroke.width)
-          .attr('fill', @_CONF.point.color)
+          .attr('r', _conf.point.r)
+          .attr('stroke', _conf.point.stroke.color)
+          .attr('stroke-width', _conf.point.stroke.width)
+          .attr('fill', _conf.point.color)
+          .on('mouseover', (d, t)->
+            _tooltip.text( tooltipCallback(d) )
+            _tooltip.transition()
+              .duration(200)
+              .style("opacity", 0.9)
+            _tooltip
+              .style("left", d3.event.pageX+_conf.point.stroke.width+'px')
+              .style("top", d3.event.pageY+'px')
+            _tooltip
+          )
+          .on('mouseout', ->
+            _tooltip.transition()
+              .duration(500)
+              .style("opacity", 0)
+          )
     else
       throw "Unknown render value '#{_canvas.render}'"
+
+  renderTooltip: ->
+    if not @_TOOLTIP?
+      @_TOOLTIP = d3.select("body").append("div")
+        .attr('class', 'tooltip')
+        .style('opacity', 0)
 
   render: ->
     @_CANVAS = @createCanvas() if not @_CANVAS?
     @renderXAxis()
     @renderYAxis()
-    @renderPoints()
+    @renderTooltip()
+    @renderPoints() # Depends on axis and tooltip
+
+tooltip = (d) ->
+  console.log "x and y are "+d
+  "x #{d[0]}, y #{d[1]}"
+
+genData = (len) ->
+  els = []
+  for i in [0..len] by 2
+    els.push [i, Math.random()*100]
+  els
 
 agChart = new AgChart(
   config:
@@ -141,6 +177,7 @@ agChart = new AgChart(
       render: "dots"
       selector: '#chart1'
       padding: [30,30]
+    tooltip: tooltip
     point:
       r: 3
       color: "#efefef"
@@ -150,6 +187,7 @@ agChart = new AgChart(
     ticks:
       ySize: "full"
       xSize: "full"
-  data: [[0,0], [1,0], [15, 20], [20,14.2]]
+  #data: [[0,0], [1,0], [15, 20], [20,14.2]]
+  data: genData(10000)
 )
 agChart.render()
