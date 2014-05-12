@@ -3,19 +3,24 @@
     <script src="libs/d3.v3.min.js" charset="utf-8"></script>
   </head>
   <style>
-    .chart div {
-      font: 10px sans-serif;
-      background-color: steelblue;
-      text-align: right;
-      padding: 3px;
-      margin: 1px;
-      color: white;
-      border: #3f3f3f 1px dotted;
-    }
-    svg{
+    .chart svg{
       border: #000000 2px solid;
       margin: 0px;
       padding: 0px;
+    }
+    .chart svg circle{
+      z-index: 5;
+    }
+    .chart .axis {
+      font-size: 12px;
+    }
+
+    .chart .axis path,
+    .chart .axis line {
+        z-index: 2;
+        fill: none;
+        stroke: #dedede;
+        shape-rendering: crispEdges;
     }
 
   </style>

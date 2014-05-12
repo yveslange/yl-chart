@@ -9,9 +9,9 @@
       this._CONF = {
         canvas: {
           render: 'circle',
-          selector: null,
-          width: 300.0,
-          height: 200.0,
+          selector: void 0,
+          width: 600.0,
+          height: 400.0,
           padding: [0, 0]
         },
         point: {
@@ -21,12 +21,21 @@
             color: "red",
             width: 4
           }
+        },
+        ticks: {
+          xSize: void 0,
+          ySize: void 0
         }
       };
-      this.defaultConfig(args.config);
       this._DATA = args.data;
-      this._CANVAS = null;
+      this._CANVAS = void 0;
+      this._SCALE = {
+        x: void 0,
+        y: void 0
+      };
+      this.defaultConfig(args.config);
       this.computePadding();
+      this.computeScales();
       return;
     }
 
@@ -67,6 +76,29 @@
       }
     };
 
+    AgChart.prototype.computeScales = function() {
+      var maxX, maxY, _canvas, _pad;
+      _canvas = this._CONF.canvas;
+      _pad = _canvas.padding;
+      maxX = d3.max(this._DATA, function(a) {
+        return a[0];
+      });
+      maxY = d3.max(this._DATA, function(a) {
+        return a[1];
+      });
+      this._SCALE.width = d3.scale.linear().domain([0, maxX]).range([_pad[0], _canvas.width - _pad[0]]);
+      return this._SCALE.height = d3.scale.linear().domain([0, maxY]).range([_canvas.height - _pad[1], _pad[1]]);
+    };
+
+    AgChart.prototype.initValues = function() {
+      return {
+        xStart: this._CONF.canvas.padding[0],
+        yStart: this._CONF.canvas.height - this._CONF.canvas.padding[1],
+        xEnd: this._CONF.canvas.width - this._CONF.canvas.padding[0],
+        yEnd: this._CONF.canvas.padding[1]
+      };
+    };
+
     AgChart.prototype.createCanvas = function() {
       if (this._CONF.canvas.selector == null) {
         throw "No selector defined";
@@ -74,32 +106,54 @@
       return this._CANVAS = d3.select(this._CONF.canvas.selector).append('svg').attr('width', this._CONF.canvas.width).attr('height', this._CONF.canvas.height);
     };
 
+    AgChart.prototype.renderXAxis = function() {
+      var axisX, height, padding;
+      padding = this._CONF.canvas.padding[1];
+      height = this._CONF.canvas.height;
+      axisX = d3.svg.axis().scale(this._SCALE.width);
+      if (this._CONF.ticks.xSize === 'full') {
+        axisX.tickSize(height - padding * 2);
+      } else if (this._CONF.ticks.xSize) {
+        this._CONF.ticks.axisX.tickSize(this._CONF.ticks.xSize);
+      }
+      return this._CANVAS.append("g").attr("transform", "translate(0," + padding + ")").attr("class", "axis x").call(axisX);
+    };
+
+    AgChart.prototype.renderYAxis = function() {
+      var axisY, padding, width;
+      padding = this._CONF.canvas.padding[0];
+      width = this._CONF.canvas.width;
+      axisY = d3.svg.axis().scale(this._SCALE.height).orient("left");
+      if (this._CONF.ticks.ySize === 'full') {
+        axisY.tickSize(-width + padding * 2);
+      } else if (this._CONF.ticks.ySize) {
+        this._CONF.ticks.axisY.tickSize(this._CONF.ticks.ySize);
+      }
+      return this._CANVAS.append("g").attr("transform", "translate(" + padding + ", 0)").attr("class", "axis y").call(axisY);
+    };
+
     AgChart.prototype.renderPoints = function() {
-      var funX, funY, maxX, maxY, _canvas;
+      var scaleH, scaleW, _canvas;
       _canvas = this._CONF.canvas;
-      maxX = d3.max(this._DATA, function(a) {
-        return a[0];
-      });
-      maxY = d3.max(this._DATA, function(a) {
-        return a[1];
-      });
-      funX = function(d) {
-        return d[0] * (_canvas.width - _canvas.padding[0] * 2) / maxX + _canvas.padding[0];
-      };
-      funY = function(d) {
-        return _canvas.height - (d[1] * (_canvas.height - _canvas.padding[1] * 2) / maxY + _canvas.padding[1]);
-      };
+      scaleW = this._SCALE.width;
+      scaleH = this._SCALE.height;
       if (_canvas.render === 'dots') {
-        return this._CANVAS.selectAll('circle').data(this._DATA).enter().append('circle').attr('cx', funX).attr('cy', funY).attr('r', this._CONF.point.r).attr('stroke', this._CONF.point.stroke.color).attr('stroke-width', this._CONF.point.stroke.width).attr('fill', this._CONF.point.color);
+        return this._CANVAS.selectAll('circle').data(this._DATA).enter().append('circle').attr('cx', function(d) {
+          return scaleW(d[0]);
+        }).attr('cy', function(d) {
+          return scaleH(d[1]);
+        }).attr('r', this._CONF.point.r).attr('stroke', this._CONF.point.stroke.color).attr('stroke-width', this._CONF.point.stroke.width).attr('fill', this._CONF.point.color);
       } else {
         throw "Unknown render value '" + _canvas.render + "'";
       }
     };
 
     AgChart.prototype.render = function() {
-      if (this._CANVAS === null) {
+      if (this._CANVAS == null) {
         this._CANVAS = this.createCanvas();
       }
+      this.renderXAxis();
+      this.renderYAxis();
       return this.renderPoints();
     };
 
@@ -112,15 +166,22 @@
       canvas: {
         render: "dots",
         selector: '#chart1',
-        padding: 'auto'
+        padding: [30, 30]
       },
       point: {
-        color: {
-          stroke: "#44A0FF"
+        r: 3,
+        color: "#efefef",
+        stroke: {
+          width: 3,
+          color: "#44A0FF"
         }
+      },
+      ticks: {
+        ySize: "full",
+        xSize: "full"
       }
     },
-    data: [[0, 0], [1, 0], [20, 14.2]]
+    data: [[0, 0], [1, 0], [15, 20], [20, 14.2]]
   });
 
   agChart.render();
