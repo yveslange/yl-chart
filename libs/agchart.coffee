@@ -18,7 +18,7 @@ class AgChart
       ticks:
         xSize: undefined
         ySize: undefined
-    @_DATA = args.data
+    @_SERIES = @prepareSeries args.series
     @_CANVAS = undefined
     @_TOOLTIP = undefined
     @_SCALE =
@@ -45,7 +45,7 @@ class AgChart
   toString: ->
     console.log "Canvas in #{@_CONF.selector}"
     console.log "Config", @_CONF
-    console.log "Datas:", @_DATA
+    console.log "Datas:", @_SERIES
     return
 
   computePadding: ->
@@ -54,26 +54,31 @@ class AgChart
     if @_CONF.canvas.padding == 'auto'
       @_CONF.canvas.padding = [pad,pad]
 
+  maxX: ->
+    max = Number.MIN_VALUE
+    for serie in @_SERIES
+      for point in serie.data
+        max = point.x if point.x > max
+    return max
+
+  maxY: ->
+    max = Number.MIN_VALUE
+    for serie in @_SERIES
+      for point in serie.data
+        max = point.y if point.y > max
+    return max
+
   computeScales: ->
     _canvas = @_CONF.canvas
     _pad = _canvas.padding
-    maxX = d3.max(@_DATA, (a)->a[0])
-    maxY = d3.max(@_DATA, (a)->a[1])
+    maxX = @maxX()
+    maxY = @maxY()
     @_SCALE.width = d3.scale.linear()
       .domain([0,maxX])
       .range([_pad[0], _canvas.width-_pad[0]])
     @_SCALE.height = d3.scale.linear()
       .domain([0,maxY])
       .range([_canvas.height-_pad[1], _pad[1]])
-
-  initValues: ->
-    # Get the initial value without the padding
-    {
-      xStart: @_CONF.canvas.padding[0]
-      yStart: @_CONF.canvas.height - @_CONF.canvas.padding[1]
-      xEnd: @_CONF.canvas.width-@_CONF.canvas.padding[0]
-      yEnd: @_CONF.canvas.padding[1]
-    }
 
   createCanvas: ->
     throw "No selector defined" if not @_CONF.canvas.selector?
@@ -112,31 +117,50 @@ class AgChart
       .attr("class", "axis y")
       .call(axisY)
 
+  prepareSeries: (data) ->
+    # Adding the configuration to each points
+    for serie in data
+      for point in serie.data
+        point.config = serie.config if serie.config?
+    data
+
   renderPoints: ->
     _conf = @_CONF
     _canvas = _conf.canvas
     scaleW = @_SCALE.width
     scaleH = @_SCALE.height
-    tooltipCallback = _conf.tooltip
+    _tooltipCallback = _conf.tooltip
     _tooltip = @_TOOLTIP
+
     if _canvas.render == 'dots'
-      @_CANVAS.selectAll('circle')
-        .data(@_DATA)
-        .enter()
-          .append('circle')
-          .attr('cx', (d) -> scaleW(d[0]))
-          .attr('cy', (d) -> scaleH(d[1]))
-          .attr('r', _conf.point.r)
-          .attr('stroke', _conf.point.stroke.color)
-          .attr('stroke-width', _conf.point.stroke.width)
-          .attr('fill', _conf.point.color)
-          .on('mouseover', (d, t)->
-            _tooltip.text( tooltipCallback(d) )
+      series = @_CANVAS.selectAll(".series")
+        .data(@_SERIES).enter()
+          .append("g")
+          .attr("class", "series")
+          .attr("id", (s, i)->"#{i}")
+          .attr("title", (s)->s.name)
+
+      series.selectAll(".circle")
+        .data((d) -> d.data) # 's' for a single serie
+        .enter().append("circle")
+          .attr('cx', (d) -> scaleW(d.x))
+          .attr('cy', (d) -> scaleH(d.y))
+          .attr('r', ( (d) ->
+            d.config?.r ?  _conf.point.r))
+          .attr('stroke',( (d) ->
+            d.config?.stroke?.color ? _conf.point.stroke.color))
+          .attr('stroke-width', ( (d) ->
+            d.config?.stroke?.width ? _conf.point.stroke.width))
+          .attr('fill', ((d)->
+            d.config?.color ? _conf.point.color))
+          .on('mouseover', (d)->
+            _tooltip.html( _tooltipCallback(this, d) )
             _tooltip.transition()
               .duration(200)
               .style("opacity", 0.9)
             _tooltip
-              .style("left", d3.event.pageX+_conf.point.stroke.width+'px')
+              .style("left", d3.event.pageX+_conf.point.stroke.width
+                +'px')
               .style("top", d3.event.pageY+'px')
             _tooltip
           )
@@ -161,14 +185,15 @@ class AgChart
     @renderTooltip()
     @renderPoints() # Depends on axis and tooltip
 
-tooltip = (d) ->
-  console.log "x and y are "+d
-  "x #{d[0]}, y #{d[1]}"
+tooltip = (node, d) ->
+  serieName = node.parentNode.getAttribute("title")
+  "<div>#{serieName}"+
+  "<div>#{d.x} #{d.y.toFixed(2)}</div>"
 
-genData = (len) ->
+genData = (len, inter=1) ->
   els = []
-  for i in [0..len] by 2
-    els.push [i, Math.random()*100]
+  for i in [0..len-1] by inter
+    els.push {x: i, y: Math.random()*100}
   els
 
 agChart = new AgChart(
@@ -178,16 +203,28 @@ agChart = new AgChart(
       selector: '#chart1'
       padding: [30,30]
     tooltip: tooltip
-    point:
+    point: # Default configuration
       r: 3
       color: "#efefef"
-      stroke:
-        width: 3
-        color: "#44A0FF"
-    ticks:
-      ySize: "full"
-      xSize: "full"
-  #data: [[0,0], [1,0], [15, 20], [20,14.2]]
-  data: genData(10000)
+      stroke: {width: 3, color: "#44A0FF"}
+    ticks: {ySize: "full", xSize: "full"}
+  series: [
+    {
+      name: "Serie 1"
+      data: genData(1000)
+      config:
+        r: 2
+        color: "#1256ef"
+        stroke: {width: 2, color: "#ff0000"}
+    }
+    {
+      name: "Serie 2"
+      data: genData(100)
+      config:
+        r: 4
+        stroke: {width: 1}
+    }
+  ]
 )
 agChart.render()
+window.agChart = agChart

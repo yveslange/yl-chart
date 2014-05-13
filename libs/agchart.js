@@ -27,7 +27,7 @@
           ySize: void 0
         }
       };
-      this._DATA = args.data;
+      this._SERIES = this.prepareSeries(args.series);
       this._CANVAS = void 0;
       this._TOOLTIP = void 0;
       this._SCALE = {
@@ -66,7 +66,7 @@
     AgChart.prototype.toString = function() {
       console.log("Canvas in " + this._CONF.selector);
       console.log("Config", this._CONF);
-      console.log("Datas:", this._DATA);
+      console.log("Datas:", this._SERIES);
     };
 
     AgChart.prototype.computePadding = function() {
@@ -77,27 +77,48 @@
       }
     };
 
+    AgChart.prototype.maxX = function() {
+      var max, point, serie, _i, _j, _len, _len1, _ref, _ref1;
+      max = Number.MIN_VALUE;
+      _ref = this._SERIES;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        serie = _ref[_i];
+        _ref1 = serie.data;
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          point = _ref1[_j];
+          if (point.x > max) {
+            max = point.x;
+          }
+        }
+      }
+      return max;
+    };
+
+    AgChart.prototype.maxY = function() {
+      var max, point, serie, _i, _j, _len, _len1, _ref, _ref1;
+      max = Number.MIN_VALUE;
+      _ref = this._SERIES;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        serie = _ref[_i];
+        _ref1 = serie.data;
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          point = _ref1[_j];
+          if (point.y > max) {
+            max = point.y;
+          }
+        }
+      }
+      return max;
+    };
+
     AgChart.prototype.computeScales = function() {
       var maxX, maxY, _canvas, _pad;
       _canvas = this._CONF.canvas;
       _pad = _canvas.padding;
-      maxX = d3.max(this._DATA, function(a) {
-        return a[0];
-      });
-      maxY = d3.max(this._DATA, function(a) {
-        return a[1];
-      });
+      maxX = this.maxX();
+      maxY = this.maxY();
       this._SCALE.width = d3.scale.linear().domain([0, maxX]).range([_pad[0], _canvas.width - _pad[0]]);
       return this._SCALE.height = d3.scale.linear().domain([0, maxY]).range([_canvas.height - _pad[1], _pad[1]]);
-    };
-
-    AgChart.prototype.initValues = function() {
-      return {
-        xStart: this._CONF.canvas.padding[0],
-        yStart: this._CONF.canvas.height - this._CONF.canvas.padding[1],
-        xEnd: this._CONF.canvas.width - this._CONF.canvas.padding[0],
-        yEnd: this._CONF.canvas.padding[1]
-      };
     };
 
     AgChart.prototype.createCanvas = function() {
@@ -133,23 +154,57 @@
       return this._CANVAS.append("g").attr("transform", "translate(" + padding + ", 0)").attr("class", "axis y").call(axisY);
     };
 
+    AgChart.prototype.prepareSeries = function(data) {
+      var point, serie, _i, _j, _len, _len1, _ref;
+      for (_i = 0, _len = data.length; _i < _len; _i++) {
+        serie = data[_i];
+        _ref = serie.data;
+        for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+          point = _ref[_j];
+          if (serie.config != null) {
+            point.config = serie.config;
+          }
+        }
+      }
+      return data;
+    };
+
     AgChart.prototype.renderPoints = function() {
-      var scaleH, scaleW, tooltipCallback, _canvas, _conf, _tooltip;
+      var scaleH, scaleW, series, _canvas, _conf, _tooltip, _tooltipCallback;
       _conf = this._CONF;
       _canvas = _conf.canvas;
       scaleW = this._SCALE.width;
       scaleH = this._SCALE.height;
-      tooltipCallback = _conf.tooltip;
+      _tooltipCallback = _conf.tooltip;
       _tooltip = this._TOOLTIP;
       if (_canvas.render === 'dots') {
-        return this._CANVAS.selectAll('circle').data(this._DATA).enter().append('circle').attr('cx', function(d) {
-          return scaleW(d[0]);
+        series = this._CANVAS.selectAll(".series").data(this._SERIES).enter().append("g").attr("class", "series").attr("id", function(s, i) {
+          return "" + i;
+        }).attr("title", function(s) {
+          return s.name;
+        });
+        return series.selectAll(".circle").data(function(d) {
+          return d.data;
+        }).enter().append("circle").attr('cx', function(d) {
+          return scaleW(d.x);
         }).attr('cy', function(d) {
-          return scaleH(d[1]);
-        }).attr('r', _conf.point.r).attr('stroke', _conf.point.stroke.color).attr('stroke-width', _conf.point.stroke.width).attr('fill', _conf.point.color).on('mouseover', function(d, t) {
-          _tooltip.text(tooltipCallback(d));
+          return scaleH(d.y);
+        }).attr('r', (function(d) {
+          var _ref, _ref1;
+          return (_ref = (_ref1 = d.config) != null ? _ref1.r : void 0) != null ? _ref : _conf.point.r;
+        })).attr('stroke', (function(d) {
+          var _ref, _ref1, _ref2;
+          return (_ref = (_ref1 = d.config) != null ? (_ref2 = _ref1.stroke) != null ? _ref2.color : void 0 : void 0) != null ? _ref : _conf.point.stroke.color;
+        })).attr('stroke-width', (function(d) {
+          var _ref, _ref1, _ref2;
+          return (_ref = (_ref1 = d.config) != null ? (_ref2 = _ref1.stroke) != null ? _ref2.width : void 0 : void 0) != null ? _ref : _conf.point.stroke.width;
+        })).attr('fill', (function(d) {
+          var _ref, _ref1;
+          return (_ref = (_ref1 = d.config) != null ? _ref1.color : void 0) != null ? _ref : _conf.point.color;
+        })).on('mouseover', function(d) {
+          _tooltip.html(_tooltipCallback(this, d));
           _tooltip.transition().duration(200).style("opacity", 0.9);
-          _tooltip.style("left", d3.event.pageX + _conf.point.stroke.width + 'px').style("top", d3.event.pageY + 'px');
+          _tooltip.style("left", d3.event.pageX + _conf.point.stroke.width, +'px').style("top", d3.event.pageY + 'px');
           return _tooltip;
         }).on('mouseout', function() {
           return _tooltip.transition().duration(500).style("opacity", 0);
@@ -179,16 +234,23 @@
 
   })();
 
-  tooltip = function(d) {
-    console.log("x and y are " + d);
-    return "x " + d[0] + ", y " + d[1];
+  tooltip = function(node, d) {
+    var serieName;
+    serieName = node.parentNode.getAttribute("title");
+    return ("<div>" + serieName) + ("<div>" + d.x + " " + (d.y.toFixed(2)) + "</div>");
   };
 
-  genData = function(len) {
-    var els, i, _i;
+  genData = function(len, inter) {
+    var els, i, _i, _ref;
+    if (inter == null) {
+      inter = 1;
+    }
     els = [];
-    for (i = _i = 0; _i <= len; i = _i += 2) {
-      els.push([i, Math.random() * 100]);
+    for (i = _i = 0, _ref = len - 1; inter > 0 ? _i <= _ref : _i >= _ref; i = _i += inter) {
+      els.push({
+        x: i,
+        y: Math.random() * 100
+      });
     }
     return els;
   };
@@ -214,9 +276,33 @@
         xSize: "full"
       }
     },
-    data: genData(10000)
+    series: [
+      {
+        name: "Serie 1",
+        data: genData(1000),
+        config: {
+          r: 2,
+          color: "#1256ef",
+          stroke: {
+            width: 2,
+            color: "#ff0000"
+          }
+        }
+      }, {
+        name: "Serie 2",
+        data: genData(100),
+        config: {
+          r: 4,
+          stroke: {
+            width: 1
+          }
+        }
+      }
+    ]
   });
 
   agChart.render();
+
+  window.agChart = agChart;
 
 }).call(this);
