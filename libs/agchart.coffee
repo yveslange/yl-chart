@@ -3,12 +3,23 @@ data = [4, 8, 15, 16, 23, 42]
 class AgChart
   constructor: (args) ->
     @_CONF =
+      tooltip:
+        callback: -> null
       canvas:
         render: 'circle'
         selector: undefined
         width: 600.0
         height: 400.0
         padding: [0,0] #left/right, bottom/top
+        cross:
+          x:
+            show: false
+            color: 'black'
+            stroke: 1
+          y:
+            show: false
+            color: 'black'
+            stroke: 1
       point:
         r: 4
         color: "#5e5e5e"
@@ -81,7 +92,7 @@ class AgChart
       .range([_canvas.height-_pad[1], _pad[1]])
 
   createCanvas: ->
-    throw "No selector defined" if not @_CONF.canvas.selector?
+    throw new Error("No selector defined") if not @_CONF.canvas.selector?
     @_CANVAS = d3.select(@_CONF.canvas.selector)
       .append('svg')
       .attr('width', @_CONF.canvas.width)
@@ -127,10 +138,12 @@ class AgChart
   renderPoints: ->
     _conf = @_CONF
     _canvas = _conf.canvas
+    _tooltipNode = @_TOOLTIP
+    _tooltipCallback = _conf.tooltip.callback
+    if typeof(_tooltipCallback) == "string"
+      _tooltipCallback = @tooltipCallbacks[_tooltipCallback]
     scaleW = @_SCALE.width
     scaleH = @_SCALE.height
-    _tooltipCallback = _conf.tooltip
-    _tooltip = @_TOOLTIP
 
     if _canvas.render == 'dots'
       series = @_CANVAS.selectAll(".series")
@@ -153,24 +166,26 @@ class AgChart
             d.config?.stroke?.width ? _conf.point.stroke.width))
           .attr('fill', ((d)->
             d.config?.color ? _conf.point.color))
+          # TODO: externalize this to be fully custumable by the user
           .on('mouseover', (d)->
-            _tooltip.html( _tooltipCallback(this, d) )
-            _tooltip.transition()
-              .duration(200)
-              .style("opacity", 0.9)
-            _tooltip
-              .style("left", d3.event.pageX+_conf.point.stroke.width
-                +'px')
+            # Stroke highlight
+            $(this).attr("stroke-width", parseFloat(
+              $(this).attr("stroke-width"))*2)
+
+            # Tooltip callback
+            _tooltipNode.html( _tooltipCallback(this, d) )
+            _tooltipNode.transition().duration(200).style("opacity", 0.9)
+            _tooltipNode
+              .style("left", d3.event.pageX+_conf.point.stroke.width+'px')
               .style("top", d3.event.pageY+'px')
-            _tooltip
           )
-          .on('mouseout', ->
-            _tooltip.transition()
-              .duration(500)
-              .style("opacity", 0)
+          .on('mouseout', (d) ->
+            $(this).attr("stroke-width", parseFloat(
+              $(this).attr("stroke-width"))/2)
+            _tooltipNode.transition().duration(500).style("opacity", 0)
           )
     else
-      throw "Unknown render value '#{_canvas.render}'"
+      throw new Error("Unknown render value '#{_canvas.render}'")
 
   renderTooltip: ->
     if not @_TOOLTIP?
@@ -178,17 +193,70 @@ class AgChart
         .attr('class', 'tooltip')
         .style('opacity', 0)
 
+  renderCross: (options)->
+    padX = options.padding[0]
+    padY = options.padding[1]
+    offsetX = 10 # To be centered on mouse
+    offsetY = 10 # To be centered on mouse
+    _crossX = options.canvas.append("line")
+      .attr("class", "crossX")
+      .attr("x1", -options.width).attr("y1", padY)
+      .attr("x2", -options.width).attr("y2", options.height-padY)
+      .attr("stroke", options.cross.x.color)
+      .attr("stroke-width", options.cross.x.stroke)
+    _crossY = options.canvas.append("line")
+      .attr("class", "crossY")
+      .attr("x1", padX).attr("y1", -options.height)
+      .attr("x2", options.width-padX).attr("y2", -options.height)
+      .attr("stroke", options.cross.y.color)
+      .attr("stroke-width", options.cross.y.stroke)
+    options.canvas.on("mousemove", (d)->
+      if options.cross.x.show and
+      d3.event.pageX >= padX+offsetX and
+      d3.event.pageX <= options.width-padX+offsetX
+        _crossX
+          .attr("x1", d3.event.pageX-offsetX)
+          .attr("x2", d3.event.pageX-offsetX)
+      if options.cross.y.show and
+      d3.event.pageY >= padY+offsetY and
+      d3.event.pageY <= options.height-padY+offsetY
+        _crossY
+          .attr("y1", d3.event.pageY-offsetY)
+          .attr("y2", d3.event.pageY-offsetY)
+    )
+
   render: ->
     @_CANVAS = @createCanvas() if not @_CANVAS?
+    @renderCross(
+      canvas: @_CANVAS
+      cross: @_CONF.canvas.cross
+      padding: @_CONF.canvas.padding
+      height: @_CONF.canvas.height
+      width: @_CONF.canvas.width
+    )
     @renderXAxis()
     @renderYAxis()
     @renderTooltip()
     @renderPoints() # Depends on axis and tooltip
 
-tooltip = (node, d) ->
-  serieName = node.parentNode.getAttribute("title")
-  "<div>#{serieName}"+
-  "<div>#{d.x} #{d.y.toFixed(2)}</div>"
+  # Some default tooltips
+  tooltipCallbacks:
+    single:
+      (node, d) ->
+        serieName = node.parentNode.getAttribute("title")
+        swatchColor = node.getAttribute("stroke")
+        "<div>#{serieName}"+
+          "<div class='swatch'
+            style='background-color: #{swatchColor}'></div>"+
+        "</div>"+
+        "<div>#{d.x} #{d.y.toFixed(2)}</div>"
+    multipleVertical:
+      (node, d) ->
+        #console.log node, d
+        cx = node.getAttribute("cx")
+        #console.log cx
+        #$("circle[cx='#{cx}']").attr("stroke-width",
+        #parseFloat(node.getAttribute("stroke-width"))*2)
 
 genData = (len, inter=1) ->
   els = []
@@ -202,7 +270,15 @@ agChart = new AgChart(
       render: "dots"
       selector: '#chart1'
       padding: [30,30]
-    tooltip: tooltip
+      cross:
+        x:
+          show: true
+          color: "#44A0FF"
+        y:
+          show: true
+          color: "#FFA044"
+    tooltip:
+      callback: "multipleVertical" # Single, multipleVertical
     point: # Default configuration
       r: 3
       color: "#efefef"
@@ -213,15 +289,12 @@ agChart = new AgChart(
       name: "Serie 1"
       data: genData(1000)
       config:
-        r: 2
-        color: "#1256ef"
-        stroke: {width: 2, color: "#ff0000"}
+        stroke: {color: "#A044FF", width: 1}
     }
     {
       name: "Serie 2"
       data: genData(100)
       config:
-        r: 4
         stroke: {width: 1}
     }
   ]
