@@ -30,6 +30,8 @@
           }
         },
         point: {
+          mouseover: this.defaultPointMouseover,
+          mouseout: this.defaultPointMouseout,
           r: 4,
           color: "#5e5e5e",
           stroke: {
@@ -76,6 +78,18 @@
       };
       setConf(this._CONF, c);
       return this._CONF;
+    };
+
+    AgChart.prototype.defaultPointMouseover = function(point) {
+      var curStrokeWidth;
+      curStrokeWidth = parseFloat(point.getAttribute("stroke-width"));
+      return point.setAttribute("stroke-width", curStrokeWidth * 2);
+    };
+
+    AgChart.prototype.defaultPointMouseout = function(point) {
+      var curStrokeWidth;
+      curStrokeWidth = parseFloat(point.getAttribute("stroke-width"));
+      return point.setAttribute("stroke-width", curStrokeWidth / 2);
     };
 
     AgChart.prototype.toString = function() {
@@ -185,9 +199,12 @@
     };
 
     AgChart.prototype.renderPoints = function() {
-      var scaleH, scaleW, series, _canvas, _conf, _tooltipCallback, _tooltipNode;
+      var scaleH, scaleW, series, _canvas, _conf, _scope, _tooltipCallback, _tooltipHide, _tooltipNode, _tooltipShow;
+      _scope = this;
       _conf = this._CONF;
       _canvas = this._CANVAS;
+      _tooltipShow = this.tooltipShow;
+      _tooltipHide = this.tooltipHide;
       _tooltipNode = this._TOOLTIP;
       _tooltipCallback = _conf.tooltip.callback;
       if (typeof _tooltipCallback === "string") {
@@ -224,18 +241,17 @@
           var _ref, _ref1;
           return (_ref = (_ref1 = d.config) != null ? _ref1.color : void 0) != null ? _ref : _conf.point.color;
         })).on('mouseover', function(d) {
-          $(this).attr("stroke-width", parseFloat($(this).attr("stroke-width")) * 2);
+          _conf.point.mouseover(this);
           _tooltipNode.html(_tooltipCallback({
             canvas: _canvas,
             tooltipNode: _tooltipNode,
             circleNode: this,
             data: d
           }));
-          _tooltipNode.transition().duration(200).style("opacity", 0.9);
-          return _tooltipNode.style("left", d3.event.pageX + _conf.point.stroke.width + 'px').style("top", d3.event.pageY + 'px');
+          return _tooltipShow(_tooltipNode, d);
         }).on('mouseout', function(d) {
-          $(this).attr("stroke-width", parseFloat($(this).attr("stroke-width")) / 2);
-          return _tooltipNode.transition().duration(500).style("opacity", 0);
+          _conf.point.mouseout(this);
+          return _tooltipHide(_tooltipNode);
         });
       } else {
         throw new Error("Unknown render value '" + _canvas.render + "'");
@@ -283,6 +299,17 @@
       return this.renderPoints();
     };
 
+    AgChart.prototype.tooltipShow = function(_tooltipNode, d) {
+      var left, top;
+      left = d3.event.pageX + d.config.stroke.width;
+      top = d3.event.pageY;
+      return _tooltipNode.style("left", left + 'px').style("top", top + 'px').transition().duration(200).style("opacity", 0.9);
+    };
+
+    AgChart.prototype.tooltipHide = function(_tooltipNode) {
+      return _tooltipNode.transition().duration(500).style("opacity", 0);
+    };
+
     AgChart.prototype.tooltipCallbacks = {
       single: function(params) {
         var serieName, swatchColor;
@@ -299,7 +326,8 @@
         $(_canvas).find("circle[cx='" + cx + "']").each(function(e, node) {
           return $(node).attr("stroke-width", 10);
         });
-        return console.log(cx, x, y, $(params.circleNode).data('x') + 99);
+        console.log(cx, x, y, $(params.circleNode).data('x') + 99);
+        return "test of tooltip";
       }
     };
 

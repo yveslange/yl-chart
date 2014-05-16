@@ -21,6 +21,8 @@ class AgChart
             color: 'black'
             stroke: 1
       point:
+        mouseover: @defaultPointMouseover
+        mouseout: @defaultPointMouseout
         r: 4
         color: "#5e5e5e"
         stroke:
@@ -52,6 +54,16 @@ class AgChart
             conf[k] = obj[k] ? conf[k]
     setConf(@_CONF,c)
     return @_CONF
+
+  # TODO: Rename this to stroke de/highlight ?
+  # TODO: Put this into an effect object ?
+  defaultPointMouseover: (point) ->
+    curStrokeWidth = parseFloat( point.getAttribute("stroke-width") )
+    point.setAttribute("stroke-width", curStrokeWidth*2)
+
+  defaultPointMouseout: (point) ->
+    curStrokeWidth = parseFloat( point.getAttribute("stroke-width") )
+    point.setAttribute("stroke-width", curStrokeWidth/2)
 
   toString: ->
     console.log "Canvas in #{@_CONF.selector}"
@@ -136,8 +148,11 @@ class AgChart
     data
 
   renderPoints: ->
-    _conf = @_CONF
+    _scope  = @
+    _conf   = @_CONF
     _canvas = @_CANVAS
+    _tooltipShow = @tooltipShow
+    _tooltipHide = @tooltipHide
     _tooltipNode = @_TOOLTIP
     _tooltipCallback = _conf.tooltip.callback
     if typeof(_tooltipCallback) == "string"
@@ -168,24 +183,21 @@ class AgChart
             d.config?.stroke?.width ? _conf.point.stroke.width))
           .attr('fill', ((d)->
             d.config?.color ? _conf.point.color))
-          # TODO: externalize this to be fully custumable by the user
           .on('mouseover', (d)->
-            # Stroke highlight
-            $(this).attr("stroke-width", parseFloat(
-              $(this).attr("stroke-width"))*2)
+            _conf.point.mouseover(this)
 
-            # Tooltip callback
-            _tooltipNode.html( _tooltipCallback(
-              {canvas: _canvas, tooltipNode: _tooltipNode, circleNode: this, data: d}))
-            _tooltipNode.transition().duration(200).style("opacity", 0.9)
-            _tooltipNode
-              .style("left", d3.event.pageX+_conf.point.stroke.width+'px')
-              .style("top", d3.event.pageY+'px')
+            _tooltipNode.html( _tooltipCallback({
+              canvas: _canvas
+              tooltipNode: _tooltipNode
+              circleNode: this
+              data: d
+            }))
+
+            _tooltipShow(_tooltipNode, d)
           )
           .on('mouseout', (d) ->
-            $(this).attr("stroke-width", parseFloat(
-              $(this).attr("stroke-width"))/2)
-            _tooltipNode.transition().duration(500).style("opacity", 0)
+            _conf.point.mouseout(this)
+            _tooltipHide(_tooltipNode)
           )
     else
       throw new Error("Unknown render value '#{_canvas.render}'")
@@ -242,6 +254,16 @@ class AgChart
     @renderTooltip()
     @renderPoints() # Depends on axis and tooltip
 
+  # TODO: create a tooltip object to handle this
+  tooltipShow: (_tooltipNode, d) ->
+    left = d3.event.pageX+d.config.stroke.width
+    top = d3.event.pageY
+    _tooltipNode.style("left", left+'px').style("top", top+'px')
+      .transition().duration(200).style("opacity", 0.9)
+
+  tooltipHide: (_tooltipNode) ->
+    _tooltipNode.transition().duration(500).style("opacity", 0)
+
   tooltipCallbacks:
     single:
       (params) ->
@@ -266,8 +288,9 @@ class AgChart
 
         #$("circle[cx='#{cx}']").attr("stroke-width",
         #parseFloat(node.getAttribute("stroke-width"))*2)
+        "test of tooltip"
 
-
+# Just for the purpose of the example
 genData = (len, inter=1) ->
   els = []
   for i in [0..len-1] by inter
