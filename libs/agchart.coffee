@@ -4,7 +4,7 @@ class AgChart
   constructor: (args) ->
     @_CONF =
       tooltip:
-        callback: -> null
+        callback: "single"
       canvas:
         render: 'circle'
         selector: undefined
@@ -137,7 +137,7 @@ class AgChart
 
   renderPoints: ->
     _conf = @_CONF
-    _canvas = _conf.canvas
+    _canvas = @_CANVAS
     _tooltipNode = @_TOOLTIP
     _tooltipCallback = _conf.tooltip.callback
     if typeof(_tooltipCallback) == "string"
@@ -145,7 +145,7 @@ class AgChart
     scaleW = @_SCALE.width
     scaleH = @_SCALE.height
 
-    if _canvas.render == 'dots'
+    if _conf.canvas.render == 'dots'
       series = @_CANVAS.selectAll(".series")
         .data(@_SERIES).enter()
           .append("g")
@@ -158,6 +158,8 @@ class AgChart
         .enter().append("circle")
           .attr('cx', (d) -> scaleW(d.x))
           .attr('cy', (d) -> scaleH(d.y))
+          .attr('data-x', (d) -> d.x)
+          .attr('data-y', (d) -> d.y)
           .attr('r', ( (d) ->
             d.config?.r ?  _conf.point.r))
           .attr('stroke',( (d) ->
@@ -173,7 +175,8 @@ class AgChart
               $(this).attr("stroke-width"))*2)
 
             # Tooltip callback
-            _tooltipNode.html( _tooltipCallback(this, d) )
+            _tooltipNode.html( _tooltipCallback(
+              {canvas: _canvas, tooltipNode: _tooltipNode, circleNode: this, data: d}))
             _tooltipNode.transition().duration(200).style("opacity", 0.9)
             _tooltipNode
               .style("left", d3.event.pageX+_conf.point.stroke.width+'px')
@@ -239,24 +242,31 @@ class AgChart
     @renderTooltip()
     @renderPoints() # Depends on axis and tooltip
 
-  # Some default tooltips
   tooltipCallbacks:
     single:
-      (node, d) ->
-        serieName = node.parentNode.getAttribute("title")
-        swatchColor = node.getAttribute("stroke")
+      (params) ->
+        serieName = params.circleNode.parentNode.getAttribute("title")
+        swatchColor = params.circleNode.getAttribute("stroke")
         "<div>#{serieName}"+
           "<div class='swatch'
             style='background-color: #{swatchColor}'></div>"+
         "</div>"+
-        "<div>#{d.x} #{d.y.toFixed(2)}</div>"
+        "<div>#{params.data.x} #{params.data.y.toFixed(2)}</div>"
     multipleVertical:
-      (node, d) ->
-        #console.log node, d
-        cx = node.getAttribute("cx")
-        #console.log cx
+      (params) ->
+        _canvas = params.canvas[0]
+        x = params.circleNode.dataset.x
+        y = params.circleNode.dataset.y
+        cx = params.circleNode.getAttribute('cx')
+        $(_canvas).find("circle[cx='#{cx}']").each((e, node)->
+          $(node).attr("stroke-width", 10)
+        )
+        console.log cx, x, y, $(params.circleNode).data('x')+99
+        # Get all same cx value
+
         #$("circle[cx='#{cx}']").attr("stroke-width",
         #parseFloat(node.getAttribute("stroke-width"))*2)
+
 
 genData = (len, inter=1) ->
   els = []
@@ -275,7 +285,7 @@ agChart = new AgChart(
           show: true
           color: "#44A0FF"
         y:
-          show: true
+          show: false
           color: "#FFA044"
     tooltip:
       callback: "multipleVertical" # Single, multipleVertical
