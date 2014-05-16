@@ -6,7 +6,10 @@ class AgChart
       tooltip:
         callback: "single"
       canvas:
-        render: 'circle'
+        render: "dots"
+        label:
+          x: null
+          y: null
         selector: undefined
         width: 600.0
         height: 400.0
@@ -132,6 +135,9 @@ class AgChart
   renderXAxis: ->
     padding = @_CONF.canvas.padding[1]
     height = @_CONF.canvas.height
+    width = @_CONF.canvas.width
+    label = @_CONF.canvas.label.x
+
     axisX = d3.svg
       .axis()
       .scale(@_SCALE.width)
@@ -143,10 +149,15 @@ class AgChart
       .attr("transform", "translate(0," + padding + ")")
       .attr("class", "axis x")
       .call(axisX)
+    @_CANVAS.append("text")
+      .attr("transform", "translate(#{width/2}, #{height-1})")
+      .text(label)
 
   renderYAxis: ->
     padding = @_CONF.canvas.padding[0]
+    height = @_CONF.canvas.height
     width = @_CONF.canvas.width
+    label = @_CONF.canvas.label.y
     axisY = d3.svg.axis()
       .scale(@_SCALE.height)
       .orient("left")
@@ -155,10 +166,12 @@ class AgChart
     else if @_CONF.ticks.ySize
       @_CONF.ticks.axisY.tickSize(@_CONF.ticks.ySize)
     @_CANVAS.append("g")
-      .attr("transform", "translate("+padding+", 0)")
+      .attr("transform", "translate(#{padding}, 0)")
       .attr("class", "axis y")
       .call(axisY)
-
+    @_CANVAS.append("text")
+      .attr("transform", "translate(#{padding}, #{padding-1})")
+      .text(label)
   prepareSeries: (data) ->
     # Adding the configuration to each points
     for serie in data
@@ -318,7 +331,8 @@ class AgChart
         $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
           serieName = node.parentNode.getAttribute("title")
           swatchColor = node.getAttribute("stroke")
-          html += "<div>#{serieName} : #{params.data.y.toFixed(2)}"+
+          y = parseFloat(node.dataset.y).toFixed(2)
+          html += "<div>#{serieName} : #{y}"+
             "<div class='swatch'
               style='background-color: #{swatchColor}'></div>"+
           "</div>"
@@ -335,7 +349,10 @@ genData = (len, inter=1) ->
 agChart = new AgChart(
   config:
     canvas:
-      render: "dots"
+      render: 'dots'
+      label:
+        x: "Some label X"
+        y: "some label Y"
       selector: '#chart1'
       padding: [30,30]
       cross:
@@ -357,13 +374,13 @@ agChart = new AgChart(
   series: [
     {
       name: "Serie 1"
-      data: genData(1000)
+      data: genData(100, 10)
       config:
         stroke: {color: "#A044FF", width: 1}
     }
     {
       name: "Serie 2"
-      data: genData(100)
+      data: genData(100, 5)
       config:
         stroke: {width: 1}
     }

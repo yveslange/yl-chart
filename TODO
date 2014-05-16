@@ -1,0 +1,19 @@
+= Ideas =
+- Rename multipleVertical to vertical
+- Create a function to get the correct effect ?
+- Ticks should be in axis sub-object key
+  point:
+    axis:
+      x:
+        label: "blaba"
+        tickSize: "full"
+      y:
+        label: "blabla"
+        tickSize: "full"
+- Position of label should be configured ?
+- Position of label depends on text size, padding. Make it auto ?
+
+
+
+= Check =
+- If the module works without any points effect

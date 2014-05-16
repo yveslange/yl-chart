@@ -11,7 +11,11 @@
           callback: "single"
         },
         canvas: {
-          render: 'circle',
+          render: "dots",
+          label: {
+            x: null,
+            y: null
+          },
           selector: void 0,
           width: 600.0,
           height: 400.0,
@@ -184,29 +188,35 @@
     };
 
     AgChart.prototype.renderXAxis = function() {
-      var axisX, height, padding;
+      var axisX, height, label, padding, width;
       padding = this._CONF.canvas.padding[1];
       height = this._CONF.canvas.height;
+      width = this._CONF.canvas.width;
+      label = this._CONF.canvas.label.x;
       axisX = d3.svg.axis().scale(this._SCALE.width);
       if (this._CONF.ticks.xSize === 'full') {
         axisX.tickSize(height - padding * 2);
       } else if (this._CONF.ticks.xSize) {
         this._CONF.ticks.axisX.tickSize(this._CONF.ticks.xSize);
       }
-      return this._CANVAS.append("g").attr("transform", "translate(0," + padding + ")").attr("class", "axis x").call(axisX);
+      this._CANVAS.append("g").attr("transform", "translate(0," + padding + ")").attr("class", "axis x").call(axisX);
+      return this._CANVAS.append("text").attr("transform", "translate(" + (width / 2) + ", " + (height - 1) + ")").text(label);
     };
 
     AgChart.prototype.renderYAxis = function() {
-      var axisY, padding, width;
+      var axisY, height, label, padding, width;
       padding = this._CONF.canvas.padding[0];
+      height = this._CONF.canvas.height;
       width = this._CONF.canvas.width;
+      label = this._CONF.canvas.label.y;
       axisY = d3.svg.axis().scale(this._SCALE.height).orient("left");
       if (this._CONF.ticks.ySize === 'full') {
         axisY.tickSize(-width + padding * 2);
       } else if (this._CONF.ticks.ySize) {
         this._CONF.ticks.axisY.tickSize(this._CONF.ticks.ySize);
       }
-      return this._CANVAS.append("g").attr("transform", "translate(" + padding + ", 0)").attr("class", "axis y").call(axisY);
+      this._CANVAS.append("g").attr("transform", "translate(" + padding + ", 0)").attr("class", "axis y").call(axisY);
+      return this._CANVAS.append("text").attr("transform", "translate(" + padding + ", " + (padding - 1) + ")").text(label);
     };
 
     AgChart.prototype.prepareSeries = function(data) {
@@ -369,10 +379,11 @@
         x = _circleNode.dataset.x;
         html = "x=" + x;
         $(params.canvas[0]).find("circle[cx='" + cx + "']").each(function(e, node) {
-          var serieName, swatchColor;
+          var serieName, swatchColor, y;
           serieName = node.parentNode.getAttribute("title");
           swatchColor = node.getAttribute("stroke");
-          return html += ("<div>" + serieName + " : " + (params.data.y.toFixed(2))) + ("<div class='swatch' style='background-color: " + swatchColor + "'></div>") + "</div>";
+          y = parseFloat(node.dataset.y).toFixed(2);
+          return html += ("<div>" + serieName + " : " + y) + ("<div class='swatch' style='background-color: " + swatchColor + "'></div>") + "</div>";
         });
         return html;
       }
@@ -400,7 +411,11 @@
   agChart = new AgChart({
     config: {
       canvas: {
-        render: "dots",
+        render: 'dots',
+        label: {
+          x: "Some label X",
+          y: "some label Y"
+        },
         selector: '#chart1',
         padding: [30, 30],
         cross: {
@@ -435,7 +450,7 @@
     series: [
       {
         name: "Serie 1",
-        data: genData(1000),
+        data: genData(100, 10),
         config: {
           stroke: {
             color: "#A044FF",
@@ -444,7 +459,7 @@
         }
       }, {
         name: "Serie 2",
-        data: genData(100),
+        data: genData(100, 5),
         config: {
           stroke: {
             width: 1
