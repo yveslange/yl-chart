@@ -1,4 +1,4 @@
 run:
 	@coffee -c libs/agchart.coffee
 watch:
-	@coffee -wc libs/agchart.coffee
+	@coffee -o libs/ -wc src/agchart.coffee
