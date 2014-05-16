@@ -184,19 +184,27 @@ class AgChart
           .attr('fill', ((d)->
             d.config?.color ? _conf.point.color))
           .on('mouseover', (d)->
-            _conf.point.mouseover(this)
+            _conf.point.mouseover(
+              canvas: _canvas
+              circleNode: this
+              data: d
+            )
 
-            _tooltipNode.html( _tooltipCallback({
+            _tooltipNode.html( _tooltipCallback(
               canvas: _canvas
               tooltipNode: _tooltipNode
               circleNode: this
               data: d
-            }))
+            ))
 
             _tooltipShow(_tooltipNode, d)
           )
           .on('mouseout', (d) ->
-            _conf.point.mouseout(this)
+            _conf.point.mouseout(
+              canvas: _canvas
+              circleNode: this
+              data: d
+            )
             _tooltipHide(_tooltipNode)
           )
     else
@@ -276,19 +284,20 @@ class AgChart
         "<div>#{params.data.x} #{params.data.y.toFixed(2)}</div>"
     multipleVertical:
       (params) ->
-        _canvas = params.canvas[0]
-        x = params.circleNode.dataset.x
-        y = params.circleNode.dataset.y
-        cx = params.circleNode.getAttribute('cx')
-        $(_canvas).find("circle[cx='#{cx}']").each((e, node)->
-          $(node).attr("stroke-width", 10)
-        )
-        console.log cx, x, y, $(params.circleNode).data('x')+99
         # Get all same cx value
-
-        #$("circle[cx='#{cx}']").attr("stroke-width",
-        #parseFloat(node.getAttribute("stroke-width"))*2)
-        "test of tooltip"
+        _circleNode = params.circleNode
+        cx = _circleNode.getAttribute('cx')
+        x = _circleNode.dataset.x
+        html = "x=#{x}"
+        $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
+          serieName = node.parentNode.getAttribute("title")
+          swatchColor = node.getAttribute("stroke")
+          html += "<div>#{serieName} : #{params.data.y.toFixed(2)}"+
+            "<div class='swatch'
+              style='background-color: #{swatchColor}'></div>"+
+          "</div>"
+        )
+        html
 
 # Just for the purpose of the example
 genData = (len, inter=1) ->
@@ -296,6 +305,22 @@ genData = (len, inter=1) ->
   for i in [0..len-1] by inter
     els.push {x: i, y: Math.random()*100}
   els
+
+onMouseOver = (params) ->
+  _circleNode = params.circleNode
+  cx = _circleNode.getAttribute('cx')
+  strokeWidth = parseFloat(_circleNode.getAttribute('stroke-width'))*4
+  $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
+    $(node).attr("stroke-width", strokeWidth)
+  )
+
+onMouseOut = (params) ->
+  _circleNode = params.circleNode
+  cx = _circleNode.getAttribute('cx')
+  strokeWidth = parseFloat(_circleNode.getAttribute('stroke-width'))/4
+  $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
+    $(node).attr("stroke-width", strokeWidth)
+  )
 
 agChart = new AgChart(
   config:
@@ -313,6 +338,8 @@ agChart = new AgChart(
     tooltip:
       callback: "multipleVertical" # Single, multipleVertical
     point: # Default configuration
+      mouseover: onMouseOver
+      mouseout: onMouseOut
       r: 3
       color: "#efefef"
       stroke: {width: 3, color: "#44A0FF"}
