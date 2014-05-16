@@ -21,8 +21,8 @@ class AgChart
             color: 'black'
             stroke: 1
       point:
-        mouseover: @defaultPointMouseover
-        mouseout: @defaultPointMouseout
+        onMouseover: "singlePoint"
+        onMouseout: "singlePoint"
         r: 4
         color: "#5e5e5e"
         stroke:
@@ -55,21 +55,40 @@ class AgChart
     setConf(@_CONF,c)
     return @_CONF
 
-  # TODO: Rename this to stroke de/highlight ?
-  # TODO: Put this into an effect object ?
-  defaultPointMouseover: (point) ->
-    curStrokeWidth = parseFloat( point.getAttribute("stroke-width") )
-    point.setAttribute("stroke-width", curStrokeWidth*2)
+  # Effects for the events
+  effects:
+    singlePoint:
+      onMouseover: (params) ->
+        _circleNode = params.circleNode
+        curStrokeWidth =
+          parseFloat( _circleNode.getAttribute("stroke-width") )
+        _circleNode.setAttribute("stroke-width", curStrokeWidth*2)
+      onMouseout: (params) ->
+        _circleNode = params.circleNode
+        curStrokeWidth =
+          parseFloat( _circleNode.getAttribute("stroke-width") )
+        _circleNode.setAttribute("stroke-width", curStrokeWidth/2)
+    multipleVertical:
+      onMouseover:  (params) ->
+        _circleNode = params.circleNode
+        cx = _circleNode.getAttribute('cx')
+        strokeWidth = parseFloat(_circleNode.getAttribute('stroke-width'))*4
+        $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
+          $(node).attr("stroke-width", strokeWidth)
+        )
 
-  defaultPointMouseout: (point) ->
-    curStrokeWidth = parseFloat( point.getAttribute("stroke-width") )
-    point.setAttribute("stroke-width", curStrokeWidth/2)
-
-  toString: ->
-    console.log "Canvas in #{@_CONF.selector}"
-    console.log "Config", @_CONF
-    console.log "Datas:", @_SERIES
-    return
+      onMouseout: (params) ->
+        _circleNode = params.circleNode
+        cx = _circleNode.getAttribute('cx')
+        strokeWidth = parseFloat(_circleNode.getAttribute('stroke-width'))/4
+        $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
+          $(node).attr("stroke-width", strokeWidth)
+        )
+        toString: ->
+          console.log "Canvas in #{@_CONF.selector}"
+          console.log "Config", @_CONF
+          console.log "Datas:", @_SERIES
+          return
 
   computePadding: ->
     # What is the size of a point
@@ -151,6 +170,7 @@ class AgChart
     _scope  = @
     _conf   = @_CONF
     _canvas = @_CANVAS
+    _effects = @effects
     _tooltipShow = @tooltipShow
     _tooltipHide = @tooltipHide
     _tooltipNode = @_TOOLTIP
@@ -184,7 +204,10 @@ class AgChart
           .attr('fill', ((d)->
             d.config?.color ? _conf.point.color))
           .on('mouseover', (d)->
-            _conf.point.mouseover(
+            effect = _conf.point.onMouseover
+            if typeof effect == 'string'
+              effect = _effects[effect].onMouseover
+            effect(
               canvas: _canvas
               circleNode: this
               data: d
@@ -200,7 +223,10 @@ class AgChart
             _tooltipShow(_tooltipNode, d)
           )
           .on('mouseout', (d) ->
-            _conf.point.mouseout(
+            effect = _conf.point.onMouseout
+            if typeof effect == 'string'
+              effect = _effects[effect].onMouseout
+            effect(
               canvas: _canvas
               circleNode: this
               data: d
@@ -306,22 +332,6 @@ genData = (len, inter=1) ->
     els.push {x: i, y: Math.random()*100}
   els
 
-onMouseOver = (params) ->
-  _circleNode = params.circleNode
-  cx = _circleNode.getAttribute('cx')
-  strokeWidth = parseFloat(_circleNode.getAttribute('stroke-width'))*4
-  $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
-    $(node).attr("stroke-width", strokeWidth)
-  )
-
-onMouseOut = (params) ->
-  _circleNode = params.circleNode
-  cx = _circleNode.getAttribute('cx')
-  strokeWidth = parseFloat(_circleNode.getAttribute('stroke-width'))/4
-  $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
-    $(node).attr("stroke-width", strokeWidth)
-  )
-
 agChart = new AgChart(
   config:
     canvas:
@@ -338,8 +348,8 @@ agChart = new AgChart(
     tooltip:
       callback: "multipleVertical" # Single, multipleVertical
     point: # Default configuration
-      mouseover: onMouseOver
-      mouseout: onMouseOut
+      onMouseover: "multipleVertical"
+      onMouseout: "multipleVertical"
       r: 3
       color: "#efefef"
       stroke: {width: 3, color: "#44A0FF"}
