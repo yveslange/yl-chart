@@ -8,8 +8,14 @@ class AgChart
       canvas:
         render: "dots"
         label:
-          x: null
-          y: null
+          x:
+            text: null
+            size: 10
+            color: "#7f7f7f"
+          y:
+            text: null
+            size: 10
+            color: "#7f7f7f"
         selector: undefined
         width: 600.0
         height: 400.0
@@ -31,9 +37,11 @@ class AgChart
         stroke:
           color: "red"
           width: 4
-      ticks:
-        xSize: undefined
-        ySize: undefined
+      axis:
+        x:
+          tickSize: undefined
+        y:
+          tickSize: undefined
     @_SERIES = @prepareSeries args.series
     @_CANVAS = undefined
     @_TOOLTIP = undefined
@@ -120,58 +128,114 @@ class AgChart
     maxY = @maxY()
     @_SCALE.width = d3.scale.linear()
       .domain([0,maxX])
+      .nice() # end with round number
       .range([_pad[0], _canvas.width-_pad[0]])
     @_SCALE.height = d3.scale.linear()
       .domain([0,maxY])
+      .nice()
       .range([_canvas.height-_pad[1], _pad[1]])
 
   createCanvas: ->
     throw new Error("No selector defined") if not @_CONF.canvas.selector?
     @_CANVAS = d3.select(@_CONF.canvas.selector)
       .append('svg')
+      .attr("fill", "white")
       .attr('width', @_CONF.canvas.width)
       .attr('height', @_CONF.canvas.height)
+
+  renderAxis: (params={
+    scale:  null
+    height: null
+    width:  null
+    padding:null
+    orient: null
+    trans:  null
+    label:  null
+  }) ->
+    axis = d3.svg.axis()
+      .scale(params.scale)
+      .orient(params.orient)
+      .tickSize(params.tickSize)
+    gaxis = @_CANVAS
+      .append("g")
+      .attr("transform", params.trans)
+      .attr("class", "axis #{params.class}")
+      .call(axis)
+
+    # Label of the axis
+    @_CANVAS.append("text")
+      .attr("fill", params.label.color)
+      .attr("class", "label #{params.class}")
+      .attr("font-size", params.label.size+"px")
+      .attr("text-anchor", "middle")
+      .attr("transform", params.label.trans)
+      .text(params.label.text)
+
+    gaxis.selectAll("line")
+      .attr("stroke", "#4f4f4f")
+      .attr("stroke-width", 1)
+
+    # Selecting the ticks only without the first one
+    gaxis.selectAll("line").filter((d) -> return d)
+      .attr("stroke", "#e0e0e0")
+      .attr("width-stroke", 2)
+
+    gaxis.selectAll("path")
+      .style("display", "none")
+    # Color of the text on axis
+    gaxis.selectAll("text")
+      .attr("fill", "red")
+      .attr("font-size", 12)
 
   renderXAxis: ->
     padding = @_CONF.canvas.padding[1]
     height = @_CONF.canvas.height
     width = @_CONF.canvas.width
+    trans = "translate(0, #{padding})"
     label = @_CONF.canvas.label.x
-
-    axisX = d3.svg
-      .axis()
-      .scale(@_SCALE.width)
-    if @_CONF.ticks.xSize == 'full'
-      axisX.tickSize(height-padding*2)
-    else if @_CONF.ticks.xSize
-      @_CONF.ticks.axisX.tickSize(@_CONF.ticks.xSize)
-    @_CANVAS.append("g")
-      .attr("transform", "translate(0," + padding + ")")
-      .attr("class", "axis x")
-      .call(axisX)
-    @_CANVAS.append("text")
-      .attr("transform", "translate(#{width/2}, #{height-1})")
-      .text(label)
+    label.trans =
+      "translate(#{width/2}, #{height-1})"
+    tickSize = @_CONF.axis.x.tickSize
+    tickSize =  height-padding*2 if tickSize == 'full'
+    params = {
+      class: "x"
+      height: @_CONF.canvas.height
+      width: @_CONF.canvas.width/2
+      scale: @_SCALE.width
+      tickSize: tickSize
+      padding: padding
+      label: label
+      orient: "bottom"
+      trans: trans
+    }
+    axis = @renderAxis(params)
 
   renderYAxis: ->
     padding = @_CONF.canvas.padding[0]
     height = @_CONF.canvas.height
     width = @_CONF.canvas.width
+    trans = "translate(#{padding}, 0)"
     label = @_CONF.canvas.label.y
-    axisY = d3.svg.axis()
-      .scale(@_SCALE.height)
-      .orient("left")
-    if @_CONF.ticks.ySize == 'full'
-      axisY.tickSize(-width+padding*2)
-    else if @_CONF.ticks.ySize
-      @_CONF.ticks.axisY.tickSize(@_CONF.ticks.ySize)
-    @_CANVAS.append("g")
-      .attr("transform", "translate(#{padding}, 0)")
-      .attr("class", "axis y")
-      .call(axisY)
-    @_CANVAS.append("text")
-      .attr("transform", "translate(#{padding}, #{padding-1})")
-      .text(label)
+    label.trans =
+      "rotate(90) translate(#{height/2}, #{-padding})"
+
+    tickSize = @_CONF.axis.y.tickSize
+    tickSize = -width+padding*2 if tickSize == 'full'
+
+    params = {
+      class: "y"
+      height: @_CONF.canvas.height
+      width: @_CONF.canvas.width
+      scale: @_SCALE.height
+      tickSize: tickSize
+      padding: padding
+      label: label
+      orient: "left"
+      trans: trans
+    }
+    axis = @renderAxis(params)
+
+
   prepareSeries: (data) ->
     # Adding the configuration to each points
     for serie in data
@@ -351,8 +415,14 @@ agChart = new AgChart(
     canvas:
       render: 'dots'
       label:
-        x: "Some label X"
-        y: "some label Y"
+        x:
+          text: "Some label X"
+          size: 10
+          color: "#7f7f7f"
+        y:
+          text: "some label Y"
+          size: 10
+          color: "#7f7f7f"
       selector: '#chart1'
       padding: [30,30]
       cross:
@@ -370,7 +440,11 @@ agChart = new AgChart(
       r: 3
       color: "#efefef"
       stroke: {width: 3, color: "#44A0FF"}
-    ticks: {ySize: "full", xSize: "full"}
+    axis:
+      y:
+        tickSize: "full"
+      x:
+        tickSize: "full"
   series: [
     {
       name: "Serie 1"

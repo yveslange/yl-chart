@@ -13,8 +13,16 @@
         canvas: {
           render: "dots",
           label: {
-            x: null,
-            y: null
+            x: {
+              text: null,
+              size: 10,
+              color: "#7f7f7f"
+            },
+            y: {
+              text: null,
+              size: 10,
+              color: "#7f7f7f"
+            }
           },
           selector: void 0,
           width: 600.0,
@@ -43,9 +51,13 @@
             width: 4
           }
         },
-        ticks: {
-          xSize: void 0,
-          ySize: void 0
+        axis: {
+          x: {
+            tickSize: void 0
+          },
+          y: {
+            tickSize: void 0
+          }
         }
       };
       this._SERIES = this.prepareSeries(args.series);
@@ -176,47 +188,91 @@
       _pad = _canvas.padding;
       maxX = this.maxX();
       maxY = this.maxY();
-      this._SCALE.width = d3.scale.linear().domain([0, maxX]).range([_pad[0], _canvas.width - _pad[0]]);
-      return this._SCALE.height = d3.scale.linear().domain([0, maxY]).range([_canvas.height - _pad[1], _pad[1]]);
+      this._SCALE.width = d3.scale.linear().domain([0, maxX]).nice().range([_pad[0], _canvas.width - _pad[0]]);
+      return this._SCALE.height = d3.scale.linear().domain([0, maxY]).nice().range([_canvas.height - _pad[1], _pad[1]]);
     };
 
     AgChart.prototype.createCanvas = function() {
       if (this._CONF.canvas.selector == null) {
         throw new Error("No selector defined");
       }
-      return this._CANVAS = d3.select(this._CONF.canvas.selector).append('svg').attr('width', this._CONF.canvas.width).attr('height', this._CONF.canvas.height);
+      return this._CANVAS = d3.select(this._CONF.canvas.selector).append('svg').attr("fill", "white").attr('width', this._CONF.canvas.width).attr('height', this._CONF.canvas.height);
+    };
+
+    AgChart.prototype.renderAxis = function(params) {
+      var axis, gaxis;
+      if (params == null) {
+        params = {
+          scale: null,
+          height: null,
+          width: null,
+          padding: null,
+          orient: null,
+          trans: null,
+          label: null
+        };
+      }
+      axis = d3.svg.axis().scale(params.scale).orient(params.orient).tickSize(params.tickSize);
+      gaxis = this._CANVAS.append("g").attr("transform", params.trans).attr("class", "axis " + params["class"]).call(axis);
+      this._CANVAS.append("text").attr("fill", params.label.color).attr("class", "label " + params["class"]).attr("font-size", params.label.size + "px").attr("text-anchor", "middle").attr("transform", params.label.trans).text(params.label.text);
+      gaxis.selectAll("line").attr("stroke", "#4f4f4f").attr("stroke-width", 1);
+      gaxis.selectAll("line").filter(function(d) {
+        return d;
+      }).attr("stroke", "#e0e0e0").attr("width-stroke", 2);
+      gaxis.selectAll("path").style("display", "none");
+      return gaxis.selectAll("text").attr("fill", "red").attr("font-size", 12);
     };
 
     AgChart.prototype.renderXAxis = function() {
-      var axisX, height, label, padding, width;
+      var axis, height, label, padding, params, tickSize, trans, width;
       padding = this._CONF.canvas.padding[1];
       height = this._CONF.canvas.height;
       width = this._CONF.canvas.width;
+      trans = "translate(0, " + padding + ")";
       label = this._CONF.canvas.label.x;
-      axisX = d3.svg.axis().scale(this._SCALE.width);
-      if (this._CONF.ticks.xSize === 'full') {
-        axisX.tickSize(height - padding * 2);
-      } else if (this._CONF.ticks.xSize) {
-        this._CONF.ticks.axisX.tickSize(this._CONF.ticks.xSize);
+      label.trans = "translate(" + (width / 2) + ", " + (height - 1) + ")";
+      tickSize = this._CONF.axis.x.tickSize;
+      if (tickSize === 'full') {
+        tickSize = height - padding * 2;
       }
-      this._CANVAS.append("g").attr("transform", "translate(0," + padding + ")").attr("class", "axis x").call(axisX);
-      return this._CANVAS.append("text").attr("transform", "translate(" + (width / 2) + ", " + (height - 1) + ")").text(label);
+      params = {
+        "class": "x",
+        height: this._CONF.canvas.height,
+        width: this._CONF.canvas.width / 2,
+        scale: this._SCALE.width,
+        tickSize: tickSize,
+        padding: padding,
+        label: label,
+        orient: "bottom",
+        trans: trans
+      };
+      return axis = this.renderAxis(params);
     };
 
     AgChart.prototype.renderYAxis = function() {
-      var axisY, height, label, padding, width;
+      var axis, height, label, padding, params, tickSize, trans, width;
       padding = this._CONF.canvas.padding[0];
       height = this._CONF.canvas.height;
       width = this._CONF.canvas.width;
+      trans = "translate(" + padding + ", 0)";
       label = this._CONF.canvas.label.y;
-      axisY = d3.svg.axis().scale(this._SCALE.height).orient("left");
-      if (this._CONF.ticks.ySize === 'full') {
-        axisY.tickSize(-width + padding * 2);
-      } else if (this._CONF.ticks.ySize) {
-        this._CONF.ticks.axisY.tickSize(this._CONF.ticks.ySize);
+      label.trans = "rotate(90) translate(" + (height / 2) + ", " + (-padding) + ")";
+      tickSize = this._CONF.axis.y.tickSize;
+      if (tickSize === 'full') {
+        tickSize = -width + padding * 2;
       }
-      this._CANVAS.append("g").attr("transform", "translate(" + padding + ", 0)").attr("class", "axis y").call(axisY);
-      return this._CANVAS.append("text").attr("transform", "translate(" + padding + ", " + (padding - 1) + ")").text(label);
+      params = {
+        "class": "y",
+        height: this._CONF.canvas.height,
+        width: this._CONF.canvas.width,
+        scale: this._SCALE.height,
+        tickSize: tickSize,
+        padding: padding,
+        label: label,
+        orient: "left",
+        trans: trans
+      };
+      return axis = this.renderAxis(params);
     };
 
     AgChart.prototype.prepareSeries = function(data) {
@@ -413,8 +469,16 @@
       canvas: {
         render: 'dots',
         label: {
-          x: "Some label X",
-          y: "some label Y"
+          x: {
+            text: "Some label X",
+            size: 10,
+            color: "#7f7f7f"
+          },
+          y: {
+            text: "some label Y",
+            size: 10,
+            color: "#7f7f7f"
+          }
         },
         selector: '#chart1',
         padding: [30, 30],
@@ -442,9 +506,13 @@
           color: "#44A0FF"
         }
       },
-      ticks: {
-        ySize: "full",
-        xSize: "full"
+      axis: {
+        y: {
+          tickSize: "full"
+        },
+        x: {
+          tickSize: "full"
+        }
       }
     },
     series: [
