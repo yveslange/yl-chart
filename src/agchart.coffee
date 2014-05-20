@@ -1,10 +1,9 @@
-data = [4, 8, 15, 16, 23, 42]
-
 class AgChart
   constructor: (args) ->
     @_CONF =
       tooltip:
         callback: "single"
+        alwaysInside: true
       canvas:
         render: "dots"
         label:
@@ -25,10 +24,12 @@ class AgChart
             show: false
             color: 'black'
             stroke: 1
+            offset: 10
           y:
             show: false
             color: 'black'
             stroke: 1
+            offset: 1
       point:
         onMouseover: "singlePoint"
         onMouseout: "singlePoint"
@@ -40,8 +41,18 @@ class AgChart
       axis:
         x:
           tickSize: undefined
+          orient: "bottom"
+          tickColor: "#efefef"
+          tickWidth: 2
+          strokeWidth: 1
+          color: "#2f2f2f"
         y:
           tickSize: undefined
+          orient: "left"
+          tickColor: "#efefef"
+          tickWidth: 2
+          strokeWidth: 1
+          color: "#2f2f2f"
     @_SERIES = @prepareSeries args.series
     @_CANVAS = undefined
     @_TOOLTIP = undefined
@@ -95,11 +106,11 @@ class AgChart
         $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
           $(node).attr("stroke-width", strokeWidth)
         )
-        toString: ->
-          console.log "Canvas in #{@_CONF.selector}"
-          console.log "Config", @_CONF
-          console.log "Datas:", @_SERIES
-          return
+  toString: ->
+    console.log "Canvas in #{@_CONF.selector}"
+    console.log "Config", @_CONF
+    console.log "Datas:", @_SERIES
+    return
 
   computePadding: ->
     # What is the size of a point
@@ -143,6 +154,21 @@ class AgChart
       .attr('width', @_CONF.canvas.width)
       .attr('height', @_CONF.canvas.height)
 
+  renderLabel: (params={
+    label:
+      color: null
+      size: null
+      trans: null
+      text: ""
+    class: null }) ->
+    @_CANVAS.append("text")
+      .attr("fill", params.label.color)
+      .attr("class", "label #{params.class}")
+      .attr("font-size", params.label.size+"px")
+      .attr("text-anchor", "middle")
+      .attr("transform", params.label.trans)
+      .text(params.label.text)
+
   renderAxis: (params={
     scale:  null
     height: null
@@ -150,8 +176,7 @@ class AgChart
     padding:null
     orient: null
     trans:  null
-    label:  null
-  }) ->
+    label:  null }) ->
     axis = d3.svg.axis()
       .scale(params.scale)
       .orient(params.orient)
@@ -162,30 +187,25 @@ class AgChart
       .attr("class", "axis #{params.class}")
       .call(axis)
 
-    # Label of the axis
-    @_CANVAS.append("text")
-      .attr("fill", params.label.color)
-      .attr("class", "label #{params.class}")
-      .attr("font-size", params.label.size+"px")
-      .attr("text-anchor", "middle")
-      .attr("transform", params.label.trans)
-      .text(params.label.text)
+    @renderLabel(params)
 
     gaxis.selectAll("line")
-      .attr("stroke", "#4f4f4f")
-      .attr("stroke-width", 1)
+      .attr("stroke", params.color)
+      .attr("stroke-width", params.strokeWidth)
 
     # Selecting the ticks only without the first one
     gaxis.selectAll("line").filter((d) -> return d)
-      .attr("stroke", "#e0e0e0")
-      .attr("width-stroke", 2)
+      .attr("stroke", params.tickColor)
+      .attr("width-stroke", params.tickWidth)
 
+    # Trick to hide the path around the graph
     gaxis.selectAll("path")
       .style("display", "none")
+
     # Color of the text on axis
     gaxis.selectAll("text")
-      .attr("fill", "red")
-      .attr("font-size", 12)
+      .attr("fill", params.label.color)
+      .attr("font-size", params.label.size)
 
   renderXAxis: ->
     padding = @_CONF.canvas.padding[1]
@@ -205,8 +225,12 @@ class AgChart
       tickSize: tickSize
       padding: padding
       label: label
-      orient: "bottom"
+      orient: @_CONF.axis.x.orient
       trans: trans
+      tickColor: @_CONF.axis.x.tickColor
+      tickWidth: @_CONF.axis.x.tickWidth
+      color: @_CONF.axis.x.color
+      strokeWidth: @_CONF.axis.x.strokeWidth
     }
     axis = @renderAxis(params)
 
@@ -230,8 +254,12 @@ class AgChart
       tickSize: tickSize
       padding: padding
       label: label
-      orient: "left"
+      orient: @_CONF.axis.y.orient
       trans: trans
+      tickColor: @_CONF.axis.y.tickColor
+      tickWidth: @_CONF.axis.y.tickWidth
+      color: @_CONF.axis.y.color
+      strokeWidth: @_CONF.axis.y.strokeWidth
     }
     axis = @renderAxis(params)
 
@@ -248,12 +276,12 @@ class AgChart
     _conf   = @_CONF
     _canvas = @_CANVAS
     _effects = @effects
-    _tooltipShow = @tooltipShow
-    _tooltipHide = @tooltipHide
+    _tooltipShow = @tooltip.show
+    _tooltipHide = @tooltip.hide
     _tooltipNode = @_TOOLTIP
     _tooltipCallback = _conf.tooltip.callback
     if typeof(_tooltipCallback) == "string"
-      _tooltipCallback = @tooltipCallbacks[_tooltipCallback]
+      _tooltipCallback = @tooltip.callbacks[_tooltipCallback]
     scaleW = @_SCALE.width
     scaleH = @_SCALE.height
 
@@ -297,7 +325,13 @@ class AgChart
               data: d
             ))
 
-            _tooltipShow(_tooltipNode, d)
+            conf =
+              canvas:
+                width: _conf.canvas.width
+                height: _conf.canvas.height
+              tooltip:
+                alwaysInside: _conf.tooltip.alwaysInside
+            _tooltipShow(conf, _tooltipNode, d)
           )
           .on('mouseout', (d) ->
             effect = _conf.point.onMouseout
@@ -322,8 +356,8 @@ class AgChart
   renderCross: (options)->
     padX = options.padding[0]
     padY = options.padding[1]
-    offsetX = 10 # To be centered on mouse
-    offsetY = 10 # To be centered on mouse
+    offsetX = @_CONF.canvas.cross.x.offset
+    offsetX = @_CONF.canvas.cross.y.offset
     _crossX = options.canvas.append("line")
       .attr("class", "crossX")
       .attr("x1", -options.width).attr("y1", padY)
@@ -365,43 +399,57 @@ class AgChart
     @renderTooltip()
     @renderPoints() # Depends on axis and tooltip
 
-  # TODO: create a tooltip object to handle this
-  tooltipShow: (_tooltipNode, d) ->
-    left = d3.event.pageX+d.config.stroke.width
-    top = d3.event.pageY
-    _tooltipNode.style("left", left+'px').style("top", top+'px')
-      .transition().duration(200).style("opacity", 0.9)
+  tooltip:
+    show: (conf, tooltipNode, d) ->
+      left = d3.event.pageX+d.config.stroke.width
+      top = d3.event.pageY+d.config.stroke.width
+      if conf.tooltip.alwaysInside
+        if d3.event.pageX > conf.canvas.width/2.0
+          widthTooltip = parseFloat(
+            tooltipNode.style('width').replace("px", ''))
+          left = d3.event.pageX-d.config.stroke.width-
+            widthTooltip-10
+        if d3.event.pageY > conf.canvas.height/2.0
+          heightTooltip = parseFloat(
+            tooltipNode.style('height').replace("px", ''))
+          top = d3.event.pageY-d.config.stroke.width-
+            heightTooltip-10
+      tooltipNode
+        .style("left", left+'px')
+        .style("top", top+'px')
+        .transition().duration(200).style("opacity", 0.9)
 
-  tooltipHide: (_tooltipNode) ->
-    _tooltipNode.transition().duration(500).style("opacity", 0)
+    hide: (tooltipNode) ->
+      tooltipNode.transition()
+        .duration(500).style("opacity", 0)
 
-  tooltipCallbacks:
-    single:
-      (params) ->
-        serieName = params.circleNode.parentNode.getAttribute("title")
-        swatchColor = params.circleNode.getAttribute("stroke")
-        "<div>#{serieName}"+
-          "<div class='swatch'
-            style='background-color: #{swatchColor}'></div>"+
-        "</div>"+
-        "<div>#{params.data.x} #{params.data.y.toFixed(2)}</div>"
-    multipleVertical:
-      (params) ->
-        # Get all same cx value
-        _circleNode = params.circleNode
-        cx = _circleNode.getAttribute('cx')
-        x = _circleNode.dataset.x
-        html = "x=#{x}"
-        $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
-          serieName = node.parentNode.getAttribute("title")
-          swatchColor = node.getAttribute("stroke")
-          y = parseFloat(node.dataset.y).toFixed(2)
-          html += "<div>#{serieName} : #{y}"+
+    callbacks:
+      single:
+        (params) ->
+          serieName = params.circleNode.parentNode.getAttribute("title")
+          swatchColor = params.circleNode.getAttribute("stroke")
+          "<div>#{serieName}"+
             "<div class='swatch'
               style='background-color: #{swatchColor}'></div>"+
-          "</div>"
-        )
-        html
+          "</div>"+
+          "<div>#{params.data.x} #{params.data.y.toFixed(2)}</div>"
+      multipleVertical:
+        (params) ->
+          # Get all same cx value
+          _circleNode = params.circleNode
+          cx = _circleNode.getAttribute('cx')
+          x = _circleNode.dataset.x
+          html = "x=#{x}"
+          $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
+            serieName = node.parentNode.getAttribute("title")
+            swatchColor = node.getAttribute("stroke")
+            y = parseFloat(node.dataset.y).toFixed(2)
+            html += "<div>#{serieName} : #{y}"+
+              "<div class='swatch'
+                style='background-color: #{swatchColor}'></div>"+
+            "</div>"
+          )
+          html
 
 # Just for the purpose of the example
 genData = (len, inter=1) ->
