@@ -1,0 +1,47 @@
+<html>
+  <head>
+    <script>
+      window.brunch = window.brunch || {};
+      window.brunch.server = '127.0.0.1';
+    </script>
+    <link rel="stylesheet" type="text/css" href="css/app.css" media="screen">
+    <script src="js/vendor.js" charset="utf-8"></script>
+    <script src="js/app.js" charset="utf-8"></script>
+  </head>
+  <body>
+    <div id="chart1" class="chart"></div>
+    <div id="chartRender"></div>
+    <div id="chartRenderPNG"></div>
+  </body>
+  <script>
+    require("initialize").run();
+    // Converting to PNG
+    var html = d3.select("svg")
+          .attr("version", 1.1)
+          .attr("xmlns", "http://www.w3.org/2000/svg")
+          .node().parentNode.innerHTML;
+
+    var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
+    var img = '<img src="'+imgsrc+'">';
+    d3.select("#chartRender").html(img);
+
+    var canvas = document.querySelector("canvas");
+    var context = canvas.getContext("2d");
+
+    var image = new Image;
+    image.src = imgsrc;
+    image.onload = function() {
+      context.drawImage(image, 0, 0);
+
+      var canvasdata = canvas.toDataURL("image/png");
+
+      var pngimg = '<img src="'+canvasdata+'">';
+      d3.select("#chartRenderPNG").html(pngimg);
+
+      var a = document.createElement("a");
+      a.download = "sample.png";
+      a.href = canvasdata;
+      a.click();
+    };
+  </script>
+</html>

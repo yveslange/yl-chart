@@ -1,0 +1,9 @@
+{
+  "name": "AgChart",
+  "version": "0.1.0",
+  "main": "_public/js/app.js",
+  "dependencies": {
+    "d3": "~3.3",
+    "jquery": "~2.1.1"
+  }
+}
