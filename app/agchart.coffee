@@ -1,10 +1,12 @@
+palette = require 'utils/palette'
+
 module.exports = exp = {}
 
 exp.Main = class Main
   constructor: (args) ->
     @_CONF =
       tooltip:
-        callback: "single"
+        callback: "singlePoint"
         alwaysInside: true
       canvas:
         render: "dots"
@@ -36,10 +38,10 @@ exp.Main = class Main
         onMouseover: "singlePoint"
         onMouseout: "singlePoint"
         r: 4
-        color: "#5e5e5e"
+        color: "munin"
         stroke:
-          color: "red"
           width: 4
+          color: "#FFFFFF"
       axis:
         x:
           tickSize: undefined
@@ -96,17 +98,40 @@ exp.Main = class Main
       onMouseover:  (params) ->
         _circleNode = params.circleNode
         cx = _circleNode.getAttribute('cx')
-        strokeWidth = parseFloat(_circleNode.getAttribute('stroke-width'))*4
+        strokeWidth = parseFloat(_circleNode.getAttribute('stroke-width'))*2
         $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
           $(node).attr("stroke-width", strokeWidth)
+        )
+      onMouseout: (params) ->
+        _circleNode = params.circleNode
+        cx = _circleNode.getAttribute('cx')
+        strokeWidth = parseFloat(_circleNode.getAttribute('stroke-width'))/2
+        $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
+          $(node).attr("stroke-width", strokeWidth)
+        )
+    multipleVerticalInverted:
+      onMouseover:  (params) ->
+        _circleNode = params.circleNode
+        cx = _circleNode.getAttribute('cx')
+        strokeWidth = parseFloat(_circleNode.getAttribute('stroke-width'))*2
+        $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
+          $(node).attr("stroke-width", strokeWidth)
+          fill = $(node).attr("fill")
+          stroke = $(node).attr("stroke")
+          $(node).attr("stroke", fill)
+          $(node).attr("fill", stroke)
         )
 
       onMouseout: (params) ->
         _circleNode = params.circleNode
         cx = _circleNode.getAttribute('cx')
-        strokeWidth = parseFloat(_circleNode.getAttribute('stroke-width'))/4
+        strokeWidth = parseFloat(_circleNode.getAttribute('stroke-width'))/2
         $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
           $(node).attr("stroke-width", strokeWidth)
+          fill = $(node).attr("fill")
+          stroke = $(node).attr("stroke")
+          $(node).attr("stroke", fill)
+          $(node).attr("fill", stroke)
         )
   toString: ->
     console.log "Canvas in #{@_CONF.selector}"
@@ -115,7 +140,6 @@ exp.Main = class Main
     return
 
   computePadding: ->
-    # What is the size of a point
     pad = @_CONF.point.r+@_CONF.point.stroke.width/2.0
     if @_CONF.canvas.padding == 'auto'
       @_CONF.canvas.padding = [pad,pad]
@@ -268,9 +292,10 @@ exp.Main = class Main
 
   prepareSeries: (data) ->
     # Adding the configuration to each points
-    for serie in data
+    for serie, i in data
       for point in serie.data
         point.config = serie.config if serie.config?
+        point.serie = i
     data
 
   renderPoints: ->
@@ -282,6 +307,8 @@ exp.Main = class Main
     _tooltipHide = @tooltip.hide
     _tooltipNode = @_TOOLTIP
     _tooltipCallback = _conf.tooltip.callback
+    _palette = new palette.Main(@_CONF.point.color)
+
     if typeof(_tooltipCallback) == "string"
       _tooltipCallback = @tooltip.callbacks[_tooltipCallback]
     scaleW = @_SCALE.width
@@ -305,11 +332,20 @@ exp.Main = class Main
           .attr('r', ( (d) ->
             d.config?.r ?  _conf.point.r))
           .attr('stroke',( (d) ->
-            d.config?.stroke?.color ? _conf.point.stroke.color))
+            if d.config?.stroke?.color?
+              return d.config.stroke.color
+            else
+              _conf.point.stroke.color
+          ))
           .attr('stroke-width', ( (d) ->
             d.config?.stroke?.width ? _conf.point.stroke.width))
           .attr('fill', ((d)->
-            d.config?.color ? _conf.point.color))
+            if d.config?.color?
+              return d.config?.color
+            if _palette.isDefined()
+              return _palette.color(d.serie)
+            _conf.point.color
+          ))
           .on('mouseover', (d)->
             effect = _conf.point.onMouseover
             if typeof effect == 'string'
@@ -359,7 +395,7 @@ exp.Main = class Main
     padX = options.padding[0]
     padY = options.padding[1]
     offsetX = @_CONF.canvas.cross.x.offset
-    offsetX = @_CONF.canvas.cross.y.offset
+    offsetY = @_CONF.canvas.cross.y.offset
     _crossX = options.canvas.append("line")
       .attr("class", "crossX")
       .attr("x1", -options.width).attr("y1", padY)
@@ -426,10 +462,10 @@ exp.Main = class Main
         .duration(500).style("opacity", 0)
 
     callbacks:
-      single:
+      singlePoint:
         (params) ->
           serieName = params.circleNode.parentNode.getAttribute("title")
-          swatchColor = params.circleNode.getAttribute("stroke")
+          swatchColor = params.circleNode.getAttribute("fill")
           "<div>#{serieName}"+
             "<div class='swatch'
               style='background-color: #{swatchColor}'></div>"+
@@ -437,7 +473,26 @@ exp.Main = class Main
           "<div>#{params.data.x} #{params.data.y.toFixed(2)}</div>"
       multipleVertical:
         (params) ->
-          # Get all same cx value
+          # Get all same cx value, take the fill color to
+          # draw watch and show some information
+          _circleNode = params.circleNode
+          cx = _circleNode.getAttribute('cx')
+          x = _circleNode.dataset.x
+          html = "x=#{x}"
+          $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
+            serieName = node.parentNode.getAttribute("title")
+            swatchColor = node.getAttribute("fill")
+            y = parseFloat(node.dataset.y).toFixed(2)
+            html += "<div>#{serieName} : #{y}"+
+              "<div class='swatch'
+                style='background-color: #{swatchColor}'></div>"+
+            "</div>"
+          )
+          html
+      multipleVerticalInverted:
+        (params) ->
+          # Get all same cx value, take the stroke color to
+          # draw watch and show some information
           _circleNode = params.circleNode
           cx = _circleNode.getAttribute('cx')
           x = _circleNode.dataset.x
@@ -452,4 +507,3 @@ exp.Main = class Main
             "</div>"
           )
           html
-

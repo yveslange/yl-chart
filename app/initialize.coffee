@@ -33,13 +33,14 @@ exp.run = ->
             show: false
             color: "#FFA044"
       tooltip:
-        callback: "multipleVertical" # Single, multipleVertical
-      point: # Default configuration
-        onMouseover: "multipleVertical"
-        onMouseout: "multipleVertical"
+        callback: "multipleVerticalInverted" # SinglePoint, multipleVertical
+      point:
+        # SinglePoint, multipleVertical, multipleVerticalInverted
+        onMouseover: "multipleVerticalInverted"
+        onMouseout: "multipleVerticalInverted"
         r: 3
-        color: "#efefef"
-        stroke: {width: 3, color: "#44A0FF"}
+        color: 'paired' # Color or palette name
+        stroke: {width: 1, color: null}
       axis:
         y:
           tickSize: "full"
@@ -50,13 +51,21 @@ exp.run = ->
         name: "Serie 1"
         data: genData(100, 10)
         config:
-          stroke: {color: "#A044FF", width: 1}
+          stroke: {width: 1, color: "#fff"}
       }
       {
         name: "Serie 2"
         data: genData(100, 5)
         config:
-          stroke: {width: 1}
+          #color: "#ff0001"
+          stroke: {width: 1, "#fff"}
+      }
+      {
+        name: "Serie 3"
+        data: genData(100, 5)
+        config:
+          #color: "#00fffe"
+          stroke: {width: 1, color: "#fff"}
       }
     ]
   )
