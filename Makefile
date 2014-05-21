@@ -1,7 +1,13 @@
-run:
-	@coffee -c libs/agchart.coffee
+build:
+	@echo "Build the project (BRUNCH)"
+	@brunch build
+build-prod:
+	@echo "Build project for production (BRUNCH)"
+	@cd public; rm -rf *;
+	@brunch build --production
 watch:
-	@coffee -o libs/ -wc src/agchart.coffee
+	@echo "Running the watcher (BRUNCH)"
+	@brunch watch
 install:
 	@echo "Installing brunch & bower (NPM)"
 	@sudo npm install -g brunch

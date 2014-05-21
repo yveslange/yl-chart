@@ -6,10 +6,6 @@ exports.config =
     javascripts:
       joinTo:
         'js/vendor.js': /^bower_components/
-        'js/app.js': /^app/
-#      order:
-#        before: [
-#          'bower_components/jquery/dist/jquery.js'
-#        ]
+        'js/agchart.js': /^app/
     stylesheets:
       joinTo: 'css/app.css': /^app\/styles\//
