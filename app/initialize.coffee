@@ -13,7 +13,7 @@ exp.run = ->
   agChart = new agchart.Main(
     config:
       canvas:
-        render: 'dots'
+        render: 'dotline' # dot, line, dotline
         label:
           x:
             text: "Some label X"
@@ -32,6 +32,13 @@ exp.run = ->
           y:
             show: false
             color: "#FFA044"
+      logo:
+        url: "agflow-logo.png"
+        width: 100
+        height: 50
+        x: 'right'
+        y: 'bottom'
+        opacity: 0.3
       tooltip:
         callback: "multipleVerticalInverted" # SinglePoint, multipleVertical
       point:

@@ -9,7 +9,7 @@ exp.Main = class Main
         callback: "singlePoint"
         alwaysInside: true
       canvas:
-        render: "dots"
+        render: "dot" # dot, line
         label:
           x:
             text: null
@@ -34,6 +34,13 @@ exp.Main = class Main
             color: 'black'
             stroke: 1
             offset: 1
+      logo:
+        url: "agflow-logo.svg"
+        width: 100
+        height: 50
+        x: 'right'
+        y: 'bottom'
+        opacity: 0.5
       point:
         onMouseover: "singlePoint"
         onMouseout: "singlePoint"
@@ -80,6 +87,7 @@ exp.Main = class Main
             conf[k] = obj[k] ? conf[k]
     setConf(@_CONF,c)
     return @_CONF
+
 
   # Effects for the events
   effects:
@@ -202,10 +210,12 @@ exp.Main = class Main
     padding:null
     orient: null
     trans:  null
-    label:  null }) ->
+    label:  null
+    format: null }) ->
     axis = d3.svg.axis()
       .scale(params.scale)
       .orient(params.orient)
+      #.tickFormat(d3.time.format("%H"))
       .tickSize(params.tickSize)
     gaxis = @_CANVAS
       .append("g")
@@ -314,16 +324,36 @@ exp.Main = class Main
     scaleW = @_SCALE.width
     scaleH = @_SCALE.height
 
-    if _conf.canvas.render == 'dots'
-      series = @_CANVAS.selectAll(".series")
-        .data(@_SERIES).enter()
-          .append("g")
-          .attr("class", "series")
-          .attr("id", (s, i)->"#{i}")
-          .attr("title", (s)->s.name)
+    series = @_CANVAS.selectAll(".series")
+      .data(@_SERIES).enter()
+        .append("g")
+        .attr("class", "series")
+        .attr("id", (s, i)->"#{i}")
+        .attr("title", (s)->s.name)
 
+    if _conf.canvas.render == 'line' or _conf.canvas.render == 'dotline'
+      valueline = d3.svg.line()
+        .interpolate("linear")
+        .x((d)->scaleW(d.x))
+        .y((d)->scaleH(d.y))
+
+      series.append("path")
+        .attr("class", "line")
+        .attr("d", (d)->valueline(d.data))
+        .attr('stroke-width', ( (d) ->
+          d.config?.stroke?.width ? _conf.point.stroke.width))
+        .attr('stroke', ((d, serieIndex)->
+          if d.config?.color?
+            return d.config?.color
+          if _palette.isDefined()
+            return _palette.color(serieIndex)
+          _conf.point.color
+        ))
+        .attr("fill", "none")
+
+    if _conf.canvas.render == 'dot' or _conf.canvas.render == 'dotline'
       series.selectAll(".circle")
-        .data((d) -> d.data) # 's' for a single serie
+        .data((d) -> d.data)
         .enter().append("circle")
           .attr('cx', (d) -> scaleW(d.x))
           .attr('cy', (d) -> scaleH(d.y))
@@ -382,8 +412,11 @@ exp.Main = class Main
             )
             _tooltipHide(_tooltipNode)
           )
+
     else
       throw new Error("Unknown render value '#{_canvas.render}'")
+
+
 
   renderTooltip: ->
     if not @_TOOLTIP?
@@ -423,8 +456,33 @@ exp.Main = class Main
           .attr("y2", d3.event.pageY-offsetY)
     )
 
+  renderLogo: (params) ->
+    if params.y == 'bottom'
+      params.y = @_CONF.canvas.height-@_CONF.canvas.padding[0]-params.height
+    params.y = @_CONF.canvas.padding[0] if params.y == 'top'
+    if params.x == 'right'
+      params.x = @_CONF.canvas.width-@_CONF.canvas.padding[1]-params.width
+    params.x = @_CONF.canvas.padding[1] if params.y == 'left'
+
+    @_CANVAS
+      .append("image")
+      .attr("width", params.width)
+      .attr("height", params.height)
+      .attr("x", params.x)
+      .attr("y", params.y)
+      .attr("opacity", params.opacity)
+      .attr("xlink:href","agflow-logo.svg")
+
   render: ->
     @_CANVAS = @createCanvas() if not @_CANVAS?
+    @renderLogo(
+      opacity: @_CONF.logo.opacity
+      url: @_CONF.logo.url
+      width: @_CONF.logo.width
+      height: @_CONF.logo.height
+      x: @_CONF.logo.x
+      y: @_CONF.logo.y
+    )
     @renderCross(
       canvas: @_CANVAS
       cross: @_CONF.canvas.cross
