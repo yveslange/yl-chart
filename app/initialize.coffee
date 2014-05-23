@@ -30,7 +30,7 @@ exp.run = ->
             size: 10
             color: "#7f7f7f"
           y:
-            text: "some label Y"
+            text: "Some label Y"
             size: 10
             color: "#7f7f7f"
         selector: '#chart1'
@@ -40,7 +40,7 @@ exp.run = ->
             show: true
             color: "#44A0FF"
           y:
-            show: false
+            show: true
             color: "#FFA044"
       logo:
         url: "agflow-logo.png"
