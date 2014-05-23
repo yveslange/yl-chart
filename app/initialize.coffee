@@ -1,13 +1,23 @@
-agchart = require 'agchart'
-
 module.exports = exp = {}
 
+agchart = require 'agchart'
+time = require 'utils/time'
+
 exp.run = ->
+  # TODO: finish this module if needed (later on)
+  t = new time.Main(
+    lang: 'en'
+  )
+  formatTooltip = (d) ->
+    date = new Date(d)
+    formatDate = d3.time.format("%b '%y")
+    formatDate(date)
+
   # Just for the purpose of the example
   genData = (len, inter=1) ->
     els = []
     for i in [0..len-1] by inter
-      els.push {x: i, y: Math.random()*100}
+      els.push {x: new Date(i*1000), y: Math.random()*100}
     els
 
   agChart = new agchart.Main(
@@ -41,6 +51,8 @@ exp.run = ->
         opacity: 0.3
       tooltip:
         callback: "multipleVerticalInverted" # SinglePoint, multipleVertical
+        format:
+          x: formatTooltip
       point:
         # SinglePoint, multipleVertical, multipleVerticalInverted
         onMouseover: "multipleVerticalInverted"
@@ -52,24 +64,25 @@ exp.run = ->
         y:
           tickSize: "full"
         x:
+          format: "%b"
           tickSize: "full"
     series: [
       {
         name: "Serie 1"
-        data: genData(100, 10)
+        data: genData(24*3600*120, 24*3600)
         config:
           stroke: {width: 1, color: "#fff"}
       }
       {
         name: "Serie 2"
-        data: genData(100, 5)
+        data: genData(24*3600*120, 36*3600*2)
         config:
           #color: "#ff0001"
           stroke: {width: 1, "#fff"}
       }
       {
         name: "Serie 3"
-        data: genData(100, 5)
+        data: genData(24*3600*120, 48*3600)
         config:
           #color: "#00fffe"
           stroke: {width: 1, color: "#fff"}

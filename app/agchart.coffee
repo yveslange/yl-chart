@@ -6,6 +6,9 @@ exp.Main = class Main
   constructor: (args) ->
     @_CONF =
       tooltip:
+        format:
+          x: null
+          y: null
         callback: "singlePoint"
         alwaysInside: true
       canvas:
@@ -51,6 +54,7 @@ exp.Main = class Main
           color: "#FFFFFF"
       axis:
         x:
+          format: null
           tickSize: undefined
           orient: "bottom"
           tickColor: "#efefef"
@@ -58,6 +62,7 @@ exp.Main = class Main
           strokeWidth: 1
           color: "#2f2f2f"
         y:
+          format: null
           tickSize: undefined
           orient: "left"
           tickColor: "#efefef"
@@ -172,11 +177,15 @@ exp.Main = class Main
     maxX = @maxX()
     maxY = @maxY()
     @_SCALE.width = d3.scale.linear()
-      .domain([0,maxX])
+    if @_CONF.axis.x.format?
+      @_SCALE.width = d3.time.scale()
+    @_SCALE.width.domain([0,maxX])
       .nice() # end with round number
       .range([_pad[0], _canvas.width-_pad[0]])
     @_SCALE.height = d3.scale.linear()
-      .domain([0,maxY])
+    if @_CONF.axis.y.format?
+      @_SCALE.height = d3.time.scale()
+    @_SCALE.height.domain([0,maxY])
       .nice()
       .range([_canvas.height-_pad[1], _pad[1]])
 
@@ -204,6 +213,7 @@ exp.Main = class Main
       .text(params.label.text)
 
   renderAxis: (params={
+    class: null
     scale:  null
     height: null
     width:  null
@@ -212,11 +222,18 @@ exp.Main = class Main
     trans:  null
     label:  null
     format: null }) ->
+
     axis = d3.svg.axis()
       .scale(params.scale)
       .orient(params.orient)
-      #.tickFormat(d3.time.format("%H"))
       .tickSize(params.tickSize)
+
+    if params.format?
+      axis.ticks(d3.time.months, 1)
+      axis.tickFormat(
+        d3.time.format(params.format)
+      )
+
     gaxis = @_CANVAS
       .append("g")
       .attr("transform", params.trans)
@@ -267,6 +284,7 @@ exp.Main = class Main
       tickWidth: @_CONF.axis.x.tickWidth
       color: @_CONF.axis.x.color
       strokeWidth: @_CONF.axis.x.strokeWidth
+      format: @_CONF.axis.x.format
     }
     axis = @renderAxis(params)
 
@@ -296,6 +314,7 @@ exp.Main = class Main
       tickWidth: @_CONF.axis.y.tickWidth
       color: @_CONF.axis.y.color
       strokeWidth: @_CONF.axis.y.strokeWidth
+      format: @_CONF.axis.y.format
     }
     axis = @renderAxis(params)
 
@@ -387,6 +406,7 @@ exp.Main = class Main
             )
 
             _tooltipNode.html( _tooltipCallback(
+              format: _conf.tooltip.format
               canvas: _canvas
               tooltipNode: _tooltipNode
               circleNode: this
@@ -415,8 +435,6 @@ exp.Main = class Main
 
     else
       throw new Error("Unknown render value '#{_canvas.render}'")
-
-
 
   renderTooltip: ->
     if not @_TOOLTIP?
@@ -524,6 +542,7 @@ exp.Main = class Main
         (params) ->
           serieName = params.circleNode.parentNode.getAttribute("title")
           swatchColor = params.circleNode.getAttribute("fill")
+          params.data.x = params.format.x(x) if params.format?.x?
           "<div>#{serieName}"+
             "<div class='swatch'
               style='background-color: #{swatchColor}'></div>"+
@@ -536,7 +555,8 @@ exp.Main = class Main
           _circleNode = params.circleNode
           cx = _circleNode.getAttribute('cx')
           x = _circleNode.dataset.x
-          html = "x=#{x}"
+          x = params.format.x(x) if params.format?.x?
+          html = "#{x}"
           $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
             serieName = node.parentNode.getAttribute("title")
             swatchColor = node.getAttribute("fill")
@@ -554,7 +574,8 @@ exp.Main = class Main
           _circleNode = params.circleNode
           cx = _circleNode.getAttribute('cx')
           x = _circleNode.dataset.x
-          html = "x=#{x}"
+          x = params.format.x(x) if params.format?.x?
+          html = "#{x}"
           $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
             serieName = node.parentNode.getAttribute("title")
             swatchColor = node.getAttribute("stroke")

@@ -1,7 +1,5 @@
 # Brunch.io configuration file
 exports.config =
-  conventions:
-    assets: /^app\/_assets\//
   path:
     public: 'public'
   files:
@@ -10,4 +8,4 @@ exports.config =
         'js/vendor.js': /^bower_components/
         'js/agchart.js': /^app/
     stylesheets:
-      joinTo: 'css/app.css': /^app\/_styles\//
+      joinTo: 'css/app.css': /^app\/styles\//
