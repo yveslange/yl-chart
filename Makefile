@@ -5,6 +5,9 @@ build-prod:
 	@echo "Build project for production (BRUNCH)"
 	@cd public; rm -rf *;
 	@brunch build --production
+	@mkdir -p release
+	@cp public/js/agchart.js release/agchart.min.js
+	@cp public/css/app.css release/agchart.min.css
 watch:
 	@echo "Running the watcher (BRUNCH)"
 	@brunch watch
