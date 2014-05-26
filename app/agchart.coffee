@@ -166,35 +166,31 @@ exp.Main = class Main
     if @_CONF.canvas.padding == 'auto'
       @_CONF.canvas.padding = [pad,pad]
 
-  maxX: ->
-    max = Number.MIN_VALUE
+  getDomain: ->
+    maxX = maxY = Number.MIN_VALUE
+    minX = minY = Number.MAX_VALUE
     for serie in @_SERIES
       for point in serie.data
-        max = point.x if point.x > max
-    return max
-
-  maxY: ->
-    max = Number.MIN_VALUE
-    for serie in @_SERIES
-      for point in serie.data
-        max = point.y if point.y > max
-    return max
+        maxX = point.x if point.x > maxX
+        minX = point.x if point.x < minX
+        maxY = point.y if point.y > maxY
+        minY = point.y if point.y < minY
+    {minX: minX, maxX: maxX, minY: minY, maxY: maxY}
 
   computeScales: ->
     _canvas = @_CONF.canvas
     _pad = _canvas.padding
-    maxX = @maxX()
-    maxY = @maxY()
+    _domain = @getDomain()
     @_SCALE.width = d3.scale.linear()
     if @_CONF.axis.x.format?
       @_SCALE.width = d3.time.scale()
-    @_SCALE.width.domain([0,maxX])
+    @_SCALE.width.domain([_domain.minX,_domain.maxX])
       .nice() # end with round number
       .range([_pad[0], _canvas.width-_pad[0]])
     @_SCALE.height = d3.scale.linear()
     if @_CONF.axis.y.format?
       @_SCALE.height = d3.time.scale()
-    @_SCALE.height.domain([0,maxY])
+    @_SCALE.height.domain([_domain.minY,_domain.maxY])
       .nice()
       .range([_canvas.height-_pad[1], _pad[1]])
 
