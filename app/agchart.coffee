@@ -81,12 +81,21 @@ exp.Main = class Main
     @computeScales()
     return
 
+
   # Define custom value for the configuration
   defaultConfig: (c={}) ->
+    # Check if the obj is a node.
+    isNode = (obj) ->
+      if obj?["0"]?.nodeName?
+        return true
+      return false
+
     setConf = (conf,obj) ->
       if obj?
         for k of obj
-          if typeof obj[k] == 'object'
+          if isNode(obj[k])
+            conf[k] = obj[k][0] ? conf[k][0] # If node, we just copy it
+          else if typeof obj[k] == 'object'
             setConf conf[k], obj[k]
           else
             conf[k] = obj[k] ? conf[k]
