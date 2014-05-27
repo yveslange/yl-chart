@@ -16,7 +16,8 @@ exp.Main = class Main
         render: "dot" # dot, line
         title:
           text: "AgChart"
-          color: "#afafaf"
+          color: "#2f2f2f"
+          size: 24
         label:
           x:
             text: null
@@ -209,10 +210,14 @@ exp.Main = class Main
   renderTitle: (params={
     title: ""
     color: null
+    size: params.size
   }) ->
     @_CANVAS.append("text")
-      .attr("class", "title")
+      .attr("x", @_CONF.canvas.padding[0]-1)
+      .attr("y", @_CONF.canvas.padding[1]-1)
+      .attr("class", "chart-title")
       .attr("fill", params.color)
+      .attr("font-size", params.size)
       .text(params.title)
 
   renderLabel: (params={
@@ -526,6 +531,7 @@ exp.Main = class Main
     @renderTitle(
       title: @_CONF.canvas.title.text
       color: @_CONF.canvas.title.color
+      size: @_CONF.canvas.title.size
     )
     @renderLogo(
       opacity: @_CONF.logo.opacity
@@ -572,6 +578,8 @@ exp.Main = class Main
     hide: (tooltipNode) ->
       tooltipNode.transition()
         .duration(500).style("opacity", 0)
+    layout:
+      singlePoint: (serieName, data, swatchColor)-> "not implemented"
 
     callbacks:
       singlePoint:
