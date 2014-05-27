@@ -24,6 +24,9 @@ exp.run = ->
     config:
       canvas:
         render: 'dotline' # dot, line, dotline
+        title:
+          color: "red"
+          text: "AgChart"
         label:
           x:
             text: "Some label X"

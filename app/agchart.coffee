@@ -12,7 +12,11 @@ exp.Main = class Main
         callback: "singlePoint"
         alwaysInside: true
       canvas:
+        bgcolor: "#FFFFFF"
         render: "dot" # dot, line
+        title:
+          text: "AgChart"
+          color: "#afafaf"
         label:
           x:
             text: null
@@ -31,12 +35,12 @@ exp.Main = class Main
             show: false
             color: 'black'
             stroke: 1
-            offset: 10
+            offset: 0
           y:
             show: false
             color: 'black'
             stroke: 1
-            offset: 1
+            offset: 0
       logo:
         url: "agflow-logo.svg"
         width: 100
@@ -51,7 +55,7 @@ exp.Main = class Main
         color: "munin"
         stroke:
           width: 4
-          color: "#FFFFFF"
+          color: null
       axis:
         x:
           format: null
@@ -198,9 +202,18 @@ exp.Main = class Main
     throw new Error("No selector defined") if not @_CONF.canvas.selector?
     @_CANVAS = d3.select(@_CONF.canvas.selector)
       .append('svg')
-      .attr("fill", "white")
+      .attr("fill", @_CONF.canvas.bgcolor)
       .attr('width', @_CONF.canvas.width)
       .attr('height', @_CONF.canvas.height)
+
+  renderTitle: (params={
+    title: ""
+    color: null
+  }) ->
+    @_CANVAS.append("text")
+      .attr("class", "title")
+      .attr("fill", params.color)
+      .text(params.title)
 
   renderLabel: (params={
     label:
@@ -300,7 +313,7 @@ exp.Main = class Main
     trans = "translate(#{padding}, 0)"
     label = @_CONF.canvas.label.y
     label.trans =
-      "rotate(90) translate(#{height/2}, #{-padding})"
+      "rotate(-90) translate(#{-height/2}, #{padding+10})"
 
     tickSize = @_CONF.axis.y.tickSize
     tickSize = -width+padding*2 if tickSize == 'full'
@@ -326,9 +339,15 @@ exp.Main = class Main
 
   prepareSeries: (data) ->
     # Adding the configuration to each points
+    # TODO: adding the configuration to each point might not be the
+    # better solution
     for serie, i in data
       for point in serie.data
-        point.config = serie.config if serie.config?
+        point.x = point.x
+        if serie.config?
+          point.config = serie.config
+        else
+          point.config = @_CONF.point
         point.serie = i
     data
 
@@ -388,6 +407,8 @@ exp.Main = class Main
           .attr('stroke',( (d) ->
             if d.config?.stroke?.color?
               return d.config.stroke.color
+            if _palette.isDefined()
+              return _palette.color(d.serie)
             else
               _conf.point.stroke.color
           ))
@@ -424,7 +445,7 @@ exp.Main = class Main
                 height: _conf.canvas.height
               tooltip:
                 alwaysInside: _conf.tooltip.alwaysInside
-            _tooltipShow(conf, _tooltipNode, d)
+            _tooltipShow(this, conf, _tooltipNode, d)
           )
           .on('mouseout', (d) ->
             effect = _conf.point.onMouseout
@@ -443,9 +464,11 @@ exp.Main = class Main
 
   renderTooltip: ->
     if not @_TOOLTIP?
-      @_TOOLTIP = d3.select("body").append("div")
+      @_TOOLTIP = d3.select(@_CONF.canvas.selector).append("div")
         .attr('class', 'tooltip')
         .style('opacity', 0)
+        .attr('left', 0)
+        .attr('top', 0)
 
   renderCross: (options)->
     padX = options.padding[0]
@@ -465,18 +488,20 @@ exp.Main = class Main
       .attr("stroke", options.cross.y.color)
       .attr("stroke-width", options.cross.y.stroke)
     options.canvas.on("mousemove", (d)->
+      eventX = d3.mouse(@)[0]
+      eventY = d3.mouse(@)[1]
       if options.cross.x.show and
-      d3.event.pageX >= padX+offsetX and
-      d3.event.pageX <= options.width-padX+offsetX
+      eventX >= padX+offsetX and
+      eventX <= options.width-padX+offsetX
         _crossX
-          .attr("x1", d3.event.pageX-offsetX)
-          .attr("x2", d3.event.pageX-offsetX)
+          .attr("x1", eventX-offsetX)
+          .attr("x2", eventX-offsetX)
       if options.cross.y.show and
-      d3.event.pageY >= padY+offsetY and
-      d3.event.pageY <= options.height-padY+offsetY
+      eventY >= padY+offsetY and
+      eventY <= options.height-padY+offsetY
         _crossY
-          .attr("y1", d3.event.pageY-offsetY)
-          .attr("y2", d3.event.pageY-offsetY)
+          .attr("y1", eventY-offsetY)
+          .attr("y2", eventY-offsetY)
     )
 
   renderLogo: (params) ->
@@ -494,10 +519,14 @@ exp.Main = class Main
       .attr("x", params.x)
       .attr("y", params.y)
       .attr("opacity", params.opacity)
-      .attr("xlink:href","agflow-logo.svg")
+      .attr("xlink:href",@_CONF.logo.url)
 
   render: ->
     @_CANVAS = @createCanvas() if not @_CANVAS?
+    @renderTitle(
+      title: @_CONF.canvas.title.text
+      color: @_CONF.canvas.title.color
+    )
     @renderLogo(
       opacity: @_CONF.logo.opacity
       url: @_CONF.logo.url
@@ -519,20 +548,22 @@ exp.Main = class Main
     @renderPoints() # Depends on axis and tooltip
 
   tooltip:
-    show: (conf, tooltipNode, d) ->
-      left = d3.event.pageX+d.config.stroke.width
-      top = d3.event.pageY+d.config.stroke.width
+    show: (context, conf, tooltipNode, d) ->
+      eventX = d3.mouse(context)[0]
+      eventY = d3.mouse(context)[1]
+      left = eventX+d.config.stroke.width
+      top = eventY+d.config.stroke.width
       if conf.tooltip.alwaysInside
-        if d3.event.pageX > conf.canvas.width/2.0
+        if eventX > conf.canvas.width/2.0
           widthTooltip = parseFloat(
             tooltipNode.style('width').replace("px", ''))
-          left = d3.event.pageX-d.config.stroke.width-
-            widthTooltip-10
-        if d3.event.pageY > conf.canvas.height/2.0
+          left = eventX-d.config.stroke.width-
+            widthTooltip
+        if eventY > conf.canvas.height/2.0
           heightTooltip = parseFloat(
             tooltipNode.style('height').replace("px", ''))
-          top = d3.event.pageY-d.config.stroke.width-
-            heightTooltip-10
+          top = eventY-d.config.stroke.width-
+            heightTooltip
       tooltipNode
         .style("left", left+'px')
         .style("top", top+'px')
@@ -559,7 +590,7 @@ exp.Main = class Main
           # draw watch and show some information
           _circleNode = params.circleNode
           cx = _circleNode.getAttribute('cx')
-          x = _circleNode.getAttribute('data-x')
+          x = parseFloat(_circleNode.getAttribute('data-x'))
           x = params.format.x(x) if params.format?.x?
           html = "#{x}"
           $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
@@ -578,12 +609,12 @@ exp.Main = class Main
           # draw watch and show some information
           _circleNode = params.circleNode
           cx = _circleNode.getAttribute('cx')
-          x = _circleNode.getAttribute('data-x')
+          x = parseFloat(_circleNode.getAttribute('data-x'))
           x = params.format.x(x) if params.format?.x?
           html = "#{x}"
           $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
             serieName = node.parentNode.getAttribute("title")
-            swatchColor = node.getAttribute("stroke")
+            swatchColor = node.getAttribute("fill")
             y = parseFloat(node.getAttribute("data-y")).toFixed(2)
             html += "<div>#{serieName} : #{y}"+
               "<div class='swatch'
