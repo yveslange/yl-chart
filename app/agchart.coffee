@@ -6,6 +6,7 @@ exp.Main = class Main
   constructor: (args) ->
     @_CONF =
       tooltip:
+        template: -> "singlePoint"
         format:
           x: null
           y: null
@@ -365,10 +366,13 @@ exp.Main = class Main
     _tooltipHide = @tooltip.hide
     _tooltipNode = @_TOOLTIP
     _tooltipCallback = _conf.tooltip.callback
+    _tooltipTemplate = _conf.tooltip.template
     _palette = new palette.Main(@_CONF.point.color)
 
     if typeof(_tooltipCallback) == "string"
       _tooltipCallback = @tooltip.callbacks[_tooltipCallback]
+    if typeof(_tooltipTemplate) == "string"
+      _tooltipTemplate = @tooltip.templates[_tooltipTemplate]
     scaleW = @_SCALE.width
     scaleH = @_SCALE.height
 
@@ -435,22 +439,23 @@ exp.Main = class Main
               circleNode: this
               data: d
             )
-
-            _tooltipNode.html( _tooltipCallback(
+            # Data for the tooltip callback
+            data = _tooltipCallback(
               format: _conf.tooltip.format
               canvas: _canvas
               tooltipNode: _tooltipNode
               circleNode: this
               data: d
-            ))
-
-            conf =
-              canvas:
-                width: _conf.canvas.width
-                height: _conf.canvas.height
-              tooltip:
-                alwaysInside: _conf.tooltip.alwaysInside
-            _tooltipShow(this, conf, _tooltipNode, d)
+            )
+            _tooltipNode.html(_tooltipTemplate(data))
+            _tooltipShow(this,
+              {
+                canvas:
+                  width: _conf.canvas.width
+                  height: _conf.canvas.height
+                tooltip:
+                  alwaysInside: _conf.tooltip.alwaysInside
+              }, _tooltipNode, d)
           )
           .on('mouseout', (d) ->
             effect = _conf.point.onMouseout
@@ -528,11 +533,6 @@ exp.Main = class Main
 
   render: ->
     @_CANVAS = @createCanvas() if not @_CANVAS?
-    @renderTitle(
-      title: @_CONF.canvas.title.text
-      color: @_CONF.canvas.title.color
-      size: @_CONF.canvas.title.size
-    )
     @renderLogo(
       opacity: @_CONF.logo.opacity
       url: @_CONF.logo.url
@@ -552,6 +552,11 @@ exp.Main = class Main
     @renderYAxis()
     @renderTooltip()
     @renderPoints() # Depends on axis and tooltip
+    @renderTitle(
+      title: @_CONF.canvas.title.text
+      color: @_CONF.canvas.title.color
+      size: @_CONF.canvas.title.size
+    )
 
   tooltip:
     show: (context, conf, tooltipNode, d) ->
@@ -578,20 +583,34 @@ exp.Main = class Main
     hide: (tooltipNode) ->
       tooltipNode.transition()
         .duration(500).style("opacity", 0)
-    layout:
-      singlePoint: (serieName, data, swatchColor)-> "not implemented"
 
+    # TODO: implement HTML layout ?
+    templates:
+      singlePoint: (params) ->
+        "<div>#{params.serieName}"+
+          "<div class='swatch'"+
+            "style='background-color: #{params.color}'></div>"+
+        "</div>"+
+        "<div>#{params.data[0].x} #{params.data[0].y}</div>"
+
+      multipleVertical: ->
+        "ok"
+      multipleVerticalInverted: ->
+        "ok"
     callbacks:
       singlePoint:
         (params) ->
-          serieName = params.circleNode.parentNode.getAttribute("title")
-          swatchColor = params.circleNode.getAttribute("fill")
-          params.data.x = params.format.x(x) if params.format?.x?
-          "<div>#{serieName}"+
-            "<div class='swatch'
-              style='background-color: #{swatchColor}'></div>"+
-          "</div>"+
-          "<div>#{params.data.x} #{params.data.y.toFixed(2)}</div>"
+          _circleNode = params.circleNode
+          x = parseFloat(_circleNode.getAttribute('data-x'))
+          x = params.format.x(x) if params.format?.x?
+          {
+            serieName: params.circleNode.parentNode.getAttribute("title")
+            color: params.circleNode.getAttribute("fill")
+            data: [{
+              x: x
+              y: params.data.y.toFixed(2)
+            }]
+          }
       multipleVertical:
         (params) ->
           # Get all same cx value, take the fill color to
@@ -600,6 +619,9 @@ exp.Main = class Main
           cx = _circleNode.getAttribute('cx')
           x = parseFloat(_circleNode.getAttribute('data-x'))
           x = params.format.x(x) if params.format?.x?
+          {
+
+          }
           html = "#{x}"
           $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
             serieName = node.parentNode.getAttribute("title")
@@ -609,15 +631,28 @@ exp.Main = class Main
               "<div class='swatch'
                 style='background-color: #{swatchColor}'></div>"+
             "</div>"
+          _circleNode = params.circleNode
+          x = parseFloat(_circleNode.getAttribute('data-x'))
+          x = params.format.x(x) if params.format?.x?
+          {
+            serieName: params.circleNode.parentNode.getAttribute("title")
+            color: params.circleNode.getAttribute("fill")
+            data: [{
+              x: x
+              y: params.data.y.toFixed(2)
+            }]
+          }
           )
           html
       multipleVerticalInverted:
         (params) ->
           # Get all same cx value, take the stroke color to
           # draw watch and show some information
+          console.log params
           _circleNode = params.circleNode
           cx = _circleNode.getAttribute('cx')
           x = parseFloat(_circleNode.getAttribute('data-x'))
+          console.log cx, x, _circleNode.getAttribute('data-x')
           x = params.format.x(x) if params.format?.x?
           html = "#{x}"
           $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->

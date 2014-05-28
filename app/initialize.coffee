@@ -3,29 +3,38 @@ module.exports = exp = {}
 agchart = require 'agchart'
 time = require 'utils/time'
 
+# Just for the purpose of the example
+genData = (len, inter=1) ->
+  els = []
+  for i in [0..len-1] by inter
+    els.push {x: i*1000, y: Math.random()*100}
+  els
+
 exp.run = ->
   # TODO: finish this module if needed (later on)
   t = new time.Main(
     lang: 'en'
   )
-  formatTooltip = (d) ->
+  tooltipFormat = (d) ->
     date = new Date(d)
     formatDate = d3.time.format("%b '%y")
     formatDate(date)
 
-  # Just for the purpose of the example
-  genData = (len, inter=1) ->
-    els = []
-    for i in [0..len-1] by inter
-      els.push {x: new Date(i*1000), y: Math.random()*100}
-    els
+  tooltipTemplate = (d) ->
+    console.log d
+
+  # singlePoint, multipleVertical, multipleVerticalInverted
+  mode = "multipleVerticalInverted"
+  mode = "multipleVertical"
+  mode = "singlePoint"
 
   agChart = new agchart.Main(
     config:
       canvas:
         render: 'dotline' # dot, line, dotline
         title:
-          color: "red"
+          color: "#4f4f4f"
+          size: 20
           text: "AgChart"
         label:
           x:
@@ -53,13 +62,13 @@ exp.run = ->
         y: 'bottom'
         opacity: 0.3
       tooltip:
-        callback: "multipleVerticalInverted" # SinglePoint, multipleVertical
+        template: mode
+        callback: mode
         format:
-          x: formatTooltip
+          x: tooltipFormat
       point:
-        # SinglePoint, multipleVertical, multipleVerticalInverted
-        onMouseover: "multipleVerticalInverted"
-        onMouseout: "multipleVerticalInverted"
+        onMouseover: mode
+        onMouseout: mode
         r: 3
         color: 'paired' # Color or palette name
         stroke: {width: 1, color: null}
@@ -81,7 +90,7 @@ exp.run = ->
         data: genData(24*3600*120, 36*3600*2)
         config:
           #color: "#ff0001"
-          stroke: {width: 1, "#fff"}
+          stroke: {width: 1, color: "#fff"}
       }
       {
         name: "Serie 3"
