@@ -11,9 +11,9 @@ Installation
 
 Compiling
 =========
-make build: normal compilation with `*.map` and not minified
+make build: normal compilation with `*.map` and not minified. A release copy will be added.
 
-make build-prod: minified version without `*.map`
+make build-prod: minified version without `*.map`. A release copy will be added.
 
 
 Watch
@@ -30,5 +30,4 @@ JavaScript dependencies
 TODO
 ====
 * Remove window.brunch.server for watcher in production
-* Move JavaScript file for prod and rename to min.js (can be done in makefile)
 * Add `make clean` in *Makefile* to clean the project
