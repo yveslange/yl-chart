@@ -6,7 +6,7 @@ exp.Main = class Main
   constructor: (args) ->
     @_CONF =
       tooltip:
-        template: -> "singlePoint"
+        template: "singlePoint"
         format:
           x: null
           y: null
@@ -28,7 +28,7 @@ exp.Main = class Main
             text: null
             size: 10
             color: "#7f7f7f"
-        selector: undefined
+        selector: null
         width: 600.0
         height: 400.0
         padding: [0,0] #left/right, bottom/top
@@ -54,14 +54,14 @@ exp.Main = class Main
         onMouseover: "singlePoint"
         onMouseout: "singlePoint"
         r: 4
+        mode: 'empty' # empty, fill
         color: "munin"
         stroke:
-          width: 4
-          color: null
+          width: 1
       axis:
         x:
           format: null
-          tickSize: undefined
+          tickSize: null
           orient: "bottom"
           tickColor: "#efefef"
           tickWidth: 2
@@ -69,13 +69,12 @@ exp.Main = class Main
           color: "#2f2f2f"
         y:
           format: null
-          tickSize: undefined
+          tickSize: null
           orient: "left"
           tickColor: "#efefef"
           tickWidth: 2
           strokeWidth: 1
           color: "#2f2f2f"
-    @_SERIES = @prepareSeries args.series
     @_CANVAS = undefined
     @_TOOLTIP = undefined
     @_SCALE =
@@ -83,29 +82,39 @@ exp.Main = class Main
       y: undefined
 
     @defaultConfig args.config
+    @_SERIES = @prepareSeries args.series
     @computePadding()
     @computeScales()
     return
 
-
-  # Define custom value for the configuration
-  defaultConfig: (c={}) ->
+  # TODO: should be in utils lib
+  # Update the obj1 with the obj2
+  updateObject: (obj1, obj2, replace=true) ->
     # Check if the obj is a node.
     isNode = (obj) ->
       if obj?["0"]?.nodeName?
         return true
       return false
 
-    setConf = (conf,obj) ->
-      if obj?
-        for k of obj
-          if isNode(obj[k])
-            conf[k] = obj[k][0] ? conf[k][0] # If node, we just copy it
-          else if typeof obj[k] == 'object'
-            setConf conf[k], obj[k]
+    update = (obj1,obj2, replace=true) ->
+      if obj2?
+        for k of obj2
+          if isNode(obj2[k]) # We copy the node as it is
+            obj1[k] = obj2[k][0] ? obj1[k][0]
+          else if typeof obj2[k] == 'object'
+            obj1[k] = {} if not obj1[k]?
+            update obj1[k], obj2[k], replace
           else
-            conf[k] = obj[k] ? conf[k]
-    setConf(@_CONF,c)
+            if replace
+              obj1[k] = obj2[k] ? obj1[k]
+            else
+              obj1[k] = obj1[k] ? obj2[k]
+      return obj1
+    update(obj1, obj2, replace)
+
+  # Define custom value for the configuration
+  defaultConfig: (c={}) ->
+    @updateObject(@_CONF,c)
     return @_CONF
 
 
@@ -202,6 +211,7 @@ exp.Main = class Main
 
   createCanvas: ->
     throw new Error("No selector defined") if not @_CONF.canvas.selector?
+    console.log @_CONF.canvas.selector
     @_CANVAS = d3.select(@_CONF.canvas.selector)
       .append('svg')
       .attr("fill", @_CONF.canvas.bgcolor)
@@ -347,14 +357,29 @@ exp.Main = class Main
     # Adding the configuration to each points
     # TODO: adding the configuration to each point might not be the
     # better solution
+    _palette = new palette.Main(@_CONF.point.color)
     for serie, i in data
       for point in serie.data
-        point.x = point.x
-        if serie.config?
-          point.config = serie.config
-        else
-          point.config = @_CONF.point
         point.serie = i
+
+        # TODO:
+        # The configuration of the point should be automatic.
+        # The problem is that we need to clone the configuration
+        # of the serie to each point
+        point.config = {}
+        point.config.color = @_CONF.point.color
+        if _palette.isDefined()
+          point.config.color = _palette.color(i)
+          console.log i, _palette.color(i)
+          console.log @_CONF.point.color
+        if serie.config?.color?
+          point.config.color = serie.config.color
+        point.config.r = serie.config?.r || @_CONF.point.r
+        point.config.stroke = {
+          width: @_CONF.point.stroke.width
+        }
+        if serie.config?.stroke?.width?
+          point.config.stroke.width = serie.config.stroke.width
     data
 
   renderPoints: ->
@@ -367,7 +392,6 @@ exp.Main = class Main
     _tooltipNode = @_TOOLTIP
     _tooltipCallback = _conf.tooltip.callback
     _tooltipTemplate = _conf.tooltip.template
-    _palette = new palette.Main(@_CONF.point.color)
 
     if typeof(_tooltipCallback) == "string"
       _tooltipCallback = @tooltip.callbacks[_tooltipCallback]
@@ -392,14 +416,9 @@ exp.Main = class Main
       series.append("path")
         .attr("class", "line")
         .attr("d", (d)->valueline(d.data))
-        .attr('stroke-width', ( (d) ->
-          d.config?.stroke?.width ? _conf.point.stroke.width))
         .attr('stroke', ((d, serieIndex)->
-          if d.config?.color?
-            return d.config?.color
-          if _palette.isDefined()
-            return _palette.color(serieIndex)
-          _conf.point.color
+          console.log d
+          d.data[0].config.color #Take the first color
         ))
         .attr("fill", "none")
 
@@ -412,24 +431,25 @@ exp.Main = class Main
           .attr('data-x', (d) -> d.x)
           .attr('data-y', (d) -> d.y)
           .attr('r', ( (d) ->
-            d.config?.r ?  _conf.point.r))
+            d.config.r))
           .attr('stroke',( (d) ->
-            if d.config?.stroke?.color?
-              return d.config.stroke.color
-            if _palette.isDefined()
-              return _palette.color(d.serie)
+            if _conf.point.mode == 'empty'
+              d.config.color
+            else if _conf.point.mode == 'fill'
+              _conf.canvas.bgcolor
             else
-              _conf.point.stroke.color
+              throw new Error("Unknown point mode '#{_conf.point.mode}'")
+          ))
+          .attr('fill', ((d)->
+            if _conf.point.mode == 'empty'
+              _conf.canvas.bgcolor
+            else if _conf.point.mode == 'fill'
+              d.config.color
+            else
+              throw new Error("Unknown point mode '#{_conf.point.mode}'")
           ))
           .attr('stroke-width', ( (d) ->
             d.config?.stroke?.width ? _conf.point.stroke.width))
-          .attr('fill', ((d)->
-            if d.config?.color?
-              return d.config?.color
-            if _palette.isDefined()
-              return _palette.color(d.serie)
-            _conf.point.color
-          ))
           .on('mouseover', (d)->
             effect = _conf.point.onMouseover
             if typeof effect == 'string'
@@ -447,6 +467,7 @@ exp.Main = class Main
               circleNode: this
               data: d
             )
+            console.log "tada", data
             _tooltipNode.html(_tooltipTemplate(data))
             _tooltipShow(this,
               {
@@ -587,6 +608,7 @@ exp.Main = class Main
     # TODO: implement HTML layout ?
     templates:
       singlePoint: (params) ->
+        console.log "here", params
         "<div>#{params.serieName}"+
           "<div class='swatch'"+
             "style='background-color: #{params.color}'></div>"+

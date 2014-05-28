@@ -83,21 +83,21 @@ exp.run = ->
         name: "Serie 1"
         data: genData(24*3600*120, 24*3600)
         config:
-          stroke: {width: 1, color: "#fff"}
+          stroke: {width: 1}
       }
       {
         name: "Serie 2"
         data: genData(24*3600*120, 36*3600*2)
         config:
-          #color: "#ff0001"
-          stroke: {width: 1, color: "#fff"}
+          color: "#ff0001"
+          stroke: {width: 1}
       }
       {
         name: "Serie 3"
         data: genData(24*3600*120, 48*3600)
         config:
           #color: "#00fffe"
-          stroke: {width: 1, color: "#fff"}
+          stroke: {width: 1}
       }
     ]
   )
