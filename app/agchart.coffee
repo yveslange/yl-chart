@@ -425,6 +425,7 @@ exp.Main = class Main
           .attr('cy', (d) -> scaleH(d.y))
           .attr('data-x', (d) -> d.x)
           .attr('data-y', (d) -> d.y)
+          .attr('data-color', (d) -> d.config.color)
           .attr('r', ( (d) ->
             d.config.r))
           .attr('stroke',( (d) ->
@@ -454,6 +455,7 @@ exp.Main = class Main
               circleNode: this
               data: d
             )
+
             # Data for the tooltip callback
             data = _tooltipCallback(
               format: _conf.tooltip.format
@@ -624,7 +626,7 @@ exp.Main = class Main
           x = parseFloat(_circleNode.getAttribute('data-x'))
           x = params.format.x(x) if params.format?.x?
           [{
-            color: params.circleNode.getAttribute("fill")
+            color: params.data.config.color
             serieName: params.circleNode.parentNode.getAttribute("title")
             x: x
             y: params.data.y.toFixed(2)
@@ -641,7 +643,7 @@ exp.Main = class Main
           $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
             res.push {
               serieName: node.parentNode.getAttribute("title")
-              color: node.getAttribute("fill")
+              color: node.getAttribute("data-color")
               y: parseFloat(node.getAttribute("data-y")).toFixed(2)
               x: x
             })
@@ -659,7 +661,7 @@ exp.Main = class Main
           $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
             res.push {
               serieName: node.parentNode.getAttribute("title")
-              color: node.getAttribute("stroke")
+              color: node.getAttribute("data-color")
               y: parseFloat(node.getAttribute("data-y")).toFixed(2)
               x: x
             })
