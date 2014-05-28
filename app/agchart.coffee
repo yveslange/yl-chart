@@ -117,7 +117,6 @@ exp.Main = class Main
     @updateObject(@_CONF,c)
     return @_CONF
 
-
   # Effects for the events
   effects:
     singlePoint:
@@ -211,7 +210,6 @@ exp.Main = class Main
 
   createCanvas: ->
     throw new Error("No selector defined") if not @_CONF.canvas.selector?
-    console.log @_CONF.canvas.selector
     @_CANVAS = d3.select(@_CONF.canvas.selector)
       .append('svg')
       .attr("fill", @_CONF.canvas.bgcolor)
@@ -370,8 +368,6 @@ exp.Main = class Main
         point.config.color = @_CONF.point.color
         if _palette.isDefined()
           point.config.color = _palette.color(i)
-          console.log i, _palette.color(i)
-          console.log @_CONF.point.color
         if serie.config?.color?
           point.config.color = serie.config.color
         point.config.r = serie.config?.r || @_CONF.point.r
@@ -417,7 +413,6 @@ exp.Main = class Main
         .attr("class", "line")
         .attr("d", (d)->valueline(d.data))
         .attr('stroke', ((d, serieIndex)->
-          console.log d
           d.data[0].config.color #Take the first color
         ))
         .attr("fill", "none")
@@ -467,7 +462,6 @@ exp.Main = class Main
               circleNode: this
               data: d
             )
-            console.log "tada", data
             _tooltipNode.html(_tooltipTemplate(data))
             _tooltipShow(this,
               {
@@ -607,32 +601,34 @@ exp.Main = class Main
 
     # TODO: implement HTML layout ?
     templates:
-      singlePoint: (params) ->
-        console.log "here", params
-        "<div>#{params.serieName}"+
+      singlePoint: (data) ->
+        "<div>#{data[0].serieName}"+
           "<div class='swatch'"+
-            "style='background-color: #{params.color}'></div>"+
+            "style='background-color: #{data[0].color}'></div>"+
         "</div>"+
-        "<div>#{params.data[0].x} #{params.data[0].y}</div>"
+        "<div>#{data[0].x} #{data[0].y}</div>"
+      multipleVertical: (data) ->
+        html = ""
+        for d in data
+          html += "<div>#{d.serieName}"+
+            "<div class='swatch'"+
+              "style='background-color: #{d.color}'></div>"+
+          "</div>"+
+          "<div>#{d.x} #{d.y}</div>"
+        html
 
-      multipleVertical: ->
-        "ok"
-      multipleVerticalInverted: ->
-        "ok"
     callbacks:
       singlePoint:
         (params) ->
           _circleNode = params.circleNode
           x = parseFloat(_circleNode.getAttribute('data-x'))
           x = params.format.x(x) if params.format?.x?
-          {
-            serieName: params.circleNode.parentNode.getAttribute("title")
+          [{
             color: params.circleNode.getAttribute("fill")
-            data: [{
-              x: x
-              y: params.data.y.toFixed(2)
-            }]
-          }
+            serieName: params.circleNode.parentNode.getAttribute("title")
+            x: x
+            y: params.data.y.toFixed(2)
+          }]
       multipleVertical:
         (params) ->
           # Get all same cx value, take the fill color to
@@ -641,49 +637,30 @@ exp.Main = class Main
           cx = _circleNode.getAttribute('cx')
           x = parseFloat(_circleNode.getAttribute('data-x'))
           x = params.format.x(x) if params.format?.x?
-          {
-
-          }
-          html = "#{x}"
+          res = []
           $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
-            serieName = node.parentNode.getAttribute("title")
-            swatchColor = node.getAttribute("fill")
-            y = parseFloat(node.getAttribute("data-y")).toFixed(2)
-            html += "<div>#{serieName} : #{y}"+
-              "<div class='swatch'
-                style='background-color: #{swatchColor}'></div>"+
-            "</div>"
-          _circleNode = params.circleNode
-          x = parseFloat(_circleNode.getAttribute('data-x'))
-          x = params.format.x(x) if params.format?.x?
-          {
-            serieName: params.circleNode.parentNode.getAttribute("title")
-            color: params.circleNode.getAttribute("fill")
-            data: [{
+            res.push {
+              serieName: node.parentNode.getAttribute("title")
+              color: node.getAttribute("fill")
+              y: parseFloat(node.getAttribute("data-y")).toFixed(2)
               x: x
-              y: params.data.y.toFixed(2)
-            }]
-          }
-          )
-          html
+            })
+          res
+
       multipleVerticalInverted:
         (params) ->
-          # Get all same cx value, take the stroke color to
+          # Get all same cx value, take the fill color to
           # draw watch and show some information
-          console.log params
           _circleNode = params.circleNode
           cx = _circleNode.getAttribute('cx')
           x = parseFloat(_circleNode.getAttribute('data-x'))
-          console.log cx, x, _circleNode.getAttribute('data-x')
           x = params.format.x(x) if params.format?.x?
-          html = "#{x}"
+          res = []
           $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
-            serieName = node.parentNode.getAttribute("title")
-            swatchColor = node.getAttribute("fill")
-            y = parseFloat(node.getAttribute("data-y")).toFixed(2)
-            html += "<div>#{serieName} : #{y}"+
-              "<div class='swatch'
-                style='background-color: #{swatchColor}'></div>"+
-            "</div>"
-          )
-          html
+            res.push {
+              serieName: node.parentNode.getAttribute("title")
+              color: node.getAttribute("stroke")
+              y: parseFloat(node.getAttribute("data-y")).toFixed(2)
+              x: x
+            })
+          res
