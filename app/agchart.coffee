@@ -19,6 +19,9 @@ exp.Main = class Main
           text: "AgChart"
           color: "#2f2f2f"
           size: 24
+          position:
+            x: 20
+            y: 20
         label:
           x:
             text: null
@@ -217,17 +220,16 @@ exp.Main = class Main
       .attr('height', @_CONF.canvas.height)
 
   renderTitle: (params={
-    title: ""
-    color: null
-    size: params.size
+    title: null
+    padding: null
   }) ->
     @_CANVAS.append("text")
-      .attr("x", @_CONF.canvas.padding[0]-1)
-      .attr("y", @_CONF.canvas.padding[1]-1)
+      .attr("x", params.title.position.x ? params.padding[0]-1)
+      .attr("y", params.title.position.y ? params.padding[1]-1)
       .attr("class", "chart-title")
-      .attr("fill", params.color)
-      .attr("font-size", params.size)
-      .text(params.title)
+      .attr("fill", params.title.color)
+      .attr("font-size", params.title.size)
+      .text(params.title.text)
 
   renderLabel: (params={
     label:
@@ -280,9 +282,7 @@ exp.Main = class Main
       .attr("stroke-width", params.strokeWidth)
 
     # Selecting the ticks only without the first one
-    gaxis.selectAll("line").filter((d, i) ->
-      console.log i
-      return d)
+    gaxis.selectAll("line").filter((d, i) -> return d)
       .attr("stroke", params.tickColor)
       .attr("width-stroke", params.tickWidth)
 
@@ -573,9 +573,8 @@ exp.Main = class Main
     @renderTooltip()
     @renderPoints() # Depends on axis and tooltip
     @renderTitle(
-      title: @_CONF.canvas.title.text
-      color: @_CONF.canvas.title.color
-      size: @_CONF.canvas.title.size
+      title: @_CONF.canvas.title
+      padding: @_CONF.canvas.padding
     )
 
   tooltip:

@@ -115,7 +115,11 @@ exp.Main = Main = (function() {
         title: {
           text: "AgChart",
           color: "#2f2f2f",
-          size: 24
+          size: 24,
+          position: {
+            x: 20,
+            y: 20
+          }
         },
         label: {
           x: {
@@ -386,14 +390,14 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.renderTitle = function(params) {
+    var _ref, _ref1;
     if (params == null) {
       params = {
-        title: "",
-        color: null,
-        size: params.size
+        title: null,
+        padding: null
       };
     }
-    return this._CANVAS.append("text").attr("x", this._CONF.canvas.padding[0] - 1).attr("y", this._CONF.canvas.padding[1] - 1).attr("class", "chart-title").attr("fill", params.color).attr("font-size", params.size).text(params.title);
+    return this._CANVAS.append("text").attr("x", (_ref1 = params.title.position.x) != null ? _ref1 : params.padding[0] - 1).attr("y", (_ref = params.title.position.y) != null ? _ref : params.padding[1] - 1).attr("class", "chart-title").attr("fill", params.title.color).attr("font-size", params.title.size).text(params.title.text);
   };
 
   Main.prototype.renderLabel = function(params) {
@@ -436,7 +440,6 @@ exp.Main = Main = (function() {
     this.renderLabel(params);
     gaxis.selectAll("line").attr("stroke", params.color).attr("stroke-width", params.strokeWidth);
     gaxis.selectAll("line").filter(function(d, i) {
-      console.log(i);
       return d;
     }).attr("stroke", params.tickColor).attr("width-stroke", params.tickWidth);
     gaxis.selectAll("path").style("display", "none");
@@ -717,9 +720,8 @@ exp.Main = Main = (function() {
     this.renderTooltip();
     this.renderPoints();
     return this.renderTitle({
-      title: this._CONF.canvas.title.text,
-      color: this._CONF.canvas.title.color,
-      size: this._CONF.canvas.title.size
+      title: this._CONF.canvas.title,
+      padding: this._CONF.canvas.padding
     });
   };
 
