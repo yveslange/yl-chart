@@ -601,7 +601,6 @@ exp.Main = class Main
       tooltipNode.transition()
         .duration(500).style("opacity", 0)
 
-    # TODO: implement HTML layout ?
     templates:
       singlePoint: (data) ->
         "<div>#{data[0].serieName}"+
@@ -617,6 +616,14 @@ exp.Main = class Main
               "style='background-color: #{d.color}'></div>"+
           "</div>"+
           "<div>#{d.x} #{d.y}</div>"
+        html
+      multipleVerticalInverted: (data) ->
+        html = "#{data[0].x}"
+        for d in data
+          html += "<div>#{d.serieName}: #{d.y}"+
+            "<div class='swatch'"+
+              "style='background-color: #{d.color}'></div>"+
+          "</div>"
         html
 
     callbacks:

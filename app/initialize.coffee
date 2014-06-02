@@ -25,8 +25,8 @@ exp.run = ->
 
   # singlePoint, multipleVertical, multipleVerticalInverted
   mode = "multipleVerticalInverted"
-  mode = "multipleVertical"
-  mode = "singlePoint"
+  #mode = "multipleVertical"
+  #mode = "singlePoint"
 
   agChart = new agchart.Main(
     config:
@@ -69,6 +69,7 @@ exp.run = ->
       point:
         onMouseover: mode
         onMouseout: mode
+        mode: 'fill'
         r: 3
         color: 'paired' # Color or palette name
         stroke: {width: 1, color: null}

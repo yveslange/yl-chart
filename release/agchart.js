@@ -755,6 +755,15 @@ exp.Main = Main = (function() {
           html += ("<div>" + d.serieName) + "<div class='swatch'" + ("style='background-color: " + d.color + "'></div>") + "</div>" + ("<div>" + d.x + " " + d.y + "</div>");
         }
         return html;
+      },
+      multipleVerticalInverted: function(data) {
+        var d, html, _i, _len;
+        html = "" + data[0].x;
+        for (_i = 0, _len = data.length; _i < _len; _i++) {
+          d = data[_i];
+          html += ("<div>" + d.serieName + ": " + d.y) + "<div class='swatch'" + ("style='background-color: " + d.color + "'></div>") + "</div>";
+        }
+        return html;
       }
     },
     callbacks: {
@@ -859,8 +868,6 @@ exp.run = function() {
     return console.log(d);
   };
   mode = "multipleVerticalInverted";
-  mode = "multipleVertical";
-  mode = "singlePoint";
   agChart = new agchart.Main({
     config: {
       canvas: {
@@ -913,6 +920,7 @@ exp.run = function() {
       point: {
         onMouseover: mode,
         onMouseout: mode,
+        mode: 'fill',
         r: 3,
         color: 'paired',
         stroke: {
