@@ -8,4 +8,4 @@ exports.config =
         'js/vendor.js': /^bower_components/
         'js/agchart.js': /^app/
     stylesheets:
-      joinTo: 'css/app.css': /^app\/styles\//
+      joinTo: 'css/agchart.css': /^app\/styles\//

@@ -1,28 +1,6 @@
-module.exports = exp = {}
+# Here are all the configuration options that can be used to customize agChart
 
-agchart = require 'agchart'
-time = require 'utils/time'
-
-# Just for the purpose of the example
-genData = (len, inter=1) ->
-  els = []
-  for i in [0..len-1] by inter
-    els.push {x: i*1000, y: Math.random()*100}
-  els
-
-exp.run = ->
-  # TODO: finish this module if needed (later on)
-  t = new time.Main(
-    lang: 'en'
-  )
-  tooltipFormat = (d) ->
-    date = new Date(d)
-    formatDate = d3.time.format("%b '%y")
-    formatDate(date)
-
-  tooltipTemplate = (d) ->
-    console.log d
-
+```Javascript
   # singlePoint, multipleVertical, multipleVerticalInverted
   mode = "multipleVerticalInverted"
   #mode = "multipleVertical"
@@ -30,13 +8,16 @@ exp.run = ->
 
   agChart = new agchart.Main(
     config:
-      canvas:
-        render: 'dotline' # dot, line, dotline
-        width: 600.0
-        height: 400.0
-        title:
-          color: "#4f4f4f"
-          size: 20
+      canvas: # General configuration of the chart
+
+        render: 'dotline' # Render mode, availables options:
+          # - dot: only circles/dots for each series
+          # - line: only lines for each series
+          # - dotline: circles/dots linked with a line for each series
+
+        title: # Title that appears in the top of the container
+          color: "#4f4f4f" # Color of the title
+          size: 24
           text: "AgChart"
         label:
           x:
@@ -78,11 +59,7 @@ exp.run = ->
       axis:
         y:
           tickSize: "full"
-          color: "#2b2e33"
-          tickWidth: 2
         x:
-          color: "#2b2e33"
-          tickWidth: 2
           format: "%b"
           tickSize: "full"
     series: [
@@ -108,4 +85,4 @@ exp.run = ->
       }
     ]
   )
-  agChart.render()
+```

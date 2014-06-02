@@ -246,6 +246,7 @@ exp.Main = class Main
 
   renderAxis: (params={
     class: null
+    color: null
     scale:  null
     height: null
     width:  null
@@ -279,7 +280,9 @@ exp.Main = class Main
       .attr("stroke-width", params.strokeWidth)
 
     # Selecting the ticks only without the first one
-    gaxis.selectAll("line").filter((d) -> return d)
+    gaxis.selectAll("line").filter((d, i) ->
+      console.log i
+      return d)
       .attr("stroke", params.tickColor)
       .attr("width-stroke", params.tickWidth)
 
