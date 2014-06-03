@@ -139,6 +139,7 @@ exp.Main = Main = (function() {
         padding: [0, 0],
         cross: {
           x: {
+            showValue: true,
             show: false,
             color: 'black',
             stroke: 1,
@@ -148,7 +149,29 @@ exp.Main = Main = (function() {
             show: false,
             color: 'black',
             stroke: 1,
-            offset: 0
+            offset: 0,
+            showValue: true
+          }
+        },
+        crossValue: {
+          x: {
+            orient: 'bottom',
+            show: true,
+            color: '#0971b7',
+            fontColor: '#ffffff',
+            fontSize: 12,
+            format: function(d) {
+              var da, m, y;
+              da = d.toString().split(" ")[2];
+              m = d.toString().split(" ")[1];
+              y = d.toString().split(" ")[3].substring(2);
+              return "" + da + " " + m + " " + y;
+            },
+            radius: 5
+          },
+          y: {
+            show: true,
+            color: 'white'
           }
         }
       },
@@ -418,7 +441,6 @@ exp.Main = Main = (function() {
 
   Main.prototype.renderAxis = function(params) {
     var line;
-    console.log(params);
     line = this._CANVAS.append("line").attr("stroke", params.axis.color).attr("stroke-width", params.axis.strokeWidth);
     switch (params.axis.orient) {
       case 'bottom':
@@ -697,22 +719,72 @@ exp.Main = Main = (function() {
     }
   };
 
-  Main.prototype.renderCross = function(options) {
-    var offsetX, offsetY, padX, padY, _crossX, _crossY;
-    padX = options.padding[0];
-    padY = options.padding[1];
-    offsetX = this._CONF.canvas.cross.x.offset;
-    offsetY = this._CONF.canvas.cross.y.offset;
-    _crossX = options.canvas.append("line").attr("class", "crossX").attr("x1", -options.width).attr("y1", padY).attr("x2", -options.width).attr("y2", options.height - padY).attr("stroke", options.cross.x.color).attr("stroke-width", options.cross.x.stroke);
-    _crossY = options.canvas.append("line").attr("class", "crossY").attr("x1", padX).attr("y1", -options.height).attr("x2", options.width - padX).attr("y2", -options.height).attr("stroke", options.cross.y.color).attr("stroke-width", options.cross.y.stroke);
-    return options.canvas.on("mousemove", function(d) {
+  Main.prototype.renderCrossValue = function(params) {
+    var box, gbox, text;
+    if (params == null) {
+      params = {
+        scale: null,
+        canvas: null,
+        confCanvas: null,
+        confCrossV: null
+      };
+    }
+    gbox = params.canvas.append("g").attr("transform", "translate(-1000, -1000)");
+    box = gbox.append("rect").attr("fill", params.confCrossV.x.color).attr("rx", params.confCrossV.x.radius).attr("ry", params.confCrossV.x.radius);
+    text = gbox.append("text").text("AgChartPile").attr("font-size", params.confCrossV.x.fontSize).attr("text-anchor", "middle").attr("fill", params.confCrossV.x.fontColor);
+    if (params.confCrossV.x.show) {
+      return params.canvas.on("mousemove.crossValue", function() {
+        var eventX, eventY, textDim, valueX;
+        eventX = d3.mouse(this)[0];
+        textDim = [text[0][0].clientWidth + 30, text[0][0].clientHeight + 2];
+        if (eventX < params.confCanvas.padding[0]) {
+          eventX = params.confCanvas.padding[0];
+        }
+        if (eventX > params.confCanvas.width - params.confCanvas.padding[0]) {
+          eventX = params.confCanvas.width - params.confCanvas.padding[0];
+        }
+        text.attr("y", textDim[1] - 4).attr("x", textDim[0] / 2);
+        box.attr("width", textDim[0]).attr("height", textDim[1]);
+        valueX = params.scale.width.invert(eventX);
+        switch (params.confCrossV.x.orient) {
+          case 'top':
+            eventY = params.confCanvas.padding[1];
+            break;
+          case 'bottom':
+            eventY = params.confCanvas.height - params.confCanvas.padding[1];
+        }
+        text.text(params.confCrossV.x.format(valueX));
+        gbox.attr("transform", "translate(" + (eventX - textDim[0] / 2) + ", " + eventY + ")");
+        return gbox.attr("cy", d3.mouse(this)[1]);
+      });
+    }
+  };
+
+  Main.prototype.renderCross = function(params) {
+    var height, offsetX, offsetY, padX, padY, width, _crossX, _crossY;
+    if (params == null) {
+      params = {
+        canvas: nulle,
+        confCanvas: null,
+        confCross: null
+      };
+    }
+    padX = params.confCanvas.padding[0];
+    padY = params.confCanvas.padding[1];
+    offsetX = params.confCross.x.offset;
+    offsetY = params.confCross.y.offset;
+    width = params.confCanvas.width;
+    height = params.confCanvas.height;
+    _crossX = params.canvas.append("line").attr("class", "crossX").attr("x1", -width).attr("y1", padY).attr("x2", -width).attr("y2", height - padY).attr("stroke", params.confCross.x.color).attr("stroke-width", params.confCross.x.stroke);
+    _crossY = params.canvas.append("line").attr("class", "crossY").attr("x1", padX).attr("y1", -height).attr("x2", width - padX).attr("y2", -height).attr("stroke", params.confCross.y.color).attr("stroke-width", params.confCross.y.stroke);
+    return params.canvas.on("mousemove.tooltip", function(d) {
       var eventX, eventY;
       eventX = d3.mouse(this)[0];
       eventY = d3.mouse(this)[1];
-      if (options.cross.x.show && eventX >= padX + offsetX && eventX <= options.width - padX + offsetX) {
+      if (params.confCross.x.show && eventX >= padX + offsetX && eventX <= width - padX + offsetX) {
         _crossX.attr("x1", eventX - offsetX).attr("x2", eventX - offsetX);
       }
-      if (options.cross.y.show && eventY >= padY + offsetY && eventY <= options.height - padY + offsetY) {
+      if (params.confCross.y.show && eventY >= padY + offsetY && eventY <= height - padY + offsetY) {
         return _crossY.attr("y1", eventY - offsetY).attr("y2", eventY - offsetY);
       }
     });
@@ -748,10 +820,8 @@ exp.Main = Main = (function() {
     });
     this.renderCross({
       canvas: this._CANVAS,
-      cross: this._CONF.canvas.cross,
-      padding: this._CONF.canvas.padding,
-      height: this._CONF.canvas.height,
-      width: this._CONF.canvas.width
+      confCanvas: this._CONF.canvas,
+      confCross: this._CONF.canvas.cross
     });
     this.renderXGrid();
     this.renderYGrid();
@@ -762,6 +832,12 @@ exp.Main = Main = (function() {
     this.renderAxis({
       canvas: this._CONF.canvas,
       axis: this._CONF.axis.y
+    });
+    this.renderCrossValue({
+      scale: this._SCALE,
+      canvas: this._CANVAS,
+      confCanvas: this._CONF.canvas,
+      confCrossV: this._CONF.canvas.crossValue
     });
     this.renderTooltip();
     this.renderPoints();

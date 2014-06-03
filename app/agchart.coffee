@@ -37,6 +37,7 @@ exp.Main = class Main
         padding: [0,0] #left/right, bottom/top
         cross:
           x:
+            showValue: true
             show: false
             color: 'black'
             stroke: 1
@@ -46,6 +47,23 @@ exp.Main = class Main
             color: 'black'
             stroke: 1
             offset: 0
+            showValue: true
+        crossValue:
+          x:
+            orient: 'bottom' # Top not implemented
+            show: true
+            color: '#0971b7'
+            fontColor: '#ffffff'
+            fontSize: 12
+            format: (d) ->
+              da = d.toString().split(" ")[2]
+              m = d.toString().split(" ")[1]
+              y = d.toString().split(" ")[3].substring(2)
+              "#{da} #{m} #{y}"
+            radius: 5
+          y:
+            show: true
+            color: 'white'
       logo:
         url: "agflow-logo.svg"
         width: 100
@@ -248,7 +266,6 @@ exp.Main = class Main
       .text(params.label.text)
 
   renderAxis: (params) ->
-    console.log params
     line = @_CANVAS.append("line")
       .attr("stroke", params.axis.color)
       .attr("stroke-width", params.axis.strokeWidth)
@@ -551,35 +568,89 @@ exp.Main = class Main
         .attr('left', 0)
         .attr('top', 0)
 
-  renderCross: (options)->
-    padX = options.padding[0]
-    padY = options.padding[1]
-    offsetX = @_CONF.canvas.cross.x.offset
-    offsetY = @_CONF.canvas.cross.y.offset
-    _crossX = options.canvas.append("line")
+  renderCrossValue: (params={
+    scale: null
+    canvas: null
+    confCanvas: null
+    confCrossV: null
+  }) ->
+    # We append the container at the begining
+    gbox = params.canvas.append("g")
+      .attr("transform", "translate(-1000, -1000)")
+    box = gbox.append("rect")
+      .attr("fill", params.confCrossV.x.color)
+      .attr("rx", params.confCrossV.x.radius)
+      .attr("ry", params.confCrossV.x.radius)
+    text = gbox.append("text")
+      .text("AgChartPile")
+      .attr("font-size", params.confCrossV.x.fontSize)
+      .attr("text-anchor", "middle")
+      .attr("fill", params.confCrossV.x.fontColor)
+
+    if params.confCrossV.x.show
+
+      params.canvas.on("mousemove.crossValue", ->
+        eventX = d3.mouse(@)[0]
+        textDim = [
+          text[0][0].clientWidth+30
+          text[0][0].clientHeight+2
+        ]
+        if eventX < params.confCanvas.padding[0]
+          eventX = params.confCanvas.padding[0]
+        if eventX > params.confCanvas.width-params.confCanvas.padding[0]
+          eventX = params.confCanvas.width-params.confCanvas.padding[0]
+        text
+          .attr("y", textDim[1]-4)
+          .attr("x", textDim[0]/2)
+        box
+          .attr("width", textDim[0])
+          .attr("height", textDim[1])
+
+        valueX = params.scale.width.invert(eventX)
+        switch params.confCrossV.x.orient
+          when 'top'
+            eventY = params.confCanvas.padding[1]
+          when 'bottom'
+            eventY = params.confCanvas.height-params.confCanvas.padding[1]
+        text.text(params.confCrossV.x.format(valueX))
+        gbox.attr("transform", "translate(#{eventX-textDim[0]/2}, #{eventY})")
+        gbox.attr("cy", d3.mouse(@)[1])
+      )
+  renderCross: (params={
+    canvas: nulle
+    confCanvas: null
+    confCross: null
+  })->
+    padX = params.confCanvas.padding[0]
+    padY = params.confCanvas.padding[1]
+    offsetX = params.confCross.x.offset
+    offsetY = params.confCross.y.offset
+    width = params.confCanvas.width
+    height = params.confCanvas.height
+    _crossX = params.canvas.append("line")
       .attr("class", "crossX")
-      .attr("x1", -options.width).attr("y1", padY)
-      .attr("x2", -options.width).attr("y2", options.height-padY)
-      .attr("stroke", options.cross.x.color)
-      .attr("stroke-width", options.cross.x.stroke)
-    _crossY = options.canvas.append("line")
+      .attr("x1", -width).attr("y1", padY)
+      .attr("x2", -width).attr("y2", height-padY)
+      .attr("stroke", params.confCross.x.color)
+      .attr("stroke-width", params.confCross.x.stroke)
+    _crossY = params.canvas.append("line")
       .attr("class", "crossY")
-      .attr("x1", padX).attr("y1", -options.height)
-      .attr("x2", options.width-padX).attr("y2", -options.height)
-      .attr("stroke", options.cross.y.color)
-      .attr("stroke-width", options.cross.y.stroke)
-    options.canvas.on("mousemove", (d)->
+      .attr("x1", padX).attr("y1", -height)
+      .attr("x2", width-padX).attr("y2", -height)
+      .attr("stroke", params.confCross.y.color)
+      .attr("stroke-width", params.confCross.y.stroke)
+    params.canvas.on("mousemove.tooltip", (d)->
       eventX = d3.mouse(@)[0]
       eventY = d3.mouse(@)[1]
-      if options.cross.x.show and
+      if params.confCross.x.show and
       eventX >= padX+offsetX and
-      eventX <= options.width-padX+offsetX
+      eventX <= width-padX+offsetX
         _crossX
           .attr("x1", eventX-offsetX)
           .attr("x2", eventX-offsetX)
-      if options.cross.y.show and
+      if params.confCross.y.show and
       eventY >= padY+offsetY and
-      eventY <= options.height-padY+offsetY
+      eventY <= height-padY+offsetY
         _crossY
           .attr("y1", eventY-offsetY)
           .attr("y2", eventY-offsetY)
@@ -614,10 +685,8 @@ exp.Main = class Main
     )
     @renderCross(
       canvas: @_CANVAS
-      cross: @_CONF.canvas.cross
-      padding: @_CONF.canvas.padding
-      height: @_CONF.canvas.height
-      width: @_CONF.canvas.width
+      confCanvas: @_CONF.canvas
+      confCross: @_CONF.canvas.cross
     )
     @renderXGrid()
     @renderYGrid()
@@ -628,6 +697,12 @@ exp.Main = class Main
     @renderAxis(
       canvas: @_CONF.canvas
       axis: @_CONF.axis.y
+    )
+    @renderCrossValue(
+      scale: @_SCALE
+      canvas: @_CANVAS
+      confCanvas: @_CONF.canvas
+      confCrossV: @_CONF.canvas.crossValue
     )
     @renderTooltip()
     @renderPoints() # Depends on axis and tooltip
