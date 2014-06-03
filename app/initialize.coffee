@@ -78,10 +78,10 @@ exp.run = ->
       axis:
         y:
           tickSize: "full"
-          color: "#2b2e33"
           tickWidth: 2
+          orient: "right"
         x:
-          color: "#2b2e33"
+          orient: "bottom"
           tickWidth: 2
           format: "%b"
           tickSize: "full"

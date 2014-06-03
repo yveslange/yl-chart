@@ -65,19 +65,19 @@ exp.Main = class Main
         x:
           format: null
           tickSize: null
-          orient: "bottom"
+          orient: "bottom" # bottom, top
           tickColor: "#efefef"
           tickWidth: 2
           strokeWidth: 1
-          color: "#2f2f2f"
+          color: "#2b2e33" # THe color of the y axis
         y:
           format: null
           tickSize: null
-          orient: "left"
+          orient: "left" # left, right
           tickColor: "#efefef"
           tickWidth: 2
           strokeWidth: 1
-          color: "#2f2f2f"
+          color: "#2b2e33" # The color of the x axis
     @_CANVAS = undefined
     @_TOOLTIP = undefined
     @_SCALE =
@@ -237,16 +237,50 @@ exp.Main = class Main
       size: null
       trans: null
       text: ""
+      textAnchor: "middle"
     class: null }) ->
     @_CANVAS.append("text")
       .attr("fill", params.label.color)
       .attr("class", "label #{params.class}")
       .attr("font-size", params.label.size+"px")
-      .attr("text-anchor", "middle")
+      .attr("text-anchor", params.label.textAnchor)
       .attr("transform", params.label.trans)
       .text(params.label.text)
 
-  renderAxis: (params={
+  renderAxis: (params) ->
+    console.log params
+    line = @_CANVAS.append("line")
+      .attr("stroke", params.axis.color)
+      .attr("stroke-width", params.axis.strokeWidth)
+    switch params.axis.orient
+      when 'bottom'
+        line
+          .attr("x1", params.canvas.padding[0])
+          .attr("y1", params.canvas.height-params.canvas.padding[1])
+          .attr("x2", params.canvas.width-params.canvas.padding[0])
+          .attr("y2", params.canvas.height-params.canvas.padding[1])
+      when "top"
+        line
+          .attr("x1", params.canvas.padding[0])
+          .attr("y1", params.canvas.padding[1])
+          .attr("x2", params.canvas.width-params.canvas.padding[0])
+          .attr("y2", params.canvas.padding[1])
+      when "left"
+        line
+          .attr("x1", params.canvas.padding[0])
+          .attr("y1", params.canvas.padding[1])
+          .attr("x2", params.canvas.padding[0])
+          .attr("y2", params.canvas.height-params.canvas.padding[1])
+      when "right"
+        line
+          .attr("x1", params.canvas.width-params.canvas.padding[0])
+          .attr("y1", params.canvas.padding[1])
+          .attr("x2", params.canvas.width-params.canvas.padding[0])
+          .attr("y2", params.canvas.height-params.canvas.padding[1])
+      else
+        throw new Error("Unknown orientation: ", params.axis.orient)
+
+  renderGrid: (params={
     class: null
     color: null
     scale:  null
@@ -258,51 +292,59 @@ exp.Main = class Main
     label:  null
     format: null }) ->
 
-    axis = d3.svg.axis()
+    grid = d3.svg.axis()
       .scale(params.scale)
       .orient(params.orient)
       .tickSize(params.tickSize)
 
     if params.format?
-      axis.ticks(d3.time.months, 1)
-      axis.tickFormat(
+      grid.ticks(d3.time.months, 1)
+      grid.tickFormat(
         d3.time.format(params.format)
       )
 
-    gaxis = @_CANVAS
+    ggrid = @_CANVAS
       .append("g")
       .attr("transform", params.trans)
       .attr("class", "axis #{params.class}")
-      .call(axis)
+      .call(grid)
 
     @renderLabel(params)
 
-    gaxis.selectAll("line")
+    ggrid.selectAll("line")
       .attr("stroke", params.color)
       .attr("stroke-width", params.strokeWidth)
 
     # Selecting the ticks only without the first one
-    gaxis.selectAll("line").filter((d, i) -> return d)
+    ggrid.selectAll("line")
       .attr("stroke", params.tickColor)
       .attr("width-stroke", params.tickWidth)
 
     # Trick to hide the path around the graph
-    gaxis.selectAll("path")
+    ggrid.selectAll("path")
       .style("display", "none")
 
     # Color of the text on axis
-    gaxis.selectAll("text")
+    ggrid.selectAll("text")
       .attr("fill", params.label.color)
       .attr("font-size", params.label.size)
 
-  renderXAxis: ->
+  renderXGrid: ->
     padding = @_CONF.canvas.padding[1]
     height = @_CONF.canvas.height
     width = @_CONF.canvas.width
-    trans = "translate(0, #{padding})"
     label = @_CONF.canvas.label.x
-    label.trans =
-      "translate(#{width/2}, #{height-1})"
+    switch @_CONF.axis.x.orient
+      when 'bottom'
+        trans = "translate(0, #{padding})"
+        label.trans =
+          "translate(#{width/2}, #{height-2})"
+      when 'top'
+        trans = "translate(0, #{height-padding})"
+        label.trans =
+          "translate(#{width/2}, #{padding/2})"
+      else
+        throw new Error("Unknown orientation: ", @_CONF.axis.x.orient)
     tickSize = @_CONF.axis.x.tickSize
     tickSize =  height-padding*2 if tickSize == 'full'
     params = {
@@ -321,16 +363,25 @@ exp.Main = class Main
       strokeWidth: @_CONF.axis.x.strokeWidth
       format: @_CONF.axis.x.format
     }
-    axis = @renderAxis(params)
+    @renderGrid(params)
 
-  renderYAxis: ->
+  renderYGrid: ->
     padding = @_CONF.canvas.padding[0]
     height = @_CONF.canvas.height
     width = @_CONF.canvas.width
-    trans = "translate(#{padding}, 0)"
     label = @_CONF.canvas.label.y
-    label.trans =
-      "rotate(-90) translate(#{-height/2}, #{padding+10})"
+    switch @_CONF.axis.y.orient
+      when 'left'
+        trans = "translate(#{padding}, 0)"
+        label.trans =
+          "rotate(-90) translate(#{-height/2}, #{padding+10})"
+      when 'right'
+        trans = "translate(#{width-padding}, 0)"
+        label.trans =
+          "translate(#{width-padding}, #{padding/2})"
+        label.textAnchor = "end"
+      else
+        throw new Error("Unknown orientation: ", @_CONF.axis.y.orient)
 
     tickSize = @_CONF.axis.y.tickSize
     tickSize = -width+padding*2 if tickSize == 'full'
@@ -351,7 +402,7 @@ exp.Main = class Main
       strokeWidth: @_CONF.axis.y.strokeWidth
       format: @_CONF.axis.y.format
     }
-    axis = @renderAxis(params)
+    @renderGrid(params)
 
 
   prepareSeries: (data) ->
@@ -568,8 +619,16 @@ exp.Main = class Main
       height: @_CONF.canvas.height
       width: @_CONF.canvas.width
     )
-    @renderXAxis()
-    @renderYAxis()
+    @renderXGrid()
+    @renderYGrid()
+    @renderAxis(
+      canvas: @_CONF.canvas
+      axis: @_CONF.axis.x
+    )
+    @renderAxis(
+      canvas: @_CONF.canvas
+      axis: @_CONF.axis.y
+    )
     @renderTooltip()
     @renderPoints() # Depends on axis and tooltip
     @renderTitle(
