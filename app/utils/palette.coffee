@@ -13,7 +13,7 @@ exp.Main = class Main
 
   color: (i) ->
     # Get the next color
-    return @_PALETTE[i]
+    return @_PALETTE[i%@_PALETTE.length]
 
   palettes: ->
     schemes = {}

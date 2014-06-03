@@ -1144,7 +1144,7 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.color = function(i) {
-    return this._PALETTE[i];
+    return this._PALETTE[i % this._PALETTE.length];
   };
 
   Main.prototype.palettes = function() {
