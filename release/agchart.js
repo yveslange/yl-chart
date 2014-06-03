@@ -115,7 +115,11 @@ exp.Main = Main = (function() {
         title: {
           text: "AgChart",
           color: "#2f2f2f",
-          size: 24
+          size: 24,
+          position: {
+            x: 20,
+            y: 20
+          }
         },
         label: {
           x: {
@@ -135,6 +139,7 @@ exp.Main = Main = (function() {
         padding: [0, 0],
         cross: {
           x: {
+            showValue: true,
             show: false,
             color: 'black',
             stroke: 1,
@@ -144,7 +149,29 @@ exp.Main = Main = (function() {
             show: false,
             color: 'black',
             stroke: 1,
-            offset: 0
+            offset: 0,
+            showValue: true
+          }
+        },
+        crossValue: {
+          x: {
+            orient: 'bottom',
+            show: true,
+            color: '#0971b7',
+            fontColor: '#ffffff',
+            fontSize: 12,
+            format: function(d) {
+              var da, m, y;
+              da = d.toString().split(" ")[2];
+              m = d.toString().split(" ")[1];
+              y = d.toString().split(" ")[3].substring(2);
+              return "" + da + " " + m + " " + y;
+            },
+            radius: 5
+          },
+          y: {
+            show: true,
+            color: 'white'
           }
         }
       },
@@ -171,19 +198,19 @@ exp.Main = Main = (function() {
           format: null,
           tickSize: null,
           orient: "bottom",
-          tickColor: "#efefef",
+          tickColor: "#f5f5f5",
           tickWidth: 2,
           strokeWidth: 1,
-          color: "#2f2f2f"
+          color: "#2b2e33"
         },
         y: {
           format: null,
           tickSize: null,
           orient: "left",
-          tickColor: "#efefef",
+          tickColor: "#f5f5f5",
           tickWidth: 2,
           strokeWidth: 1,
-          color: "#2f2f2f"
+          color: "#2b2e33"
         }
       }
     };
@@ -386,14 +413,14 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.renderTitle = function(params) {
+    var _ref, _ref1;
     if (params == null) {
       params = {
-        title: "",
-        color: null,
-        size: params.size
+        title: null,
+        padding: null
       };
     }
-    return this._CANVAS.append("text").attr("x", this._CONF.canvas.padding[0] - 1).attr("y", this._CONF.canvas.padding[1] - 1).attr("class", "chart-title").attr("fill", params.color).attr("font-size", params.size).text(params.title);
+    return this._CANVAS.append("text").attr("x", (_ref1 = params.title.position.x) != null ? _ref1 : params.padding[0] - 1).attr("y", (_ref = params.title.position.y) != null ? _ref : params.padding[1] - 1).attr("class", "chart-title").attr("fill", params.title.color).attr("font-size", params.title.size).text(params.title.text);
   };
 
   Main.prototype.renderLabel = function(params) {
@@ -403,19 +430,38 @@ exp.Main = Main = (function() {
           color: null,
           size: null,
           trans: null,
-          text: ""
+          text: "",
+          textAnchor: ""
         },
         "class": null
       };
     }
-    return this._CANVAS.append("text").attr("fill", params.label.color).attr("class", "label " + params["class"]).attr("font-size", params.label.size + "px").attr("text-anchor", "middle").attr("transform", params.label.trans).text(params.label.text);
+    return this._CANVAS.append("text").attr("fill", params.label.color).attr("class", "label " + params["class"]).attr("font-size", params.label.size + "px").attr("text-anchor", params.label.textAnchor).attr("transform", params.label.trans).text(params.label.text);
   };
 
   Main.prototype.renderAxis = function(params) {
-    var axis, gaxis;
+    var line;
+    line = this._CANVAS.append("line").attr("stroke", params.axis.color).attr("stroke-width", params.axis.strokeWidth);
+    switch (params.axis.orient) {
+      case 'bottom':
+        return line.attr("x1", params.canvas.padding[0]).attr("y1", params.canvas.height - params.canvas.padding[1]).attr("x2", params.canvas.width - params.canvas.padding[0]).attr("y2", params.canvas.height - params.canvas.padding[1]);
+      case "top":
+        return line.attr("x1", params.canvas.padding[0]).attr("y1", params.canvas.padding[1]).attr("x2", params.canvas.width - params.canvas.padding[0]).attr("y2", params.canvas.padding[1]);
+      case "left":
+        return line.attr("x1", params.canvas.padding[0]).attr("y1", params.canvas.padding[1]).attr("x2", params.canvas.padding[0]).attr("y2", params.canvas.height - params.canvas.padding[1]);
+      case "right":
+        return line.attr("x1", params.canvas.width - params.canvas.padding[0]).attr("y1", params.canvas.padding[1]).attr("x2", params.canvas.width - params.canvas.padding[0]).attr("y2", params.canvas.height - params.canvas.padding[1]);
+      default:
+        throw new Error("Unknown orientation: ", params.axis.orient);
+    }
+  };
+
+  Main.prototype.renderGrid = function(params) {
+    var ggrid, grid;
     if (params == null) {
       params = {
         "class": null,
+        color: null,
         scale: null,
         height: null,
         width: null,
@@ -426,29 +472,38 @@ exp.Main = Main = (function() {
         format: null
       };
     }
-    axis = d3.svg.axis().scale(params.scale).orient(params.orient).tickSize(params.tickSize);
+    grid = d3.svg.axis().scale(params.scale).orient(params.orient).tickSize(params.tickSize);
     if (params.format != null) {
-      axis.ticks(d3.time.months, 1);
-      axis.tickFormat(d3.time.format(params.format));
+      grid.ticks(d3.time.months, 1);
+      grid.tickFormat(d3.time.format(params.format));
     }
-    gaxis = this._CANVAS.append("g").attr("transform", params.trans).attr("class", "axis " + params["class"]).call(axis);
+    ggrid = this._CANVAS.append("g").attr("transform", params.trans).attr("class", "axis " + params["class"]).call(grid);
     this.renderLabel(params);
-    gaxis.selectAll("line").attr("stroke", params.color).attr("stroke-width", params.strokeWidth);
-    gaxis.selectAll("line").filter(function(d) {
-      return d;
-    }).attr("stroke", params.tickColor).attr("width-stroke", params.tickWidth);
-    gaxis.selectAll("path").style("display", "none");
-    return gaxis.selectAll("text").attr("fill", params.label.color).attr("font-size", params.label.size);
+    ggrid.selectAll("line").attr("stroke", params.color).attr("stroke-width", params.strokeWidth);
+    ggrid.selectAll("line").attr("stroke", params.tickColor).attr("width-stroke", params.tickWidth);
+    ggrid.selectAll("path").style("display", "none");
+    return ggrid.selectAll("text").attr("fill", params.label.color).attr("font-size", params.label.size);
   };
 
-  Main.prototype.renderXAxis = function() {
-    var axis, height, label, padding, params, tickSize, trans, width;
+  Main.prototype.renderXGrid = function() {
+    var height, label, padding, params, tickSize, trans, width;
     padding = this._CONF.canvas.padding[1];
     height = this._CONF.canvas.height;
     width = this._CONF.canvas.width;
-    trans = "translate(0, " + padding + ")";
     label = this._CONF.canvas.label.x;
-    label.trans = "translate(" + (width / 2) + ", " + (height - 1) + ")";
+    label.textAnchor = "middle";
+    switch (this._CONF.axis.x.orient) {
+      case 'bottom':
+        trans = "translate(0, " + padding + ")";
+        label.trans = "translate(" + (width / 2) + ", " + (height - 2) + ")";
+        break;
+      case 'top':
+        trans = "translate(0, " + (height - padding) + ")";
+        label.trans = "translate(" + (width / 2) + ", " + (padding / 2) + ")";
+        break;
+      default:
+        throw new Error("Unknown orientation: ", this._CONF.axis.x.orient);
+    }
     tickSize = this._CONF.axis.x.tickSize;
     if (tickSize === 'full') {
       tickSize = height - padding * 2;
@@ -469,17 +524,28 @@ exp.Main = Main = (function() {
       strokeWidth: this._CONF.axis.x.strokeWidth,
       format: this._CONF.axis.x.format
     };
-    return axis = this.renderAxis(params);
+    return this.renderGrid(params);
   };
 
-  Main.prototype.renderYAxis = function() {
-    var axis, height, label, padding, params, tickSize, trans, width;
+  Main.prototype.renderYGrid = function() {
+    var height, label, padding, params, tickSize, trans, width;
     padding = this._CONF.canvas.padding[0];
     height = this._CONF.canvas.height;
     width = this._CONF.canvas.width;
-    trans = "translate(" + padding + ", 0)";
     label = this._CONF.canvas.label.y;
-    label.trans = "rotate(-90) translate(" + (-height / 2) + ", " + (padding + 10) + ")";
+    switch (this._CONF.axis.y.orient) {
+      case 'left':
+        trans = "translate(" + padding + ", 0)";
+        label.trans = "rotate(-90) translate(" + (-height / 2) + ", " + (padding + 10) + ")";
+        break;
+      case 'right':
+        trans = "translate(" + (width - padding) + ", 0)";
+        label.trans = "translate(" + (width - padding) + ", " + (padding / 2) + ")";
+        label.textAnchor = "end";
+        break;
+      default:
+        throw new Error("Unknown orientation: ", this._CONF.axis.y.orient);
+    }
     tickSize = this._CONF.axis.y.tickSize;
     if (tickSize === 'full') {
       tickSize = -width + padding * 2;
@@ -500,7 +566,7 @@ exp.Main = Main = (function() {
       strokeWidth: this._CONF.axis.y.strokeWidth,
       format: this._CONF.axis.y.format
     };
-    return axis = this.renderAxis(params);
+    return this.renderGrid(params);
   };
 
   Main.prototype.prepareSeries = function(data) {
@@ -654,22 +720,72 @@ exp.Main = Main = (function() {
     }
   };
 
-  Main.prototype.renderCross = function(options) {
-    var offsetX, offsetY, padX, padY, _crossX, _crossY;
-    padX = options.padding[0];
-    padY = options.padding[1];
-    offsetX = this._CONF.canvas.cross.x.offset;
-    offsetY = this._CONF.canvas.cross.y.offset;
-    _crossX = options.canvas.append("line").attr("class", "crossX").attr("x1", -options.width).attr("y1", padY).attr("x2", -options.width).attr("y2", options.height - padY).attr("stroke", options.cross.x.color).attr("stroke-width", options.cross.x.stroke);
-    _crossY = options.canvas.append("line").attr("class", "crossY").attr("x1", padX).attr("y1", -options.height).attr("x2", options.width - padX).attr("y2", -options.height).attr("stroke", options.cross.y.color).attr("stroke-width", options.cross.y.stroke);
-    return options.canvas.on("mousemove", function(d) {
+  Main.prototype.renderCrossValue = function(params) {
+    var box, gbox, text;
+    if (params == null) {
+      params = {
+        scale: null,
+        canvas: null,
+        confCanvas: null,
+        confCrossV: null
+      };
+    }
+    gbox = params.canvas.append("g").attr("transform", "translate(-1000, -1000)");
+    box = gbox.append("rect").attr("fill", params.confCrossV.x.color).attr("rx", params.confCrossV.x.radius).attr("ry", params.confCrossV.x.radius);
+    text = gbox.append("text").text("AgChartPile").attr("font-size", params.confCrossV.x.fontSize).attr("text-anchor", "middle").attr("fill", params.confCrossV.x.fontColor);
+    if (params.confCrossV.x.show) {
+      return params.canvas.on("mousemove.crossValue", function() {
+        var eventX, eventY, textDim, valueX;
+        eventX = d3.mouse(this)[0];
+        textDim = [text[0][0].clientWidth + 30, text[0][0].clientHeight + 2];
+        if (eventX < params.confCanvas.padding[0]) {
+          eventX = params.confCanvas.padding[0];
+        }
+        if (eventX > params.confCanvas.width - params.confCanvas.padding[0]) {
+          eventX = params.confCanvas.width - params.confCanvas.padding[0];
+        }
+        text.attr("y", textDim[1] - 4).attr("x", textDim[0] / 2);
+        box.attr("width", textDim[0]).attr("height", textDim[1]);
+        valueX = params.scale.width.invert(eventX);
+        switch (params.confCrossV.x.orient) {
+          case 'top':
+            eventY = params.confCanvas.padding[1];
+            break;
+          case 'bottom':
+            eventY = params.confCanvas.height - params.confCanvas.padding[1];
+        }
+        text.text(params.confCrossV.x.format(valueX));
+        gbox.attr("transform", "translate(" + (eventX - textDim[0] / 2) + ", " + eventY + ")");
+        return gbox.attr("cy", d3.mouse(this)[1]);
+      });
+    }
+  };
+
+  Main.prototype.renderCross = function(params) {
+    var height, offsetX, offsetY, padX, padY, width, _crossX, _crossY;
+    if (params == null) {
+      params = {
+        canvas: nulle,
+        confCanvas: null,
+        confCross: null
+      };
+    }
+    padX = params.confCanvas.padding[0];
+    padY = params.confCanvas.padding[1];
+    offsetX = params.confCross.x.offset;
+    offsetY = params.confCross.y.offset;
+    width = params.confCanvas.width;
+    height = params.confCanvas.height;
+    _crossX = params.canvas.append("line").attr("class", "crossX").attr("x1", -width).attr("y1", padY).attr("x2", -width).attr("y2", height - padY).attr("stroke", params.confCross.x.color).attr("stroke-width", params.confCross.x.stroke);
+    _crossY = params.canvas.append("line").attr("class", "crossY").attr("x1", padX).attr("y1", -height).attr("x2", width - padX).attr("y2", -height).attr("stroke", params.confCross.y.color).attr("stroke-width", params.confCross.y.stroke);
+    return params.canvas.on("mousemove.tooltip", function(d) {
       var eventX, eventY;
       eventX = d3.mouse(this)[0];
       eventY = d3.mouse(this)[1];
-      if (options.cross.x.show && eventX >= padX + offsetX && eventX <= options.width - padX + offsetX) {
+      if (params.confCross.x.show && eventX >= padX + offsetX && eventX <= width - padX + offsetX) {
         _crossX.attr("x1", eventX - offsetX).attr("x2", eventX - offsetX);
       }
-      if (options.cross.y.show && eventY >= padY + offsetY && eventY <= options.height - padY + offsetY) {
+      if (params.confCross.y.show && eventY >= padY + offsetY && eventY <= height - padY + offsetY) {
         return _crossY.attr("y1", eventY - offsetY).attr("y2", eventY - offsetY);
       }
     });
@@ -705,19 +821,30 @@ exp.Main = Main = (function() {
     });
     this.renderCross({
       canvas: this._CANVAS,
-      cross: this._CONF.canvas.cross,
-      padding: this._CONF.canvas.padding,
-      height: this._CONF.canvas.height,
-      width: this._CONF.canvas.width
+      confCanvas: this._CONF.canvas,
+      confCross: this._CONF.canvas.cross
     });
-    this.renderXAxis();
-    this.renderYAxis();
+    this.renderXGrid();
+    this.renderYGrid();
+    this.renderAxis({
+      canvas: this._CONF.canvas,
+      axis: this._CONF.axis.x
+    });
+    this.renderAxis({
+      canvas: this._CONF.canvas,
+      axis: this._CONF.axis.y
+    });
+    this.renderCrossValue({
+      scale: this._SCALE,
+      canvas: this._CANVAS,
+      confCanvas: this._CONF.canvas,
+      confCrossV: this._CONF.canvas.crossValue
+    });
     this.renderTooltip();
     this.renderPoints();
     return this.renderTitle({
-      title: this._CONF.canvas.title.text,
-      color: this._CONF.canvas.title.color,
-      size: this._CONF.canvas.title.size
+      title: this._CONF.canvas.title,
+      padding: this._CONF.canvas.padding
     });
   };
 
@@ -830,7 +957,7 @@ exp.Main = Main = (function() {
 });
 
 ;require.register("initialize", function(exports, require, module) {
-var agchart, exp, genData, time;
+var agchart, exp, genData, genDataFunc, time;
 
 module.exports = exp = {};
 
@@ -848,6 +975,21 @@ genData = function(len, inter) {
     els.push({
       x: i * 1000,
       y: Math.random() * 100
+    });
+  }
+  return els;
+};
+
+genDataFunc = function(len, inter, func) {
+  var els, i, _i, _ref;
+  if (inter == null) {
+    inter = 1;
+  }
+  els = [];
+  for (i = _i = 0, _ref = len - 1; inter > 0 ? _i <= _ref : _i >= _ref; i = _i += inter) {
+    els.push({
+      x: i * 1000,
+      y: func(i) * 10 + 50
     });
   }
   return els;
@@ -872,6 +1014,8 @@ exp.run = function() {
     config: {
       canvas: {
         render: 'dotline',
+        width: 600.0,
+        height: 400.0,
         title: {
           color: "#4f4f4f",
           size: 20,
@@ -930,9 +1074,15 @@ exp.run = function() {
       },
       axis: {
         y: {
-          tickSize: "full"
+          tickSize: "full",
+          tickColor: "#ebebeb",
+          tickWidth: 2,
+          orient: "right"
         },
         x: {
+          orient: "bottom",
+          tickWidth: 2,
+          tickColor: "#ebebeb",
           format: "%b",
           tickSize: "full"
         }
@@ -941,7 +1091,9 @@ exp.run = function() {
     series: [
       {
         name: "Serie 1",
-        data: genData(24 * 3600 * 120, 24 * 3600),
+        data: genDataFunc(24 * 3600 * 120, 36 * 3600, function(d) {
+          return Math.cos(d) * 10;
+        }),
         config: {
           stroke: {
             width: 1
@@ -949,7 +1101,7 @@ exp.run = function() {
         }
       }, {
         name: "Serie 2",
-        data: genData(24 * 3600 * 120, 36 * 3600 * 2),
+        data: genDataFunc(24 * 3600 * 120, 36 * 3600 * 2, Math.tan),
         config: {
           color: "#ff0001",
           stroke: {
@@ -958,7 +1110,7 @@ exp.run = function() {
         }
       }, {
         name: "Serie 3",
-        data: genData(24 * 3600 * 120, 48 * 3600),
+        data: genDataFunc(24 * 3600 * 120, 48 * 3600, Math.sin),
         config: {
           stroke: {
             width: 1
