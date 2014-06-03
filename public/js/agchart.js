@@ -431,7 +431,7 @@ exp.Main = Main = (function() {
           size: null,
           trans: null,
           text: "",
-          textAnchor: "middle"
+          textAnchor: ""
         },
         "class": null
       };
@@ -491,6 +491,7 @@ exp.Main = Main = (function() {
     height = this._CONF.canvas.height;
     width = this._CONF.canvas.width;
     label = this._CONF.canvas.label.x;
+    label.textAnchor = "middle";
     switch (this._CONF.axis.x.orient) {
       case 'bottom':
         trans = "translate(0, " + padding + ")";

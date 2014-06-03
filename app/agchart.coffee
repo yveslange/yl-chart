@@ -255,7 +255,7 @@ exp.Main = class Main
       size: null
       trans: null
       text: ""
-      textAnchor: "middle"
+      textAnchor: ""
     class: null }) ->
     @_CANVAS.append("text")
       .attr("fill", params.label.color)
@@ -264,7 +264,6 @@ exp.Main = class Main
       .attr("text-anchor", params.label.textAnchor)
       .attr("transform", params.label.trans)
       .text(params.label.text)
-
   renderAxis: (params) ->
     line = @_CANVAS.append("line")
       .attr("stroke", params.axis.color)
@@ -351,6 +350,7 @@ exp.Main = class Main
     height = @_CONF.canvas.height
     width = @_CONF.canvas.width
     label = @_CONF.canvas.label.x
+    label.textAnchor = "middle"
     switch @_CONF.axis.x.orient
       when 'bottom'
         trans = "translate(0, #{padding})"
