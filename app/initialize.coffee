@@ -10,6 +10,12 @@ genData = (len, inter=1) ->
     els.push {x: i*1000, y: Math.random()*100}
   els
 
+genDataFunc = (len, inter=1, func) ->
+  els = []
+  for i in [0..len-1] by inter
+    els.push {x: i*1000, y: func(i)*10+50}
+  els
+
 exp.run = ->
   # TODO: finish this module if needed (later on)
   t = new time.Main(
@@ -78,30 +84,32 @@ exp.run = ->
       axis:
         y:
           tickSize: "full"
+          tickColor: "#ebebeb"
           tickWidth: 2
           orient: "right"
         x:
           orient: "bottom"
           tickWidth: 2
+          tickColor: "#ebebeb"
           format: "%b"
           tickSize: "full"
     series: [
       {
         name: "Serie 1"
-        data: genData(24*3600*120, 24*3600)
+        data: genDataFunc(24*3600*120, 36*3600, (d) -> Math.cos(d)*10)
         config:
           stroke: {width: 1}
       }
       {
         name: "Serie 2"
-        data: genData(24*3600*120, 36*3600*2)
+        data: genDataFunc(24*3600*120, 36*3600*2, Math.tan)
         config:
           color: "#ff0001"
           stroke: {width: 1}
       }
       {
         name: "Serie 3"
-        data: genData(24*3600*120, 48*3600)
+        data: genDataFunc(24*3600*120, 48*3600, Math.sin)
         config:
           #color: "#00fffe"
           stroke: {width: 1}

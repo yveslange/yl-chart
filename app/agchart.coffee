@@ -66,7 +66,7 @@ exp.Main = class Main
           format: null
           tickSize: null
           orient: "bottom" # bottom, top
-          tickColor: "#efefef"
+          tickColor: "#f5f5f5"
           tickWidth: 2
           strokeWidth: 1
           color: "#2b2e33" # THe color of the y axis
@@ -74,7 +74,7 @@ exp.Main = class Main
           format: null
           tickSize: null
           orient: "left" # left, right
-          tickColor: "#efefef"
+          tickColor: "#f5f5f5"
           tickWidth: 2
           strokeWidth: 1
           color: "#2b2e33" # The color of the x axis
@@ -414,9 +414,9 @@ exp.Main = class Main
       for point in serie.data
         point.serie = i
 
-        # TODO:
-        # The configuration of the point should be automatic.
-        # The problem is that we need to clone the configuration
+        # NOTE:
+        # The configuration of the point should be automatic. But
+        # the problem is that we need to clone the configuration
         # of the serie to each point
         point.config = {}
         point.config.color = @_CONF.point.color

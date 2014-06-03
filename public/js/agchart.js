@@ -175,7 +175,7 @@ exp.Main = Main = (function() {
           format: null,
           tickSize: null,
           orient: "bottom",
-          tickColor: "#efefef",
+          tickColor: "#f5f5f5",
           tickWidth: 2,
           strokeWidth: 1,
           color: "#2b2e33"
@@ -184,7 +184,7 @@ exp.Main = Main = (function() {
           format: null,
           tickSize: null,
           orient: "left",
-          tickColor: "#efefef",
+          tickColor: "#f5f5f5",
           tickWidth: 2,
           strokeWidth: 1,
           color: "#2b2e33"
@@ -880,7 +880,7 @@ exp.Main = Main = (function() {
 });
 
 ;require.register("initialize", function(exports, require, module) {
-var agchart, exp, genData, time;
+var agchart, exp, genData, genDataFunc, time;
 
 module.exports = exp = {};
 
@@ -898,6 +898,21 @@ genData = function(len, inter) {
     els.push({
       x: i * 1000,
       y: Math.random() * 100
+    });
+  }
+  return els;
+};
+
+genDataFunc = function(len, inter, func) {
+  var els, i, _i, _ref;
+  if (inter == null) {
+    inter = 1;
+  }
+  els = [];
+  for (i = _i = 0, _ref = len - 1; inter > 0 ? _i <= _ref : _i >= _ref; i = _i += inter) {
+    els.push({
+      x: i * 1000,
+      y: func(i) * 10 + 50
     });
   }
   return els;
@@ -983,12 +998,14 @@ exp.run = function() {
       axis: {
         y: {
           tickSize: "full",
+          tickColor: "#ebebeb",
           tickWidth: 2,
           orient: "right"
         },
         x: {
           orient: "bottom",
           tickWidth: 2,
+          tickColor: "#ebebeb",
           format: "%b",
           tickSize: "full"
         }
@@ -997,7 +1014,9 @@ exp.run = function() {
     series: [
       {
         name: "Serie 1",
-        data: genData(24 * 3600 * 120, 24 * 3600),
+        data: genDataFunc(24 * 3600 * 120, 36 * 3600, function(d) {
+          return Math.cos(d) * 10;
+        }),
         config: {
           stroke: {
             width: 1
@@ -1005,7 +1024,7 @@ exp.run = function() {
         }
       }, {
         name: "Serie 2",
-        data: genData(24 * 3600 * 120, 36 * 3600 * 2),
+        data: genDataFunc(24 * 3600 * 120, 36 * 3600 * 2, Math.tan),
         config: {
           color: "#ff0001",
           stroke: {
@@ -1014,7 +1033,7 @@ exp.run = function() {
         }
       }, {
         name: "Serie 3",
-        data: genData(24 * 3600 * 120, 48 * 3600),
+        data: genDataFunc(24 * 3600 * 120, 48 * 3600, Math.sin),
         config: {
           stroke: {
             width: 1
