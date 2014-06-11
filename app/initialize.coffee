@@ -54,7 +54,7 @@ exp.run = ->
             size: 10
             color: "#7f7f7f"
         selector: '#chart1'
-        padding: [30,30]
+        padding: [50,50]
         cross:
           x:
             show: true

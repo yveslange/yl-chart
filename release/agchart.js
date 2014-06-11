@@ -116,8 +116,13 @@ exp.Main = Main = (function() {
           text: "AgChart",
           color: "#2f2f2f",
           size: 24,
+          border: {
+            radius: 2,
+            color: "#3f3f3f",
+            padding: [4, 1]
+          },
           position: {
-            x: 20,
+            x: 35,
             y: 20
           }
         },
@@ -413,14 +418,17 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.renderTitle = function(params) {
-    var _ref, _ref1;
+    var rect, text, textDim;
     if (params == null) {
       params = {
         title: null,
         padding: null
       };
     }
-    return this._CANVAS.append("text").attr("x", (_ref1 = params.title.position.x) != null ? _ref1 : params.padding[0] - 1).attr("y", (_ref = params.title.position.y) != null ? _ref : params.padding[1] - 1).attr("class", "chart-title").attr("fill", params.title.color).attr("font-size", params.title.size).text(params.title.text);
+    rect = this._CANVAS.append("rect");
+    text = this._CANVAS.append("text").attr("x", params.title.position.x).attr("y", params.title.position.y).attr("class", "chart-title").attr("fill", params.title.color).attr("font-size", params.title.size).text(params.title.text);
+    textDim = text.node().getBBox();
+    return rect.attr("x", params.title.position.x - params.title.border.padding[0]).attr("y", textDim.y - params.title.border.padding[1] + 1).attr("width", textDim.width + params.title.border.padding[0] * 2).attr("height", textDim.height + params.title.border.padding[1] * 2).attr("ry", params.title.border.radius).attr("rx", params.title.border.radius).attr("stroke", params.title.border.color);
   };
 
   Main.prototype.renderLabel = function(params) {
@@ -529,26 +537,26 @@ exp.Main = Main = (function() {
 
   Main.prototype.renderYGrid = function() {
     var height, label, padding, params, tickSize, trans, width;
-    padding = this._CONF.canvas.padding[0];
+    padding = this._CONF.canvas.padding;
     height = this._CONF.canvas.height;
     width = this._CONF.canvas.width;
     label = this._CONF.canvas.label.y;
     switch (this._CONF.axis.y.orient) {
       case 'left':
-        trans = "translate(" + padding + ", 0)";
-        label.trans = "rotate(-90) translate(" + (-height / 2) + ", " + (padding + 10) + ")";
+        trans = "translate(" + padding[0] + ", 0)";
+        label.trans = "rotate(-90) translate(" + (-height / 2) + ", " + (padding[0] + 10) + ")";
         break;
       case 'right':
-        trans = "translate(" + (width - padding) + ", 0)";
-        label.trans = "translate(" + (width - padding) + ", " + (padding / 2) + ")";
-        label.textAnchor = "end";
+        trans = "translate(" + (width - padding[0]) + ", 0)";
+        label.trans = "translate(" + (width - padding[0]) + ", " + (padding[1] / 2) + ")";
+        label.textAnchor = "middle";
         break;
       default:
         throw new Error("Unknown orientation: ", this._CONF.axis.y.orient);
     }
     tickSize = this._CONF.axis.y.tickSize;
     if (tickSize === 'full') {
-      tickSize = -width + padding * 2;
+      tickSize = -width + padding[0] * 2;
     }
     params = {
       "class": "y",
@@ -721,7 +729,7 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.renderCrossValue = function(params) {
-    var box, gbox, text;
+    var box, gbox, text, textDim, timeoutUnmoved;
     if (params == null) {
       params = {
         scale: null,
@@ -730,22 +738,32 @@ exp.Main = Main = (function() {
         confCrossV: null
       };
     }
-    gbox = params.canvas.append("g").attr("transform", "translate(-1000, -1000)");
-    box = gbox.append("rect").attr("fill", params.confCrossV.x.color).attr("rx", params.confCrossV.x.radius).attr("ry", params.confCrossV.x.radius);
+    gbox = params.canvas.append("g").style("opacity", 0);
+    box = gbox.append("rect");
     text = gbox.append("text").text("AgChartPile").attr("font-size", params.confCrossV.x.fontSize).attr("text-anchor", "middle").attr("fill", params.confCrossV.x.fontColor);
+    textDim = text.node().getBBox();
+    console.log(textDim);
+    box.attr("fill", params.confCrossV.x.color).attr("rx", params.confCrossV.x.radius).attr("ry", params.confCrossV.x.radius);
     if (params.confCrossV.x.show) {
+      timeoutUnmoved = null;
       return params.canvas.on("mousemove.crossValue", function() {
-        var eventX, eventY, textDim, valueX;
+        var eventX, eventY, positionX, valueX;
+        gbox.transition().duration(300).style('opacity', 1);
+        clearTimeout(timeoutUnmoved);
         eventX = d3.mouse(this)[0];
-        textDim = [text[0][0].clientWidth + 30, text[0][0].clientHeight + 2];
         if (eventX < params.confCanvas.padding[0]) {
           eventX = params.confCanvas.padding[0];
-        }
-        if (eventX > params.confCanvas.width - params.confCanvas.padding[0]) {
+        } else if (eventX > params.confCanvas.width - params.confCanvas.padding[0]) {
           eventX = params.confCanvas.width - params.confCanvas.padding[0];
         }
-        text.attr("y", textDim[1] - 4).attr("x", textDim[0] / 2);
-        box.attr("width", textDim[0]).attr("height", textDim[1]);
+        positionX = eventX;
+        if (eventX < params.confCanvas.padding[0] + textDim.width / 2) {
+          positionX = params.confCanvas.padding[0] + textDim.width / 2;
+        } else if (eventX > params.confCanvas.width - params.confCanvas.padding[0] - textDim.width / 2) {
+          positionX = params.confCanvas.width - params.confCanvas.padding[0] - textDim.width / 2;
+        }
+        text.attr("y", textDim.height - textDim.height * 0.25).attr("x", textDim.width / 2);
+        box.attr("width", textDim.width).attr("height", textDim.height);
         valueX = params.scale.width.invert(eventX);
         switch (params.confCrossV.x.orient) {
           case 'top':
@@ -755,8 +773,11 @@ exp.Main = Main = (function() {
             eventY = params.confCanvas.height - params.confCanvas.padding[1];
         }
         text.text(params.confCrossV.x.format(valueX));
-        gbox.attr("transform", "translate(" + (eventX - textDim[0] / 2) + ", " + eventY + ")");
-        return gbox.attr("cy", d3.mouse(this)[1]);
+        gbox.attr("transform", "translate(" + (positionX - textDim.width / 2) + ", " + eventY + ")");
+        gbox.attr("cy", d3.mouse(this)[1]);
+        return timeoutUnmoved = setTimeout((function() {
+          return gbox.transition().duration(500).style('opacity', 0);
+        }), 2000);
       });
     }
   };
@@ -793,16 +814,16 @@ exp.Main = Main = (function() {
 
   Main.prototype.renderLogo = function(params) {
     if (params.y === 'bottom') {
-      params.y = this._CONF.canvas.height - this._CONF.canvas.padding[0] - params.height;
+      params.y = this._CONF.canvas.height - this._CONF.canvas.padding[1] - params.height;
     }
     if (params.y === 'top') {
-      params.y = this._CONF.canvas.padding[0];
+      params.y = this._CONF.canvas.padding[1];
     }
     if (params.x === 'right') {
-      params.x = this._CONF.canvas.width - this._CONF.canvas.padding[1] - params.width;
+      params.x = this._CONF.canvas.width - this._CONF.canvas.padding[0] - params.width;
     }
     if (params.y === 'left') {
-      params.x = this._CONF.canvas.padding[1];
+      params.x = this._CONF.canvas.padding[0];
     }
     return this._CANVAS.append("image").attr("width", params.width).attr("height", params.height).attr("x", params.x).attr("y", params.y).attr("opacity", params.opacity).attr("xlink:href", this._CONF.logo.url);
   };
@@ -1034,7 +1055,7 @@ exp.run = function() {
           }
         },
         selector: '#chart1',
-        padding: [30, 30],
+        padding: [50, 50],
         cross: {
           x: {
             show: true,

@@ -19,8 +19,12 @@ exp.Main = class Main
           text: "AgChart"
           color: "#2f2f2f"
           size: 24
+          border:
+            radius: 2
+            color: "#3f3f3f"
+            padding: [4,1]
           position:
-            x: 20
+            x: 35
             y: 20
         label:
           x:
@@ -241,13 +245,24 @@ exp.Main = class Main
     title: null
     padding: null
   }) ->
-    @_CANVAS.append("text")
-      .attr("x", params.title.position.x ? params.padding[0]-1)
-      .attr("y", params.title.position.y ? params.padding[1]-1)
+    rect = @_CANVAS.append("rect")
+    text = @_CANVAS.append("text")
+      .attr("x", params.title.position.x)
+      .attr("y", params.title.position.y)
       .attr("class", "chart-title")
       .attr("fill", params.title.color)
       .attr("font-size", params.title.size)
       .text(params.title.text)
+    textDim = text.node().getBBox()
+    rect
+      .attr("x", params.title.position.x-params.title.border.padding[0])
+      .attr("y", textDim.y-params.title.border.padding[1]+1)
+      .attr("width", textDim.width+params.title.border.padding[0]*2)
+      .attr("height", textDim.height+params.title.border.padding[1]*2)
+      .attr("ry", params.title.border.radius)
+      .attr("rx", params.title.border.radius)
+      .attr("stroke", params.title.border.color)
+
 
   renderLabel: (params={
     label:
@@ -264,6 +279,8 @@ exp.Main = class Main
       .attr("text-anchor", params.label.textAnchor)
       .attr("transform", params.label.trans)
       .text(params.label.text)
+
+
   renderAxis: (params) ->
     line = @_CANVAS.append("line")
       .attr("stroke", params.axis.color)
@@ -383,25 +400,25 @@ exp.Main = class Main
     @renderGrid(params)
 
   renderYGrid: ->
-    padding = @_CONF.canvas.padding[0]
+    padding = @_CONF.canvas.padding
     height = @_CONF.canvas.height
     width = @_CONF.canvas.width
     label = @_CONF.canvas.label.y
     switch @_CONF.axis.y.orient
       when 'left'
-        trans = "translate(#{padding}, 0)"
+        trans = "translate(#{padding[0]}, 0)"
         label.trans =
-          "rotate(-90) translate(#{-height/2}, #{padding+10})"
+          "rotate(-90) translate(#{-height/2}, #{padding[0]+10})"
       when 'right'
-        trans = "translate(#{width-padding}, 0)"
+        trans = "translate(#{width-padding[0]}, 0)"
         label.trans =
-          "translate(#{width-padding}, #{padding/2})"
-        label.textAnchor = "end"
+          "translate(#{width-padding[0]}, #{padding[1]/2})"
+        label.textAnchor = "middle"
       else
         throw new Error("Unknown orientation: ", @_CONF.axis.y.orient)
 
     tickSize = @_CONF.axis.y.tickSize
-    tickSize = -width+padding*2 if tickSize == 'full'
+    tickSize = -width+padding[0]*2 if tickSize == 'full'
 
     params = {
       class: "y"
@@ -576,35 +593,45 @@ exp.Main = class Main
   }) ->
     # We append the container at the begining
     gbox = params.canvas.append("g")
-      .attr("transform", "translate(-1000, -1000)")
+      .style("opacity", 0)
     box = gbox.append("rect")
-      .attr("fill", params.confCrossV.x.color)
-      .attr("rx", params.confCrossV.x.radius)
-      .attr("ry", params.confCrossV.x.radius)
     text = gbox.append("text")
       .text("AgChartPile")
       .attr("font-size", params.confCrossV.x.fontSize)
       .attr("text-anchor", "middle")
       .attr("fill", params.confCrossV.x.fontColor)
+    textDim = text.node().getBBox()
+    console.log textDim
+    box
+      .attr("fill", params.confCrossV.x.color)
+      .attr("rx", params.confCrossV.x.radius)
+      .attr("ry", params.confCrossV.x.radius)
 
     if params.confCrossV.x.show
-
+      timeoutUnmoved = null
       params.canvas.on("mousemove.crossValue", ->
+        gbox.transition().duration(300).style('opacity', 1)
+        clearTimeout(timeoutUnmoved)
         eventX = d3.mouse(@)[0]
-        textDim = [
-          text[0][0].clientWidth+30
-          text[0][0].clientHeight+2
-        ]
+
+        # Blocking the X value
         if eventX < params.confCanvas.padding[0]
           eventX = params.confCanvas.padding[0]
-        if eventX > params.confCanvas.width-params.confCanvas.padding[0]
+        else if eventX > params.confCanvas.width-params.confCanvas.padding[0]
           eventX = params.confCanvas.width-params.confCanvas.padding[0]
+
+        # Blocking the position of the pile
+        positionX = eventX
+        if eventX < params.confCanvas.padding[0]+textDim.width/2
+          positionX = params.confCanvas.padding[0]+textDim.width/2
+        else if eventX > params.confCanvas.width-params.confCanvas.padding[0]-textDim.width/2
+          positionX = params.confCanvas.width-params.confCanvas.padding[0]-textDim.width/2
         text
-          .attr("y", textDim[1]-4)
-          .attr("x", textDim[0]/2)
+          .attr("y", textDim.height-textDim.height*0.25) # Seems that we need to remove 25% to have it centered. Auto magically resolved !
+          .attr("x", textDim.width/2)
         box
-          .attr("width", textDim[0])
-          .attr("height", textDim[1])
+          .attr("width", textDim.width)
+          .attr("height", textDim.height)
 
         valueX = params.scale.width.invert(eventX)
         switch params.confCrossV.x.orient
@@ -613,9 +640,16 @@ exp.Main = class Main
           when 'bottom'
             eventY = params.confCanvas.height-params.confCanvas.padding[1]
         text.text(params.confCrossV.x.format(valueX))
-        gbox.attr("transform", "translate(#{eventX-textDim[0]/2}, #{eventY})")
+        gbox.attr("transform", "translate(#{positionX-textDim.width/2}, #{eventY})")
         gbox.attr("cy", d3.mouse(@)[1])
+
+        # Detect unmoved mouse
+        timeoutUnmoved = setTimeout(( ->
+          gbox.transition().duration(500).style('opacity', 0)
+        ), 2000)
       )
+
+
   renderCross: (params={
     canvas: nulle
     confCanvas: null
@@ -658,11 +692,11 @@ exp.Main = class Main
 
   renderLogo: (params) ->
     if params.y == 'bottom'
-      params.y = @_CONF.canvas.height-@_CONF.canvas.padding[0]-params.height
-    params.y = @_CONF.canvas.padding[0] if params.y == 'top'
+      params.y = @_CONF.canvas.height-@_CONF.canvas.padding[1]-params.height
+    params.y = @_CONF.canvas.padding[1] if params.y == 'top'
     if params.x == 'right'
-      params.x = @_CONF.canvas.width-@_CONF.canvas.padding[1]-params.width
-    params.x = @_CONF.canvas.padding[1] if params.y == 'left'
+      params.x = @_CONF.canvas.width-@_CONF.canvas.padding[0]-params.width
+    params.x = @_CONF.canvas.padding[0] if params.y == 'left'
 
     @_CANVAS
       .append("image")
