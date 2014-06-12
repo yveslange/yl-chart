@@ -74,6 +74,9 @@ exp.Main = class Main
         x: 'right'
         y: 'bottom'
         opacity: 0.5
+      line:
+        stroke:
+          width: 2
       point:
         onMouseover: "singlePoint"
         onMouseout: "singlePoint"
@@ -516,6 +519,7 @@ exp.Main = class Main
           d.data[0].config.color #Take the first color
         ))
         .attr("fill", "none")
+        .attr("stroke-width", _conf.line.stroke.width)
 
     if _conf.canvas.render == 'dot' or _conf.canvas.render == 'dotline'
       series.selectAll(".circle")

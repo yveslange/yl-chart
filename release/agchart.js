@@ -187,6 +187,11 @@ exp.Main = Main = (function() {
         y: 'bottom',
         opacity: 0.5
       },
+      line: {
+        stroke: {
+          width: 2
+        }
+      },
       point: {
         onMouseover: "singlePoint",
         onMouseout: "singlePoint",
@@ -656,7 +661,7 @@ exp.Main = Main = (function() {
         return valueline(d.data);
       }).attr('stroke', (function(d, serieIndex) {
         return d.data[0].config.color;
-      })).attr("fill", "none");
+      })).attr("fill", "none").attr("stroke-width", _conf.line.stroke.width);
     }
     if (_conf.canvas.render === 'dot' || _conf.canvas.render === 'dotline') {
       return series.selectAll(".circle").data(function(d) {
@@ -1199,11 +1204,16 @@ exp.run = function() {
           x: tooltipFormat
         }
       },
+      line: {
+        stroke: {
+          width: 2
+        }
+      },
       point: {
         onMouseover: mode,
         onMouseout: mode,
         mode: 'fill',
-        r: 3,
+        r: 4,
         color: 'paired',
         stroke: {
           width: 1,

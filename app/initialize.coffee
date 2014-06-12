@@ -76,11 +76,13 @@ exp.run = ->
         callback: mode
         format:
           x: tooltipFormat
+      line:
+        stroke: {width: 2}
       point:
         onMouseover: mode
         onMouseout: mode
         mode: 'fill'
-        r: 3
+        r: 4
         color: 'paired' # Color or palette name
         stroke: {width: 1, color: null}
       axis:
