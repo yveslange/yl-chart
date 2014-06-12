@@ -19,6 +19,7 @@ exp.Main = class Main
           text: ""
           color: "#2f2f2f"
           size: 24
+          fontFamily: "arial"
           border:
             radius: 2
             color: "#3f3f3f"
@@ -261,12 +262,13 @@ exp.Main = class Main
       .attr("fill", params.title.color)
       .attr("font-size", params.title.size)
       .attr("font-weight", "bold")
+      .attr("font-family", params.title.fontFamily) #Important to fix the font !
       .text(params.title.text)
     textDim = text.node().getBBox()
-    console.log params.title.border.padding[0]/2
+    text
+      .attr("x", params.title.border.padding[0])
+      .attr("y", textDim.height-params.title.border.padding[1]-2)
     rect
-      .attr("x", -params.title.border.padding[0])
-      .attr("y", textDim.y-params.title.border.padding[1])
       .attr("width", textDim.width+params.title.border.padding[0]*2)
       .attr("height", textDim.height+params.title.border.padding[1]*2)
       .attr("ry", params.title.border.radius)

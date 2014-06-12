@@ -44,6 +44,8 @@ exp.run = ->
           color: "#4f4f4f"
           size: 16
           text: "AgChart demonstration"
+          border:
+            padding: [8,1]
         label:
           x:
             text: "Some label X"

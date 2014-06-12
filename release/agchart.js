@@ -116,6 +116,7 @@ exp.Main = Main = (function() {
           text: "",
           color: "#2f2f2f",
           size: 24,
+          fontFamily: "arial",
           border: {
             radius: 2,
             color: "#3f3f3f",
@@ -440,10 +441,10 @@ exp.Main = Main = (function() {
     posY = params.title.position.y;
     gbox = this._CANVAS.append("g").attr("transform", "translate(" + posX + "," + posY + ")");
     rect = gbox.append("rect");
-    text = gbox.append("text").attr("class", "chart-title").attr("fill", params.title.color).attr("font-size", params.title.size).attr("font-weight", "bold").text(params.title.text);
+    text = gbox.append("text").attr("class", "chart-title").attr("fill", params.title.color).attr("font-size", params.title.size).attr("font-weight", "bold").attr("font-family", params.title.fontFamily).text(params.title.text);
     textDim = text.node().getBBox();
-    console.log(params.title.border.padding[0] / 2);
-    return rect.attr("x", -params.title.border.padding[0]).attr("y", textDim.y - params.title.border.padding[1]).attr("width", textDim.width + params.title.border.padding[0] * 2).attr("height", textDim.height + params.title.border.padding[1] * 2).attr("ry", params.title.border.radius).attr("rx", params.title.border.radius).attr("stroke", params.title.border.color);
+    text.attr("x", params.title.border.padding[0]).attr("y", textDim.height - params.title.border.padding[1] - 2);
+    return rect.attr("width", textDim.width + params.title.border.padding[0] * 2).attr("height", textDim.height + params.title.border.padding[1] * 2).attr("ry", params.title.border.radius).attr("rx", params.title.border.radius).attr("stroke", params.title.border.color);
   };
 
   Main.prototype.renderLabel = function(params) {
@@ -1153,7 +1154,10 @@ exp.run = function() {
         title: {
           color: "#4f4f4f",
           size: 16,
-          text: "AgChart demonstration"
+          text: "AgChart demonstration",
+          border: {
+            padding: [8, 1]
+          }
         },
         label: {
           x: {
