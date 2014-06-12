@@ -42,8 +42,7 @@ exp.run = ->
         height: 400.0
         title:
           color: "#4f4f4f"
-          size: 20
-          text: "AgChart"
+          size: 16
         label:
           x:
             text: "Some label X"

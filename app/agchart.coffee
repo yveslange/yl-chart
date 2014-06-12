@@ -16,7 +16,7 @@ exp.Main = class Main
         bgcolor: "#FFFFFF"
         render: "dot" # dot, line
         title:
-          text: "AgChart"
+          text: "AgChart demonstration"
           color: "#2f2f2f"
           size: 24
           border:
@@ -41,7 +41,6 @@ exp.Main = class Main
         padding: [0,0] #left/right, bottom/top
         cross:
           x:
-            showValue: true
             show: false
             color: 'black'
             stroke: 1
@@ -51,7 +50,6 @@ exp.Main = class Main
             color: 'black'
             stroke: 1
             offset: 0
-            showValue: true
         crossValue:
           x:
             orient: 'bottom' # Top not implemented
@@ -260,11 +258,12 @@ exp.Main = class Main
       .attr("class", "chart-title")
       .attr("fill", params.title.color)
       .attr("font-size", params.title.size)
+      .attr("font-weight", "bold")
       .text(params.title.text)
     textDim = text.node().getBBox()
     rect
       .attr("x", params.title.position.x-params.title.border.padding[0])
-      .attr("y", textDim.y-params.title.border.padding[1]+1)
+      .attr("y", textDim.y-params.title.border.padding[1])
       .attr("width", textDim.width+params.title.border.padding[0]*2)
       .attr("height", textDim.height+params.title.border.padding[1]*2)
       .attr("ry", params.title.border.radius)
@@ -680,7 +679,11 @@ exp.Main = class Main
       .attr("x2", width-padX).attr("y2", -height)
       .attr("stroke", params.confCross.y.color)
       .attr("stroke-width", params.confCross.y.stroke)
+    timeoutUnmoved = null
     params.canvas.on("mousemove.tooltip", (d)->
+      clearTimeout(timeoutUnmoved)
+      _crossY.transition().style('opacity', 1)
+      _crossX.transition().style('opacity', 1)
       eventX = d3.mouse(@)[0]
       eventY = d3.mouse(@)[1]
       if params.confCross.x.show and
@@ -695,6 +698,11 @@ exp.Main = class Main
         _crossY
           .attr("y1", eventY-offsetY)
           .attr("y2", eventY-offsetY)
+      # Detect unmoved mouse
+      timeoutUnmoved = setTimeout(( ->
+        _crossY.transition().duration(500).style('opacity', 0)
+        _crossX.transition().duration(500).style('opacity', 0)
+      ), 2000)
     )
 
   renderLogo: (params) ->
@@ -799,9 +807,9 @@ exp.Main = class Main
         width = context._CONF.canvas.width
         height = context._CONF.canvas.height
         textDim = text.node().getBBox()
-        console.log width, textDim.width, context._CONF.canvas.padding[0]
-        pX = width-textDim.width-context._CONF.canvas.padding[0]
-        pY = height-context._CONF.canvas.padding[1]-2
+        pX = width-context._CONF.canvas.padding[0]-10
+        pY = height-context._CONF.canvas.padding[1]-3
+        text.attr("text-anchor", "end")
         text.attr("transform", "translate(#{pX}, #{pY})")
 
         # Converting the SVG to a canvas

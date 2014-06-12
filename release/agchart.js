@@ -113,7 +113,7 @@ exp.Main = Main = (function() {
         bgcolor: "#FFFFFF",
         render: "dot",
         title: {
-          text: "AgChart",
+          text: "AgChart demonstration",
           color: "#2f2f2f",
           size: 24,
           border: {
@@ -144,7 +144,6 @@ exp.Main = Main = (function() {
         padding: [0, 0],
         cross: {
           x: {
-            showValue: true,
             show: false,
             color: 'black',
             stroke: 1,
@@ -154,8 +153,7 @@ exp.Main = Main = (function() {
             show: false,
             color: 'black',
             stroke: 1,
-            offset: 0,
-            showValue: true
+            offset: 0
           }
         },
         crossValue: {
@@ -439,9 +437,9 @@ exp.Main = Main = (function() {
       };
     }
     rect = this._CANVAS.append("rect");
-    text = this._CANVAS.append("text").attr("x", params.title.position.x).attr("y", params.title.position.y).attr("class", "chart-title").attr("fill", params.title.color).attr("font-size", params.title.size).text(params.title.text);
+    text = this._CANVAS.append("text").attr("x", params.title.position.x).attr("y", params.title.position.y).attr("class", "chart-title").attr("fill", params.title.color).attr("font-size", params.title.size).attr("font-weight", "bold").text(params.title.text);
     textDim = text.node().getBBox();
-    return rect.attr("x", params.title.position.x - params.title.border.padding[0]).attr("y", textDim.y - params.title.border.padding[1] + 1).attr("width", textDim.width + params.title.border.padding[0] * 2).attr("height", textDim.height + params.title.border.padding[1] * 2).attr("ry", params.title.border.radius).attr("rx", params.title.border.radius).attr("stroke", params.title.border.color);
+    return rect.attr("x", params.title.position.x - params.title.border.padding[0]).attr("y", textDim.y - params.title.border.padding[1]).attr("width", textDim.width + params.title.border.padding[0] * 2).attr("height", textDim.height + params.title.border.padding[1] * 2).attr("ry", params.title.border.radius).attr("rx", params.title.border.radius).attr("stroke", params.title.border.color);
   };
 
   Main.prototype.renderLabel = function(params) {
@@ -795,7 +793,7 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.renderCross = function(params) {
-    var height, offsetX, offsetY, padX, padY, width, _crossX, _crossY;
+    var height, offsetX, offsetY, padX, padY, timeoutUnmoved, width, _crossX, _crossY;
     if (params == null) {
       params = {
         canvas: nulle,
@@ -811,16 +809,24 @@ exp.Main = Main = (function() {
     height = params.confCanvas.height;
     _crossX = params.canvas.append("line").attr("class", "crossX").attr("x1", -width).attr("y1", padY).attr("x2", -width).attr("y2", height - padY).attr("stroke", params.confCross.x.color).attr("stroke-width", params.confCross.x.stroke);
     _crossY = params.canvas.append("line").attr("class", "crossY").attr("x1", padX).attr("y1", -height).attr("x2", width - padX).attr("y2", -height).attr("stroke", params.confCross.y.color).attr("stroke-width", params.confCross.y.stroke);
+    timeoutUnmoved = null;
     return params.canvas.on("mousemove.tooltip", function(d) {
       var eventX, eventY;
+      clearTimeout(timeoutUnmoved);
+      _crossY.transition().style('opacity', 1);
+      _crossX.transition().style('opacity', 1);
       eventX = d3.mouse(this)[0];
       eventY = d3.mouse(this)[1];
       if (params.confCross.x.show && eventX >= padX + offsetX && eventX <= width - padX + offsetX) {
         _crossX.attr("x1", eventX - offsetX).attr("x2", eventX - offsetX);
       }
       if (params.confCross.y.show && eventY >= padY + offsetY && eventY <= height - padY + offsetY) {
-        return _crossY.attr("y1", eventY - offsetY).attr("y2", eventY - offsetY);
+        _crossY.attr("y1", eventY - offsetY).attr("y2", eventY - offsetY);
       }
+      return timeoutUnmoved = setTimeout((function() {
+        _crossY.transition().duration(500).style('opacity', 0);
+        return _crossX.transition().duration(500).style('opacity', 0);
+      }), 2000);
     });
   };
 
@@ -943,9 +949,9 @@ exp.Main = Main = (function() {
         width = context._CONF.canvas.width;
         height = context._CONF.canvas.height;
         textDim = text.node().getBBox();
-        console.log(width, textDim.width, context._CONF.canvas.padding[0]);
-        pX = width - textDim.width - context._CONF.canvas.padding[0];
-        pY = height - context._CONF.canvas.padding[1] - 2;
+        pX = width - context._CONF.canvas.padding[0] - 10;
+        pY = height - context._CONF.canvas.padding[1] - 3;
+        text.attr("text-anchor", "end");
         text.attr("transform", "translate(" + pX + ", " + pY + ")");
         svg = $(selector).find("svg")[0];
         svg_xml = (new XMLSerializer()).serializeToString(svg);
@@ -1142,8 +1148,7 @@ exp.run = function() {
         height: 400.0,
         title: {
           color: "#4f4f4f",
-          size: 20,
-          text: "AgChart"
+          size: 16
         },
         label: {
           x: {
