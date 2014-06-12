@@ -38,11 +38,12 @@ exp.run = ->
     config:
       canvas:
         render: 'dotline' # dot, line, dotline
-        width: 600.0
+        width: 900.0
         height: 400.0
         title:
           color: "#4f4f4f"
           size: 16
+          text: "AgChart demonstration"
         label:
           x:
             text: "Some label X"

@@ -16,7 +16,7 @@ exp.Main = class Main
         bgcolor: "#FFFFFF"
         render: "dot" # dot, line
         title:
-          text: "AgChart demonstration"
+          text: ""
           color: "#2f2f2f"
           size: 24
           border:
@@ -251,10 +251,12 @@ exp.Main = class Main
     title: null
     padding: null
   }) ->
-    rect = @_CANVAS.append("rect")
-    text = @_CANVAS.append("text")
-      .attr("x", params.title.position.x)
-      .attr("y", params.title.position.y)
+    posX = params.title.position.x
+    posY = params.title.position.y
+    gbox = @_CANVAS.append("g")
+      .attr("transform", "translate(#{posX},#{posY})")
+    rect = gbox.append("rect")
+    text = gbox.append("text")
       .attr("class", "chart-title")
       .attr("fill", params.title.color)
       .attr("font-size", params.title.size)
@@ -262,7 +264,7 @@ exp.Main = class Main
       .text(params.title.text)
     textDim = text.node().getBBox()
     rect
-      .attr("x", params.title.position.x-params.title.border.padding[0])
+      .attr("x", -params.title.border.padding[0]/2)
       .attr("y", textDim.y-params.title.border.padding[1])
       .attr("width", textDim.width+params.title.border.padding[0]*2)
       .attr("height", textDim.height+params.title.border.padding[1]*2)

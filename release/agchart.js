@@ -113,7 +113,7 @@ exp.Main = Main = (function() {
         bgcolor: "#FFFFFF",
         render: "dot",
         title: {
-          text: "AgChart demonstration",
+          text: "",
           color: "#2f2f2f",
           size: 24,
           border: {
@@ -429,17 +429,20 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.renderTitle = function(params) {
-    var rect, text, textDim;
+    var gbox, posX, posY, rect, text, textDim;
     if (params == null) {
       params = {
         title: null,
         padding: null
       };
     }
-    rect = this._CANVAS.append("rect");
-    text = this._CANVAS.append("text").attr("x", params.title.position.x).attr("y", params.title.position.y).attr("class", "chart-title").attr("fill", params.title.color).attr("font-size", params.title.size).attr("font-weight", "bold").text(params.title.text);
+    posX = params.title.position.x;
+    posY = params.title.position.y;
+    gbox = this._CANVAS.append("g").attr("transform", "translate(" + posX + "," + posY + ")");
+    rect = gbox.append("rect");
+    text = gbox.append("text").attr("class", "chart-title").attr("fill", params.title.color).attr("font-size", params.title.size).attr("font-weight", "bold").text(params.title.text);
     textDim = text.node().getBBox();
-    return rect.attr("x", params.title.position.x - params.title.border.padding[0]).attr("y", textDim.y - params.title.border.padding[1]).attr("width", textDim.width + params.title.border.padding[0] * 2).attr("height", textDim.height + params.title.border.padding[1] * 2).attr("ry", params.title.border.radius).attr("rx", params.title.border.radius).attr("stroke", params.title.border.color);
+    return rect.attr("x", -params.title.border.padding[0] / 2).attr("y", textDim.y - params.title.border.padding[1]).attr("width", textDim.width + params.title.border.padding[0] * 2).attr("height", textDim.height + params.title.border.padding[1] * 2).attr("ry", params.title.border.radius).attr("rx", params.title.border.radius).attr("stroke", params.title.border.color);
   };
 
   Main.prototype.renderLabel = function(params) {
@@ -1144,11 +1147,12 @@ exp.run = function() {
     config: {
       canvas: {
         render: 'dotline',
-        width: 600.0,
+        width: 900.0,
         height: 400.0,
         title: {
           color: "#4f4f4f",
-          size: 16
+          size: 16,
+          text: "AgChart demonstration"
         },
         label: {
           x: {
