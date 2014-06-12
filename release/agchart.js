@@ -895,10 +895,47 @@ exp.Main = Main = (function() {
       title: this._CONF.canvas.title,
       padding: this._CONF.canvas.padding
     });
-    return this.renderPluginMenu({
+    this.renderPluginMenu({
       selector: this._CONF.canvas.selector,
       confPlugins: this._CONF.plugins
     });
+    return this.renderLegends();
+  };
+
+  Main.prototype.renderLegends = function() {
+    var color, currentX, currentY, i, legPanel, legend, posX, posY, rectHeight, rectMargin, rectWidth, serie, textWidth, widthSpace, _ref, _results;
+    console.log("Render legends");
+    rectWidth = 30;
+    rectHeight = 10;
+    textWidth = 100;
+    rectMargin = 2;
+    widthSpace = this._CONF.canvas.width - this._CONF.canvas.padding[0] * 2;
+    posX = this._CONF.canvas.padding[0];
+    posY = this._CONF.canvas.height - 12;
+    currentX = 0;
+    currentY = 15;
+    legPanel = this._CANVAS.append("g").attr("transform", "translate(" + posX + ", " + posY + ")");
+    _ref = this._SERIES;
+    _results = [];
+    for (i in _ref) {
+      serie = _ref[i];
+      i = parseInt(i);
+      color = serie.data[0].config.color;
+      console.log(serie.name, color);
+      legend = legPanel.append("g").attr("transform", "translate(" + currentX + ", " + currentY + ")");
+      legend.append("rect").attr("width", rectWidth).attr("height", 10).attr("fill", color).attr("stroke", "#afafaf").attr("stroke-width", "1");
+      legend.append("text").attr("x", rectMargin + rectWidth).attr("y", 10).attr("fill", "#3f3f3f").attr("font-size", 10).text(serie.name);
+      console.log(currentX, widthSpace);
+      if (currentX + rectWidth + textWidth + rectMargin > widthSpace - rectWidth - textWidth - rectMargin) {
+        console.log(serie.name, "is out");
+        currentX = 0;
+        currentY += 15;
+        _results.push(this._CANVAS.attr("height", this._CONF.canvas.height + currentY));
+      } else {
+        _results.push(currentX += rectWidth + textWidth + rectMargin);
+      }
+    }
+    return _results;
   };
 
   Main.prototype.renderPluginMenu = function(params) {
@@ -1264,6 +1301,94 @@ exp.run = function() {
             width: 1
           }
         }
+      }, {
+        name: "Serie",
+        data: [
+          {
+            x: 1,
+            y: 100
+          }
+        ]
+      }, {
+        name: "Serie",
+        data: [
+          {
+            x: 1,
+            y: 110
+          }
+        ]
+      }, {
+        name: "Serie",
+        data: [
+          {
+            x: 1,
+            y: 120
+          }
+        ]
+      }, {
+        name: "Serie",
+        data: [
+          {
+            x: 1,
+            y: 130
+          }
+        ]
+      }, {
+        name: "Serie",
+        data: [
+          {
+            x: 1,
+            y: 140
+          }
+        ]
+      }, {
+        name: "Serie",
+        data: [
+          {
+            x: 1,
+            y: 150
+          }
+        ]
+      }, {
+        name: "Serie",
+        data: [
+          {
+            x: 1,
+            y: 160
+          }
+        ]
+      }, {
+        name: "Serie",
+        data: [
+          {
+            x: 1,
+            y: 170
+          }
+        ]
+      }, {
+        name: "Serie",
+        data: [
+          {
+            x: 1,
+            y: 180
+          }
+        ]
+      }, {
+        name: "Serie",
+        data: [
+          {
+            x: 1,
+            y: 190
+          }
+        ]
+      }, {
+        name: "Serie",
+        data: [
+          {
+            x: 1,
+            y: 200
+          }
+        ]
       }
     ]
   });

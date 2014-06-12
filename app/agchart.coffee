@@ -774,6 +774,58 @@ exp.Main = class Main
       confPlugins: @_CONF.plugins
     )
 
+    @renderLegends()
+
+  renderLegends: ->
+
+    console.log "Render legends"
+    rectWidth = 30
+    rectHeight = 10
+    textWidth = 100
+    rectMargin = 2
+
+    # Update the size of the SVG to display the legend
+
+    # Width space available
+    widthSpace = @_CONF.canvas.width-@_CONF.canvas.padding[0]*2
+
+    posX = @_CONF.canvas.padding[0]
+    posY = @_CONF.canvas.height-12
+
+    currentX = 0
+    currentY = 15
+    legPanel = @_CANVAS.append("g")
+      .attr("transform", "translate(#{posX}, #{posY})")
+    for i, serie of @_SERIES
+      i = parseInt(i)
+      color = serie.data[0].config.color
+      console.log serie.name, color
+      legend = legPanel.append("g")
+        .attr("transform", "translate(#{currentX}, #{currentY})")
+      legend.append("rect")
+        .attr("width", rectWidth)
+        .attr("height", 10)
+        .attr("fill", color)
+        .attr("stroke", "#afafaf")
+        .attr("stroke-width", "1")
+      legend.append("text")
+        .attr("x", rectMargin+rectWidth)
+        .attr("y", 10)
+        .attr("fill", "#3f3f3f")
+        .attr("font-size", 10)
+        .text(serie.name)
+      console.log currentX, widthSpace
+      if currentX+rectWidth+textWidth+rectMargin> widthSpace-rectWidth-textWidth-rectMargin
+        console.log serie.name, "is out"
+        currentX = 0
+        currentY += 15
+        # Update canvas height
+        @_CANVAS.attr("height", @_CONF.canvas.height+currentY)
+      else
+        currentX += rectWidth+textWidth+rectMargin
+
+
+
   renderPluginMenu: (params={
     selector: null
     confPlugins: {}
