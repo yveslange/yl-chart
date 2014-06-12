@@ -921,13 +921,10 @@ exp.Main = Main = (function() {
       serie = _ref[i];
       i = parseInt(i);
       color = serie.data[0].config.color;
-      console.log(serie.name, color);
       legend = legPanel.append("g").attr("transform", "translate(" + currentX + ", " + currentY + ")");
       legend.append("rect").attr("width", rectWidth).attr("height", 10).attr("fill", color).attr("stroke", "#afafaf").attr("stroke-width", "1");
       legend.append("text").attr("x", rectMargin + rectWidth).attr("y", 10).attr("fill", "#3f3f3f").attr("font-size", 10).text(serie.name);
-      console.log(currentX, widthSpace);
       if (currentX + rectWidth + textWidth + rectMargin > widthSpace - rectWidth - textWidth - rectMargin) {
-        console.log(serie.name, "is out");
         currentX = 0;
         currentY += 15;
         _results.push(this._CANVAS.attr("height", this._CONF.canvas.height + currentY));
