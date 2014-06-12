@@ -100,6 +100,13 @@ exp.Main = class Main
           tickWidth: 2
           strokeWidth: 1
           color: "#2b2e33" # The color of the x axis
+      plugins:
+        exportation:
+          enable: true
+          copyright:
+            text: "(c) AgFlow 2014"
+            color: "#9f9f9f"
+            fontSize: 12
     @_CANVAS = undefined
     @_TOOLTIP = undefined
     @_SCALE =
@@ -235,6 +242,7 @@ exp.Main = class Main
 
   createCanvas: ->
     throw new Error("No selector defined") if not @_CONF.canvas.selector?
+    $(@_CONF.canvas.selector).css({"position": "relative"})
     @_CANVAS = d3.select(@_CONF.canvas.selector)
       .append('svg')
       .attr("fill", @_CONF.canvas.bgcolor)
@@ -601,7 +609,6 @@ exp.Main = class Main
       .attr("text-anchor", "middle")
       .attr("fill", params.confCrossV.x.fontColor)
     textDim = text.node().getBBox()
-    console.log textDim
     box
       .attr("fill", params.confCrossV.x.color)
       .attr("rx", params.confCrossV.x.radius)
@@ -744,6 +751,85 @@ exp.Main = class Main
       title: @_CONF.canvas.title
       padding: @_CONF.canvas.padding
     )
+
+    @renderPluginMenu(
+      selector: @_CONF.canvas.selector
+      confPlugins: @_CONF.plugins
+    )
+
+  renderPluginMenu: (params={
+    selector: null
+    confPlugins: {}
+  }) ->
+    pluginsMenu = $("<div/>", {
+      id: "pluginsMenu"
+    }).appendTo(params.selector)
+    pluginsMenu.css({
+      "position": "absolute"
+      "left": @_CONF.canvas.width+1
+      "top": "0px"
+      "opacity": 0.1
+    })
+    pluginsMenu.on("mouseover.menuPlugin", ()->
+      pluginsMenu.animate({opacity: 1}, 10))
+    pluginsMenu.on("mouseout.menuPlugin", ()->
+      pluginsMenu.animate({opacity: 0.1}, 10))
+
+    for plugin of params.confPlugins
+      if params.confPlugins[plugin].enable
+        icon = $("<img/>",{
+          src: "icons/#{plugin}.png"
+          width: "30px"
+        }).appendTo(pluginsMenu)
+        icon.css({cursor: "pointer"})
+        callback = @plugins[plugin].onClick
+        context = @
+        icon.click(-> callback(context, params.selector, params.confPlugins[plugin]))
+
+
+  plugins:
+    exportation:
+      onClick: (context, selector, conf) ->
+        # Replace logo by copyright text
+        image = $(selector).find("image").remove()
+        text = context._CANVAS.append("text")
+          .attr("fill", conf.copyright.color)
+          .attr("font-size", conf.copyright.fontSize+"px")
+          .text(conf.copyright.text)
+        width = context._CONF.canvas.width
+        height = context._CONF.canvas.height
+        textDim = text.node().getBBox()
+        console.log width, textDim.width, context._CONF.canvas.padding[0]
+        pX = width-textDim.width-context._CONF.canvas.padding[0]
+        pY = height-context._CONF.canvas.padding[1]-2
+        text.attr("transform", "translate(#{pX}, #{pY})")
+
+        # Converting the SVG to a canvas
+        svg = $(selector).find("svg")[0]
+        svg_xml = (new XMLSerializer()).serializeToString(svg)
+        canvas = document.createElement('canvas')
+        $("body").append(canvas)
+        canvg(canvas, svg_xml)
+        canvas.remove()
+
+        # Convert canvas to PNG
+        img = canvas.toDataURL("image/png")
+        a = document.createElement('a')
+        a.href = img
+        a.download = "agflow.png"
+        $("body").append(a)
+        a.click()
+
+        # Trick: we need to re-render the logo
+        context.renderLogo(
+          opacity: context._CONF.logo.opacity
+          url: context._CONF.logo.url
+          width:context._CONF.logo.width
+          height: context._CONF.logo.height
+          x: context._CONF.logo.x
+          y: context._CONF.logo.y
+        )
+        text.remove()
 
   tooltip:
     show: (context, conf, tooltipNode, d) ->

@@ -22,3 +22,6 @@ install:
 	@echo "Installing brunch dependencies (NPM)"
 	@npm install
 	@cd app; bower install
+clean:
+	@cd release/;rm -rf *;cd ..
+	@cd public/;rm -rf *; cd ..

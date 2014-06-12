@@ -217,6 +217,16 @@ exp.Main = Main = (function() {
           strokeWidth: 1,
           color: "#2b2e33"
         }
+      },
+      plugins: {
+        exportation: {
+          enable: true,
+          copyright: {
+            text: "(c) AgFlow 2014",
+            color: "#9f9f9f",
+            fontSize: 12
+          }
+        }
       }
     };
     this._CANVAS = void 0;
@@ -414,6 +424,9 @@ exp.Main = Main = (function() {
     if (this._CONF.canvas.selector == null) {
       throw new Error("No selector defined");
     }
+    $(this._CONF.canvas.selector).css({
+      "position": "relative"
+    });
     return this._CANVAS = d3.select(this._CONF.canvas.selector).append('svg').attr("fill", this._CONF.canvas.bgcolor).attr('width', this._CONF.canvas.width).attr('height', this._CONF.canvas.height);
   };
 
@@ -742,7 +755,6 @@ exp.Main = Main = (function() {
     box = gbox.append("rect");
     text = gbox.append("text").text("AgChartPile").attr("font-size", params.confCrossV.x.fontSize).attr("text-anchor", "middle").attr("fill", params.confCrossV.x.fontColor);
     textDim = text.node().getBBox();
-    console.log(textDim);
     box.attr("fill", params.confCrossV.x.color).attr("rx", params.confCrossV.x.radius).attr("ry", params.confCrossV.x.radius);
     if (params.confCrossV.x.show) {
       timeoutUnmoved = null;
@@ -863,10 +875,101 @@ exp.Main = Main = (function() {
     });
     this.renderTooltip();
     this.renderPoints();
-    return this.renderTitle({
+    this.renderTitle({
       title: this._CONF.canvas.title,
       padding: this._CONF.canvas.padding
     });
+    return this.renderPluginMenu({
+      selector: this._CONF.canvas.selector,
+      confPlugins: this._CONF.plugins
+    });
+  };
+
+  Main.prototype.renderPluginMenu = function(params) {
+    var callback, context, icon, plugin, pluginsMenu, _results;
+    if (params == null) {
+      params = {
+        selector: null,
+        confPlugins: {}
+      };
+    }
+    pluginsMenu = $("<div/>", {
+      id: "pluginsMenu"
+    }).appendTo(params.selector);
+    pluginsMenu.css({
+      "position": "absolute",
+      "left": this._CONF.canvas.width + 1,
+      "top": "0px",
+      "opacity": 0.1
+    });
+    pluginsMenu.on("mouseover.menuPlugin", function() {
+      return pluginsMenu.animate({
+        opacity: 1
+      }, 10);
+    });
+    pluginsMenu.on("mouseout.menuPlugin", function() {
+      return pluginsMenu.animate({
+        opacity: 0.1
+      }, 10);
+    });
+    _results = [];
+    for (plugin in params.confPlugins) {
+      if (params.confPlugins[plugin].enable) {
+        icon = $("<img/>", {
+          src: "icons/" + plugin + ".png",
+          width: "30px"
+        }).appendTo(pluginsMenu);
+        icon.css({
+          cursor: "pointer"
+        });
+        callback = this.plugins[plugin].onClick;
+        context = this;
+        _results.push(icon.click(function() {
+          return callback(context, params.selector, params.confPlugins[plugin]);
+        }));
+      } else {
+        _results.push(void 0);
+      }
+    }
+    return _results;
+  };
+
+  Main.prototype.plugins = {
+    exportation: {
+      onClick: function(context, selector, conf) {
+        var a, canvas, height, image, img, pX, pY, svg, svg_xml, text, textDim, width;
+        image = $(selector).find("image").remove();
+        text = context._CANVAS.append("text").attr("fill", conf.copyright.color).attr("font-size", conf.copyright.fontSize + "px").text(conf.copyright.text);
+        width = context._CONF.canvas.width;
+        height = context._CONF.canvas.height;
+        textDim = text.node().getBBox();
+        console.log(width, textDim.width, context._CONF.canvas.padding[0]);
+        pX = width - textDim.width - context._CONF.canvas.padding[0];
+        pY = height - context._CONF.canvas.padding[1] - 2;
+        text.attr("transform", "translate(" + pX + ", " + pY + ")");
+        svg = $(selector).find("svg")[0];
+        svg_xml = (new XMLSerializer()).serializeToString(svg);
+        canvas = document.createElement('canvas');
+        $("body").append(canvas);
+        canvg(canvas, svg_xml);
+        canvas.remove();
+        img = canvas.toDataURL("image/png");
+        a = document.createElement('a');
+        a.href = img;
+        a.download = "agflow.png";
+        $("body").append(a);
+        a.click();
+        context.renderLogo({
+          opacity: context._CONF.logo.opacity,
+          url: context._CONF.logo.url,
+          width: context._CONF.logo.width,
+          height: context._CONF.logo.height,
+          x: context._CONF.logo.x,
+          y: context._CONF.logo.y
+        });
+        return text.remove();
+      }
+    }
   };
 
   Main.prototype.tooltip = {
