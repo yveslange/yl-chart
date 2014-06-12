@@ -22,7 +22,7 @@ exp.Main = class Main
           border:
             radius: 2
             color: "#3f3f3f"
-            padding: [4,1]
+            padding: [8,1]
           position:
             x: 35
             y: 20
@@ -263,8 +263,9 @@ exp.Main = class Main
       .attr("font-weight", "bold")
       .text(params.title.text)
     textDim = text.node().getBBox()
+    console.log params.title.border.padding[0]/2
     rect
-      .attr("x", -params.title.border.padding[0]/2)
+      .attr("x", -params.title.border.padding[0])
       .attr("y", textDim.y-params.title.border.padding[1])
       .attr("width", textDim.width+params.title.border.padding[0]*2)
       .attr("height", textDim.height+params.title.border.padding[1]*2)
