@@ -904,7 +904,6 @@ exp.Main = Main = (function() {
 
   Main.prototype.renderLegends = function() {
     var color, currentX, currentY, i, legPanel, legend, posX, posY, rect, rectHeight, rectMargin, rectWidth, serie, textWidth, widthSpace, _ref, _results;
-    console.log("Render legends");
     rectWidth = 30;
     rectHeight = 10;
     textWidth = 100;
@@ -921,8 +920,8 @@ exp.Main = Main = (function() {
       serie = _ref[i];
       i = parseInt(i);
       color = serie.data[0].config.color;
-      legend = legPanel.append("g").attr("transform", "translate(" + currentX + ", " + currentY + ")");
-      rect = legend.append("rect").attr("width", rectWidth).attr("height", 10).attr("fill", color).attr("stroke", "#afafaf").attr("stroke-width", "1").attr("data-serieIndex", i);
+      legend = legPanel.append("g").attr("transform", "translate(" + currentX + ", " + currentY + ")").style("cursor", "pointer").attr("data-serieIndex", i);
+      rect = legend.append("rect").attr("width", rectWidth).attr("height", 10).attr("fill", color).attr("stroke", "#afafaf").attr("stroke-width", "1");
       legend.append("text").attr("x", rectMargin + rectWidth).attr("y", 10).attr("fill", "#3f3f3f").attr("font-size", 10).text(serie.name);
       if (currentX + rectWidth + textWidth + rectMargin > widthSpace - rectWidth - textWidth - rectMargin) {
         currentX = 0;
@@ -931,9 +930,16 @@ exp.Main = Main = (function() {
       } else {
         currentX += rectWidth + textWidth + rectMargin;
       }
-      _results.push(rect.on("click", function() {
+      _results.push(legend.on("click", function() {
+        var opacity;
+        opacity = $(this).css("opacity");
         serie = this.getAttribute("data-serieIndex");
-        return $(".series#" + serie).fadeToggle("800");
+        $(".series#" + serie).toggle();
+        if (opacity === "1") {
+          return $(this).fadeTo(800, 0.3);
+        } else {
+          return $(this).fadeTo(800, 1);
+        }
       }));
     }
     return _results;

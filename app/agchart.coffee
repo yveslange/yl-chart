@@ -777,14 +777,10 @@ exp.Main = class Main
     @renderLegends()
 
   renderLegends: ->
-
-    console.log "Render legends"
     rectWidth = 30
     rectHeight = 10
     textWidth = 100
     rectMargin = 2
-
-    # Update the size of the SVG to display the legend
 
     # Width space available
     widthSpace = @_CONF.canvas.width-@_CONF.canvas.padding[0]*2
@@ -801,13 +797,14 @@ exp.Main = class Main
       color = serie.data[0].config.color
       legend = legPanel.append("g")
         .attr("transform", "translate(#{currentX}, #{currentY})")
+        .style("cursor", "pointer")
+        .attr("data-serieIndex", i)
       rect = legend.append("rect")
         .attr("width", rectWidth)
         .attr("height", 10)
         .attr("fill", color)
         .attr("stroke", "#afafaf")
         .attr("stroke-width", "1")
-        .attr("data-serieIndex", i)
       legend.append("text")
         .attr("x", rectMargin+rectWidth)
         .attr("y", 10)
@@ -822,10 +819,14 @@ exp.Main = class Main
       else
         currentX += rectWidth+textWidth+rectMargin
 
-      rect.on("click", ()  ->
+      legend.on("click", ()  ->
+        opacity = $(this).css("opacity")
         serie = this.getAttribute("data-serieIndex")
-        $(".series#"+serie).fadeToggle("800")
-
+        $(".series#"+serie).toggle()
+        if opacity == "1"
+          $(this).fadeTo(800, 0.3)
+        else
+          $(this).fadeTo(800, 1)
       )
 
 
