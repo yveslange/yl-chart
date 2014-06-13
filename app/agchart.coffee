@@ -801,12 +801,13 @@ exp.Main = class Main
       color = serie.data[0].config.color
       legend = legPanel.append("g")
         .attr("transform", "translate(#{currentX}, #{currentY})")
-      legend.append("rect")
+      rect = legend.append("rect")
         .attr("width", rectWidth)
         .attr("height", 10)
         .attr("fill", color)
         .attr("stroke", "#afafaf")
         .attr("stroke-width", "1")
+        .attr("data-serieIndex", i)
       legend.append("text")
         .attr("x", rectMargin+rectWidth)
         .attr("y", 10)
@@ -820,6 +821,12 @@ exp.Main = class Main
         @_CANVAS.attr("height", @_CONF.canvas.height+currentY)
       else
         currentX += rectWidth+textWidth+rectMargin
+
+      rect.on("click", ()  ->
+        serie = this.getAttribute("data-serieIndex")
+        $(".series#"+serie).fadeToggle("800")
+
+      )
 
 
 

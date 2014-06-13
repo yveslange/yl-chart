@@ -903,7 +903,7 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.renderLegends = function() {
-    var color, currentX, currentY, i, legPanel, legend, posX, posY, rectHeight, rectMargin, rectWidth, serie, textWidth, widthSpace, _ref, _results;
+    var color, currentX, currentY, i, legPanel, legend, posX, posY, rect, rectHeight, rectMargin, rectWidth, serie, textWidth, widthSpace, _ref, _results;
     console.log("Render legends");
     rectWidth = 30;
     rectHeight = 10;
@@ -922,15 +922,19 @@ exp.Main = Main = (function() {
       i = parseInt(i);
       color = serie.data[0].config.color;
       legend = legPanel.append("g").attr("transform", "translate(" + currentX + ", " + currentY + ")");
-      legend.append("rect").attr("width", rectWidth).attr("height", 10).attr("fill", color).attr("stroke", "#afafaf").attr("stroke-width", "1");
+      rect = legend.append("rect").attr("width", rectWidth).attr("height", 10).attr("fill", color).attr("stroke", "#afafaf").attr("stroke-width", "1").attr("data-serieIndex", i);
       legend.append("text").attr("x", rectMargin + rectWidth).attr("y", 10).attr("fill", "#3f3f3f").attr("font-size", 10).text(serie.name);
       if (currentX + rectWidth + textWidth + rectMargin > widthSpace - rectWidth - textWidth - rectMargin) {
         currentX = 0;
         currentY += 15;
-        _results.push(this._CANVAS.attr("height", this._CONF.canvas.height + currentY));
+        this._CANVAS.attr("height", this._CONF.canvas.height + currentY);
       } else {
-        _results.push(currentX += rectWidth + textWidth + rectMargin);
+        currentX += rectWidth + textWidth + rectMargin;
       }
+      _results.push(rect.on("click", function() {
+        serie = this.getAttribute("data-serieIndex");
+        return $(".series#" + serie).fadeToggle("800");
+      }));
     }
     return _results;
   };
