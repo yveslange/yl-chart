@@ -97,6 +97,7 @@ exp.Main = class Main
           font:
             color: "#2b2e33"
             size: 10
+            weight: "normal"
         y:
           format: null
           tickSize: null
@@ -108,6 +109,7 @@ exp.Main = class Main
           font:
             color: "#2b2e33"
             size: 10
+            weight: "normal"
       plugins:
         exportation:
           enable: true
@@ -382,6 +384,7 @@ exp.Main = class Main
     ggrid.selectAll("text")
       .attr("fill", params.fontColor)
       .attr("font-size", params.fontSize)
+      .attr("font-weight", params.fontWeight)
 
   renderXGrid: ->
     padding = @_CONF.canvas.padding[1]
@@ -419,6 +422,7 @@ exp.Main = class Main
       format: @_CONF.axis.x.format
       fontSize: @_CONF.axis.x.font.size
       fontColor: @_CONF.axis.x.font.color
+      fontWeight: @_CONF.axis.x.font.weight
     }
     @renderGrid(params)
 
@@ -460,6 +464,7 @@ exp.Main = class Main
       format: @_CONF.axis.y.format
       fontSize: @_CONF.axis.y.font.size
       fontColor: @_CONF.axis.y.font.color
+      fontWeight: @_CONF.axis.y.font.weight
     }
     @renderGrid(params)
 
