@@ -532,7 +532,7 @@ exp.Main = Main = (function() {
       };
     }
     grid = d3.svg.axis().scale(params.scale).orient(params.orient).tickSize(params.tickSize);
-    if (params.ticks = !"auto") {
+    if (params.ticks !== "auto") {
       grid.ticks(params.ticks);
     }
     if (params.format != null) {
@@ -1319,6 +1319,7 @@ exp.run = function() {
       },
       axis: {
         y: {
+          ticks: 5,
           tickSize: "full",
           tickColor: "#ebebeb",
           tickWidth: 2,
@@ -1328,6 +1329,7 @@ exp.run = function() {
           }
         },
         x: {
+          ticks: 1,
           orient: "bottom",
           tickWidth: 2,
           tickColor: "#ebebeb",

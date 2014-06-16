@@ -365,7 +365,7 @@ exp.Main = class Main
       .orient(params.orient)
       .tickSize(params.tickSize)
 
-    if params.ticks =! "auto"
+    if params.ticks != "auto"
       grid.ticks(params.ticks)
 
     if params.format?

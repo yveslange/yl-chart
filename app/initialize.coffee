@@ -90,6 +90,7 @@ exp.run = ->
         stroke: {width: 1, color: null}
       axis:
         y:
+          ticks: 5
           tickSize: "full"
           tickColor: "#ebebeb"
           tickWidth: 2
@@ -97,6 +98,7 @@ exp.run = ->
           font:
             weight: "bold"
         x:
+          ticks: 1
           orient: "bottom"
           tickWidth: 2
           tickColor: "#ebebeb"
