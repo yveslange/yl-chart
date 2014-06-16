@@ -59,14 +59,14 @@ exp.run = ->
         padding: [50,50]
         cross:
           x:
-            show: false
+            show: true
             color: "#44A0FF"
           y:
             show: true
             color: "#FFA044"
         crossValue:
           x:
-            show: false
+            show: true
       logo:
         url: "agflow-logo.png"
         width: 100
@@ -123,17 +123,6 @@ exp.run = ->
           #color: "#00fffe"
           stroke: {width: 1}
       }
-      {name: "Serie", data: [{x: 1, y:100}]}
-      {name: "Serie", data: [{x: 1, y:110}]}
-      {name: "Serie", data: [{x: 1, y:120}]}
-      {name: "Serie", data: [{x: 1, y:130}]}
-      {name: "Serie", data: [{x: 1, y:140}]}
-      {name: "Serie", data: [{x: 1, y:150}]}
-      {name: "Serie", data: [{x: 1, y:160}]}
-      {name: "Serie", data: [{x: 1, y:170}]}
-      {name: "Serie", data: [{x: 1, y:180}]}
-      {name: "Serie", data: [{x: 1, y:190}]}
-      {name: "Serie", data: [{x: 1, y:200}]}
     ]
   )
   agChart.render()

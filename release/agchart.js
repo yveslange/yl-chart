@@ -112,7 +112,7 @@ exp.Main = Main = (function() {
       canvas: {
         scale: {
           x: {
-            nice: true,
+            nice: false,
             padding: [10, 10]
           },
           y: {
@@ -215,6 +215,7 @@ exp.Main = Main = (function() {
       axis: {
         x: {
           format: null,
+          ticks: "auto",
           tickSize: null,
           orient: "bottom",
           tickColor: "#f5f5f5",
@@ -229,6 +230,7 @@ exp.Main = Main = (function() {
         },
         y: {
           format: null,
+          ticks: "auto",
           tickSize: null,
           orient: "left",
           tickColor: "#f5f5f5",
@@ -530,8 +532,15 @@ exp.Main = Main = (function() {
       };
     }
     grid = d3.svg.axis().scale(params.scale).orient(params.orient).tickSize(params.tickSize);
+    if (params.ticks = !"auto") {
+      grid.ticks(params.ticks);
+    }
     if (params.format != null) {
-      grid.ticks(d3.time.months, 1);
+      if (params.ticks === "auto") {
+        grid.ticks(d3.time.months, 1);
+      } else {
+        grid.ticks(d3.time.months, params.ticks);
+      }
       grid.tickFormat(d3.time.format(params.format));
     }
     ggrid = this._CANVAS.append("g").attr("transform", params.trans).attr("class", "axis " + params["class"]).call(grid);
@@ -570,6 +579,7 @@ exp.Main = Main = (function() {
       height: this._CONF.canvas.height,
       width: this._CONF.canvas.width / 2,
       scale: this._SCALE.width,
+      ticks: this._CONF.axis.x.ticks,
       tickSize: tickSize,
       padding: padding,
       label: label,
@@ -615,6 +625,7 @@ exp.Main = Main = (function() {
       height: this._CONF.canvas.height,
       width: this._CONF.canvas.width,
       scale: this._SCALE.height,
+      ticks: this._CONF.axis.y.ticks,
       tickSize: tickSize,
       padding: padding,
       label: label,
@@ -952,27 +963,30 @@ exp.Main = Main = (function() {
     _results = [];
     for (i in _ref) {
       serie = _ref[i];
+      this._CANVAS.attr("height", this._CONF.canvas.height + currentY);
       i = parseInt(i);
       color = serie.data[0].config.color;
-      legend = legPanel.append("g").attr("transform", "translate(" + currentX + ", " + currentY + ")").style("cursor", "pointer").attr("data-serieIndex", i);
+      legend = legPanel.append("g").attr("transform", "translate(" + currentX + ", " + currentY + ")").style("cursor", "pointer").attr("data-serieIndex", i).attr("data-hide", "false");
       rect = legend.append("rect").attr("width", rectWidth).attr("height", 10).attr("fill", color).attr("stroke", "#afafaf").attr("stroke-width", "1");
       legend.append("text").attr("x", rectMargin + rectWidth).attr("y", 10).attr("fill", "#3f3f3f").attr("font-size", 10).text(serie.name);
       if (currentX + rectWidth + textWidth + rectMargin > widthSpace - rectWidth - textWidth - rectMargin) {
         currentX = 0;
         currentY += 15;
-        this._CANVAS.attr("height", this._CONF.canvas.height + currentY);
       } else {
         currentX += rectWidth + textWidth + rectMargin;
       }
       _results.push(legend.on("click", function() {
-        var opacity;
+        var hide, opacity;
         opacity = $(this).css("opacity");
         serie = this.getAttribute("data-serieIndex");
+        hide = this.getAttribute("data-hide");
         $(".series#" + serie).toggle();
-        if (opacity === "1") {
-          return $(this).fadeTo(800, 0.3);
+        if (hide === "false") {
+          $(this).fadeTo(100, 0.3);
+          return this.setAttribute("data-hide", "true");
         } else {
-          return $(this).fadeTo(800, 1);
+          $(this).fadeTo(100, 1);
+          return this.setAttribute("data-hide", "false");
         }
       }));
     }
@@ -1258,7 +1272,7 @@ exp.run = function() {
         padding: [50, 50],
         cross: {
           x: {
-            show: false,
+            show: true,
             color: "#44A0FF"
           },
           y: {
@@ -1268,7 +1282,7 @@ exp.run = function() {
         },
         crossValue: {
           x: {
-            show: false
+            show: true
           }
         }
       },
@@ -1350,94 +1364,6 @@ exp.run = function() {
             width: 1
           }
         }
-      }, {
-        name: "Serie",
-        data: [
-          {
-            x: 1,
-            y: 100
-          }
-        ]
-      }, {
-        name: "Serie",
-        data: [
-          {
-            x: 1,
-            y: 110
-          }
-        ]
-      }, {
-        name: "Serie",
-        data: [
-          {
-            x: 1,
-            y: 120
-          }
-        ]
-      }, {
-        name: "Serie",
-        data: [
-          {
-            x: 1,
-            y: 130
-          }
-        ]
-      }, {
-        name: "Serie",
-        data: [
-          {
-            x: 1,
-            y: 140
-          }
-        ]
-      }, {
-        name: "Serie",
-        data: [
-          {
-            x: 1,
-            y: 150
-          }
-        ]
-      }, {
-        name: "Serie",
-        data: [
-          {
-            x: 1,
-            y: 160
-          }
-        ]
-      }, {
-        name: "Serie",
-        data: [
-          {
-            x: 1,
-            y: 170
-          }
-        ]
-      }, {
-        name: "Serie",
-        data: [
-          {
-            x: 1,
-            y: 180
-          }
-        ]
-      }, {
-        name: "Serie",
-        data: [
-          {
-            x: 1,
-            y: 190
-          }
-        ]
-      }, {
-        name: "Serie",
-        data: [
-          {
-            x: 1,
-            y: 200
-          }
-        ]
       }
     ]
   });

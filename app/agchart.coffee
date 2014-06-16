@@ -15,7 +15,7 @@ exp.Main = class Main
       canvas:
         scale:
           x:
-            nice: true
+            nice: false
             padding: [10, 10]
           y:
             nice: true
@@ -95,6 +95,7 @@ exp.Main = class Main
       axis:
         x:
           format: null
+          ticks: "auto"
           tickSize: null
           orient: "bottom" # bottom, top
           tickColor: "#f5f5f5"
@@ -107,6 +108,7 @@ exp.Main = class Main
             weight: "normal"
         y:
           format: null
+          ticks: "auto"
           tickSize: null
           orient: "left" # left, right
           tickColor: "#f5f5f5"
@@ -363,8 +365,14 @@ exp.Main = class Main
       .orient(params.orient)
       .tickSize(params.tickSize)
 
+    if params.ticks =! "auto"
+      grid.ticks(params.ticks)
+
     if params.format?
-      grid.ticks(d3.time.months, 1)
+      if params.ticks == "auto"
+        grid.ticks(d3.time.months, 1)
+      else
+        grid.ticks(d3.time.months, params.ticks)
       grid.tickFormat(
         d3.time.format(params.format)
       )
@@ -420,6 +428,7 @@ exp.Main = class Main
       height: @_CONF.canvas.height
       width: @_CONF.canvas.width/2
       scale: @_SCALE.width
+      ticks: @_CONF.axis.x.ticks
       tickSize: tickSize
       padding: padding
       label: label
@@ -462,6 +471,7 @@ exp.Main = class Main
       height: @_CONF.canvas.height
       width: @_CONF.canvas.width
       scale: @_SCALE.height
+      ticks: @_CONF.axis.y.ticks
       tickSize: tickSize
       padding: padding
       label: label
@@ -818,12 +828,14 @@ exp.Main = class Main
     legPanel = @_CANVAS.append("g")
       .attr("transform", "translate(#{posX}, #{posY})")
     for i, serie of @_SERIES
+      @_CANVAS.attr("height", @_CONF.canvas.height+currentY)
       i = parseInt(i)
       color = serie.data[0].config.color
       legend = legPanel.append("g")
         .attr("transform", "translate(#{currentX}, #{currentY})")
         .style("cursor", "pointer")
         .attr("data-serieIndex", i)
+        .attr("data-hide", "false")
       rect = legend.append("rect")
         .attr("width", rectWidth)
         .attr("height", 10)
@@ -840,18 +852,20 @@ exp.Main = class Main
         currentX = 0
         currentY += 15
         # Update canvas height
-        @_CANVAS.attr("height", @_CONF.canvas.height+currentY)
       else
         currentX += rectWidth+textWidth+rectMargin
 
       legend.on("click", ()  ->
         opacity = $(this).css("opacity")
         serie = this.getAttribute("data-serieIndex")
+        hide = this.getAttribute("data-hide")
         $(".series#"+serie).toggle()
-        if opacity == "1"
-          $(this).fadeTo(800, 0.3)
+        if hide == "false"
+          $(this).fadeTo(100, 0.3)
+          this.setAttribute("data-hide", "true")
         else
-          $(this).fadeTo(800, 1)
+          $(this).fadeTo(100, 1)
+          this.setAttribute("data-hide", "false")
       )
 
 
