@@ -110,6 +110,16 @@ exp.Main = Main = (function() {
         alwaysInside: true
       },
       canvas: {
+        scale: {
+          x: {
+            nice: true,
+            padding: [10, 10]
+          },
+          y: {
+            nice: true,
+            padding: [10, 10]
+          }
+        },
         bgcolor: "#FFFFFF",
         render: "dot",
         title: {
@@ -426,12 +436,18 @@ exp.Main = Main = (function() {
     if (this._CONF.axis.x.format != null) {
       this._SCALE.width = d3.time.scale();
     }
-    this._SCALE.width.domain([_domain.minX, _domain.maxX]).nice().range([_pad[0], _canvas.width - _pad[0]]);
+    this._SCALE.width.domain([_domain.minX, _domain.maxX]).range([_pad[0], _canvas.width - _pad[0]]);
+    if (_canvas.scale.x.nice) {
+      this._SCALE.width.nice();
+    }
     this._SCALE.height = d3.scale.linear();
     if (this._CONF.axis.y.format != null) {
       this._SCALE.height = d3.time.scale();
     }
-    return this._SCALE.height.domain([_domain.minY, _domain.maxY]).nice().range([_canvas.height - _pad[1], _pad[1]]);
+    this._SCALE.height.domain([_domain.minY, _domain.maxY]).range([_canvas.height - _pad[1], _pad[1]]);
+    if (_canvas.scale.y.nice) {
+      return this._SCALE.height.nice();
+    }
   };
 
   Main.prototype.createCanvas = function() {
@@ -1240,12 +1256,17 @@ exp.run = function() {
         padding: [50, 50],
         cross: {
           x: {
-            show: true,
+            show: false,
             color: "#44A0FF"
           },
           y: {
             show: true,
             color: "#FFA044"
+          }
+        },
+        crossValue: {
+          x: {
+            show: false
           }
         }
       },
@@ -1285,7 +1306,10 @@ exp.run = function() {
           tickSize: "full",
           tickColor: "#ebebeb",
           tickWidth: 2,
-          orient: "right"
+          orient: "right",
+          font: {
+            weight: "bold"
+          }
         },
         x: {
           orient: "bottom",

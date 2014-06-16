@@ -13,6 +13,13 @@ exp.Main = class Main
         callback: "singlePoint"
         alwaysInside: true
       canvas:
+        scale:
+          x:
+            nice: true
+            padding: [10, 10]
+          y:
+            nice: true
+            padding: [10, 10]
         bgcolor: "#FFFFFF"
         render: "dot" # dot, line
         title:
@@ -241,14 +248,16 @@ exp.Main = class Main
     if @_CONF.axis.x.format?
       @_SCALE.width = d3.time.scale()
     @_SCALE.width.domain([_domain.minX,_domain.maxX])
-      .nice() # end with round number
       .range([_pad[0], _canvas.width-_pad[0]])
+    if _canvas.scale.x.nice
+      @_SCALE.width.nice()
     @_SCALE.height = d3.scale.linear()
     if @_CONF.axis.y.format?
       @_SCALE.height = d3.time.scale()
     @_SCALE.height.domain([_domain.minY,_domain.maxY])
-      .nice()
       .range([_canvas.height-_pad[1], _pad[1]])
+    if _canvas.scale.y.nice
+      @_SCALE.height.nice()
 
   createCanvas: ->
     throw new Error("No selector defined") if not @_CONF.canvas.selector?

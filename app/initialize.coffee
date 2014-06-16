@@ -59,11 +59,14 @@ exp.run = ->
         padding: [50,50]
         cross:
           x:
-            show: true
+            show: false
             color: "#44A0FF"
           y:
             show: true
             color: "#FFA044"
+        crossValue:
+          x:
+            show: false
       logo:
         url: "agflow-logo.png"
         width: 100
@@ -91,6 +94,8 @@ exp.run = ->
           tickColor: "#ebebeb"
           tickWidth: 2
           orient: "right"
+          font:
+            weight: "bold"
         x:
           orient: "bottom"
           tickWidth: 2
