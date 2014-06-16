@@ -43,7 +43,7 @@ exp.run = ->
         title:
           color: "#4f4f4f"
           size: 16
-          text: "AgChart demonstration"
+          text: null
           border:
             padding: [8,1]
         label:

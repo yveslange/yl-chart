@@ -475,7 +475,9 @@ exp.Main = Main = (function() {
     text = gbox.append("text").attr("class", "chart-title").attr("fill", params.title.color).attr("font-size", params.title.size).attr("font-weight", "bold").attr("font-family", params.title.fontFamily).text(params.title.text);
     textDim = text.node().getBBox();
     text.attr("x", params.title.border.padding[0]).attr("y", textDim.height - params.title.border.padding[1] - 2);
-    return rect.attr("width", textDim.width + params.title.border.padding[0] * 2).attr("height", textDim.height + params.title.border.padding[1] * 2).attr("ry", params.title.border.radius).attr("rx", params.title.border.radius).attr("stroke", params.title.border.color);
+    if (params.title.text) {
+      return rect.attr("width", textDim.width + params.title.border.padding[0] * 2).attr("height", textDim.height + params.title.border.padding[1] * 2).attr("ry", params.title.border.radius).attr("rx", params.title.border.radius).attr("stroke", params.title.border.color);
+    }
   };
 
   Main.prototype.renderLabel = function(params) {
@@ -1235,7 +1237,7 @@ exp.run = function() {
         title: {
           color: "#4f4f4f",
           size: 16,
-          text: "AgChart demonstration",
+          text: null,
           border: {
             padding: [8, 1]
           }

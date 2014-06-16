@@ -288,12 +288,13 @@ exp.Main = class Main
     text
       .attr("x", params.title.border.padding[0])
       .attr("y", textDim.height-params.title.border.padding[1]-2)
-    rect
-      .attr("width", textDim.width+params.title.border.padding[0]*2)
-      .attr("height", textDim.height+params.title.border.padding[1]*2)
-      .attr("ry", params.title.border.radius)
-      .attr("rx", params.title.border.radius)
-      .attr("stroke", params.title.border.color)
+    if params.title.text
+      rect
+        .attr("width", textDim.width+params.title.border.padding[0]*2)
+        .attr("height", textDim.height+params.title.border.padding[1]*2)
+        .attr("ry", params.title.border.radius)
+        .attr("rx", params.title.border.radius)
+        .attr("stroke", params.title.border.color)
 
 
   renderLabel: (params={
