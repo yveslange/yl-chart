@@ -210,7 +210,11 @@ exp.Main = Main = (function() {
           tickColor: "#f5f5f5",
           tickWidth: 2,
           strokeWidth: 1,
-          color: "#2b2e33"
+          color: "#2b2e33",
+          font: {
+            color: "#2b2e33",
+            size: 10
+          }
         },
         y: {
           format: null,
@@ -219,7 +223,11 @@ exp.Main = Main = (function() {
           tickColor: "#f5f5f5",
           tickWidth: 2,
           strokeWidth: 1,
-          color: "#2b2e33"
+          color: "#2b2e33",
+          font: {
+            color: "#2b2e33",
+            size: 10
+          }
         }
       },
       plugins: {
@@ -511,7 +519,7 @@ exp.Main = Main = (function() {
     ggrid.selectAll("line").attr("stroke", params.color).attr("stroke-width", params.strokeWidth);
     ggrid.selectAll("line").attr("stroke", params.tickColor).attr("width-stroke", params.tickWidth);
     ggrid.selectAll("path").style("display", "none");
-    return ggrid.selectAll("text").attr("fill", params.label.color).attr("font-size", params.label.size);
+    return ggrid.selectAll("text").attr("fill", params.fontColor).attr("font-size", params.fontSize);
   };
 
   Main.prototype.renderXGrid = function() {
@@ -551,7 +559,9 @@ exp.Main = Main = (function() {
       tickWidth: this._CONF.axis.x.tickWidth,
       color: this._CONF.axis.x.color,
       strokeWidth: this._CONF.axis.x.strokeWidth,
-      format: this._CONF.axis.x.format
+      format: this._CONF.axis.x.format,
+      fontSize: this._CONF.axis.x.font.size,
+      fontColor: this._CONF.axis.x.font.color
     };
     return this.renderGrid(params);
   };
@@ -593,7 +603,9 @@ exp.Main = Main = (function() {
       tickWidth: this._CONF.axis.y.tickWidth,
       color: this._CONF.axis.y.color,
       strokeWidth: this._CONF.axis.y.strokeWidth,
-      format: this._CONF.axis.y.format
+      format: this._CONF.axis.y.format,
+      fontSize: this._CONF.axis.y.font.size,
+      fontColor: this._CONF.axis.y.font.color
     };
     return this.renderGrid(params);
   };
@@ -1239,7 +1251,7 @@ exp.run = function() {
         height: 50,
         x: 'right',
         y: 'bottom',
-        opacity: 0.3
+        opacity: 0.1
       },
       tooltip: {
         template: mode,

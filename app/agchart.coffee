@@ -94,6 +94,9 @@ exp.Main = class Main
           tickWidth: 2
           strokeWidth: 1
           color: "#2b2e33" # THe color of the y axis
+          font:
+            color: "#2b2e33"
+            size: 10
         y:
           format: null
           tickSize: null
@@ -102,6 +105,9 @@ exp.Main = class Main
           tickWidth: 2
           strokeWidth: 1
           color: "#2b2e33" # The color of the x axis
+          font:
+            color: "#2b2e33"
+            size: 10
       plugins:
         exportation:
           enable: true
@@ -374,8 +380,8 @@ exp.Main = class Main
 
     # Color of the text on axis
     ggrid.selectAll("text")
-      .attr("fill", params.label.color)
-      .attr("font-size", params.label.size)
+      .attr("fill", params.fontColor)
+      .attr("font-size", params.fontSize)
 
   renderXGrid: ->
     padding = @_CONF.canvas.padding[1]
@@ -411,6 +417,8 @@ exp.Main = class Main
       color: @_CONF.axis.x.color
       strokeWidth: @_CONF.axis.x.strokeWidth
       format: @_CONF.axis.x.format
+      fontSize: @_CONF.axis.x.font.size
+      fontColor: @_CONF.axis.x.font.color
     }
     @renderGrid(params)
 
@@ -450,6 +458,8 @@ exp.Main = class Main
       color: @_CONF.axis.y.color
       strokeWidth: @_CONF.axis.y.strokeWidth
       format: @_CONF.axis.y.format
+      fontSize: @_CONF.axis.y.font.size
+      fontColor: @_CONF.axis.y.font.color
     }
     @renderGrid(params)
 

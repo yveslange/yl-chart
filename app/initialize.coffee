@@ -70,7 +70,7 @@ exp.run = ->
         height: 50
         x: 'right'
         y: 'bottom'
-        opacity: 0.3
+        opacity: 0.1
       tooltip:
         template: mode
         callback: mode
