@@ -953,7 +953,8 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.renderLegends = function() {
-    var color, currentX, currentY, i, legPanel, legend, posX, posY, rect, rectHeight, rectMargin, rectWidth, selector, serie, textWidth, widthSpace, _ref, _results;
+    var color, currentX, currentY, i, legPanel, legend, posX, posY, rect, rectHeight, rectMargin, rectWidth, selector, serie, textWidth, widthSpace, _ref, _results, _series;
+    _series = this._SERIES;
     selector = this._CONF.canvas.selector;
     rectWidth = 30;
     rectHeight = 10;
@@ -986,14 +987,16 @@ exp.Main = Main = (function() {
         opacity = $(this).css("opacity");
         serie = this.getAttribute("data-serieIndex");
         hide = this.getAttribute("data-hide");
-        $(selector).find(".series#" + serie).toggle();
         if (hide === "false") {
           $(this).fadeTo(100, 0.3);
-          return this.setAttribute("data-hide", "true");
+          $(selector).find(".series#" + serie)[0].setAttribute("data-hide", "true");
+          this.setAttribute("data-hide", "true");
         } else {
           $(this).fadeTo(100, 1);
-          return this.setAttribute("data-hide", "false");
+          $(selector).find(".series#" + serie)[0].setAttribute("data-hide", "false");
+          this.setAttribute("data-hide", "false");
         }
+        return $(selector).find(".series#" + serie).toggle();
       }));
     }
     return _results;
@@ -1110,23 +1113,27 @@ exp.Main = Main = (function() {
     },
     templates: {
       singlePoint: function(data) {
-        return ("<div>" + data[0].serieName) + "<div class='swatch'" + ("style='background-color: " + data[0].color + "'></div>") + "</div>" + ("<div>" + data[0].x + " " + data[0].y + "</div>");
+        return ("<div class='serie' id='0'>" + data[0].serieName) + "<div class='swatch'" + ("style='background-color: " + data[0].color + "'></div>") + "</div>" + ("<div>" + data[0].x + " " + data[0].y + "</div>");
       },
       multipleVertical: function(data) {
-        var d, html, _i, _len;
+        var d, html, i, _i, _len;
         html = "";
-        for (_i = 0, _len = data.length; _i < _len; _i++) {
-          d = data[_i];
-          html += ("<div>" + d.serieName) + "<div class='swatch'" + ("style='background-color: " + d.color + "'></div>") + "</div>" + ("<div>" + d.x + " " + d.y + "</div>");
+        for (i = _i = 0, _len = data.length; _i < _len; i = ++_i) {
+          d = data[i];
+          if (!d.hide) {
+            html += ("<div class='serie' id='" + i + "'>" + d.serieName) + "<div class='swatch'" + ("style='background-color: " + d.color + "'></div>") + "</div>" + ("<div>" + d.x + " " + d.y + "</div>");
+          }
         }
         return html;
       },
       multipleVerticalInverted: function(data) {
-        var d, html, _i, _len;
+        var d, html, i, _i, _len;
         html = "" + data[0].x;
-        for (_i = 0, _len = data.length; _i < _len; _i++) {
-          d = data[_i];
-          html += ("<div>" + d.serieName + ": " + d.y) + "<div class='swatch'" + ("style='background-color: " + d.color + "'></div>") + "</div>";
+        for (i = _i = 0, _len = data.length; _i < _len; i = ++_i) {
+          d = data[i];
+          if (!d.hide) {
+            html += ("<div class='serie' id='" + i + "'>" + d.serieName + ": " + d.y) + "<div class='swatch'" + ("style='background-color: " + d.color + "'></div>") + "</div>";
+          }
         }
         return html;
       }
@@ -1144,7 +1151,8 @@ exp.Main = Main = (function() {
             color: params.data.config.color,
             serieName: params.circleNode.parentNode.getAttribute("title"),
             x: x,
-            y: params.data.y.toFixed(2)
+            y: params.data.y.toFixed(2),
+            hide: node.parentNode.getAttribute("data-hide") === "true"
           }
         ];
       },
@@ -1162,7 +1170,8 @@ exp.Main = Main = (function() {
             serieName: node.parentNode.getAttribute("title"),
             color: node.getAttribute("data-color"),
             y: parseFloat(node.getAttribute("data-y")).toFixed(2),
-            x: x
+            x: x,
+            hide: node.parentNode.getAttribute("data-hide") === "true"
           });
         });
         return res;
@@ -1181,7 +1190,8 @@ exp.Main = Main = (function() {
             serieName: node.parentNode.getAttribute("title"),
             color: node.getAttribute("data-color"),
             y: parseFloat(node.getAttribute("data-y")).toFixed(2),
-            x: x
+            x: x,
+            hide: node.parentNode.getAttribute("data-hide") === "true"
           });
         });
         return res;

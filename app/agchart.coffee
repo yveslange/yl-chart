@@ -39,10 +39,12 @@ exp.Main = class Main
             text: null
             size: 10
             color: "#7f7f7f"
+            offset: 15
           y:
             text: null
             size: 10
             color: "#7f7f7f"
+            offset: 0
         selector: null
         width: 600.0
         height: 400.0
@@ -308,14 +310,36 @@ exp.Main = class Main
       trans: null
       text: ""
       textAnchor: ""
+      offset: null
     class: null }) ->
-    @_CANVAS.append("text")
+
+    params.label.offset = params.label.offset || 0
+
+    width = params.width
+    height = params.height
+    padding = params.padding
+    offset = params.label.offset
+
+    text = @_CANVAS.append("text")
       .attr("fill", params.label.color)
       .attr("class", "label #{params.class}")
       .attr("font-size", params.label.size+"px")
       .attr("text-anchor", params.label.textAnchor)
-      .attr("transform", params.label.trans)
       .text(params.label.text)
+
+    textDim = text.node().getBBox()
+
+    switch params.orient
+      when 'bottom'
+        trans = "translate(#{width/2}, #{height-padding[1]+textDim.height+offset})"
+      when 'top'
+        trans = "translate(#{width/2}, #{height-2})"
+      when 'left'
+        trans = "translate(#{padding[0]}, 0)"
+      when 'right'
+        trans = "translate(#{width-padding[0]}, #{padding[1]/2})"
+
+    text.attr("transform", trans)
 
 
   renderAxis: (params) ->
@@ -407,28 +431,26 @@ exp.Main = class Main
       .attr("font-weight", params.fontWeight)
 
   renderXGrid: ->
-    padding = @_CONF.canvas.padding[1]
+    padding = @_CONF.canvas.padding
     height = @_CONF.canvas.height
     width = @_CONF.canvas.width
     label = @_CONF.canvas.label.x
     label.textAnchor = "middle"
+    label.orient = @_CONF.axis.x.orient
+    label.offset = @_CONF.canvas.label.x.offset
     switch @_CONF.axis.x.orient
       when 'bottom'
-        trans = "translate(0, #{padding})"
-        label.trans =
-          "translate(#{width/2}, #{height-2})"
+        trans = "translate(0, #{padding[1]})"
       when 'top'
-        trans = "translate(0, #{height-padding})"
-        label.trans =
-          "translate(#{width/2}, #{padding/2})"
+        trans = "translate(0, #{height-padding[1]})"
       else
         throw new Error("Unknown orientation: ", @_CONF.axis.x.orient)
     tickSize = @_CONF.axis.x.tickSize
-    tickSize =  height-padding*2 if tickSize == 'full'
+    tickSize =  height-padding[1]*2 if tickSize == 'full'
     params = {
       class: "x"
       height: @_CONF.canvas.height
-      width: @_CONF.canvas.width/2
+      width: @_CONF.canvas.width
       scale: @_SCALE.width
       ticks: @_CONF.axis.x.ticks
       tickSize: tickSize
@@ -454,13 +476,10 @@ exp.Main = class Main
     label = @_CONF.canvas.label.y
     switch @_CONF.axis.y.orient
       when 'left'
-        trans = "translate(#{padding[0]}, 0)"
         label.trans =
           "rotate(-90) translate(#{-height/2}, #{padding[0]+10})"
       when 'right'
         trans = "translate(#{width-padding[0]}, 0)"
-        label.trans =
-          "translate(#{width-padding[0]}, #{padding[1]/2})"
         label.textAnchor = "middle"
       else
         throw new Error("Unknown orientation: ", @_CONF.axis.y.orient)
@@ -816,6 +835,7 @@ exp.Main = class Main
 
 
   renderLegends: ->
+    _series = @_SERIES
     selector = @_CONF.canvas.selector
     rectWidth = 30
     rectHeight = 10
@@ -864,13 +884,15 @@ exp.Main = class Main
         opacity = $(this).css("opacity")
         serie = this.getAttribute("data-serieIndex")
         hide = this.getAttribute("data-hide")
-        $(selector).find(".series#"+serie).toggle()
         if hide == "false"
           $(this).fadeTo(100, 0.3)
+          $(selector).find(".series#"+serie)[0].setAttribute("data-hide", "true")
           this.setAttribute("data-hide", "true")
         else
           $(this).fadeTo(100, 1)
+          $(selector).find(".series#"+serie)[0].setAttribute("data-hide", "false")
           this.setAttribute("data-hide", "false")
+        $(selector).find(".series#"+serie).toggle()
       )
 
 
@@ -977,27 +999,29 @@ exp.Main = class Main
 
     templates:
       singlePoint: (data) ->
-        "<div>#{data[0].serieName}"+
+        "<div class='serie' id='0'>#{data[0].serieName}"+
           "<div class='swatch'"+
             "style='background-color: #{data[0].color}'></div>"+
         "</div>"+
         "<div>#{data[0].x} #{data[0].y}</div>"
       multipleVertical: (data) ->
         html = ""
-        for d in data
-          html += "<div>#{d.serieName}"+
-            "<div class='swatch'"+
-              "style='background-color: #{d.color}'></div>"+
-          "</div>"+
-          "<div>#{d.x} #{d.y}</div>"
+        for d, i in data
+          if not d.hide
+            html += "<div class='serie' id='#{i}'>#{d.serieName}"+
+              "<div class='swatch'"+
+                "style='background-color: #{d.color}'></div>"+
+            "</div>"+
+            "<div>#{d.x} #{d.y}</div>"
         html
       multipleVerticalInverted: (data) ->
         html = "#{data[0].x}"
-        for d in data
-          html += "<div>#{d.serieName}: #{d.y}"+
-            "<div class='swatch'"+
-              "style='background-color: #{d.color}'></div>"+
-          "</div>"
+        for d, i in data
+          if not d.hide
+            html += "<div class='serie' id='#{i}'>#{d.serieName}: #{d.y}"+
+              "<div class='swatch'"+
+                "style='background-color: #{d.color}'></div>"+
+            "</div>"
         html
 
     callbacks:
@@ -1011,6 +1035,7 @@ exp.Main = class Main
             serieName: params.circleNode.parentNode.getAttribute("title")
             x: x
             y: params.data.y.toFixed(2)
+            hide: node.parentNode.getAttribute("data-hide") == "true"
           }]
       multipleVertical:
         (params) ->
@@ -1027,6 +1052,7 @@ exp.Main = class Main
               color: node.getAttribute("data-color")
               y: parseFloat(node.getAttribute("data-y")).toFixed(2)
               x: x
+              hide: node.parentNode.getAttribute("data-hide") == "true"
             })
           res
 
@@ -1045,5 +1071,6 @@ exp.Main = class Main
               color: node.getAttribute("data-color")
               y: parseFloat(node.getAttribute("data-y")).toFixed(2)
               x: x
+              hide: node.parentNode.getAttribute("data-hide") == "true"
             })
           res
