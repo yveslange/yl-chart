@@ -104,6 +104,8 @@ exp.run = ->
           tickColor: "#ebebeb"
           format: "%b"
           tickSize: "full"
+      legends:
+        show: true
     series: [
       {
         name: "Serie 1"

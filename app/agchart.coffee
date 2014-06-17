@@ -119,6 +119,8 @@ exp.Main = class Main
             color: "#2b2e33"
             size: 10
             weight: "normal"
+      legends:
+        show: true
       plugins:
         exportation:
           enable: true
@@ -809,9 +811,12 @@ exp.Main = class Main
       confPlugins: @_CONF.plugins
     )
 
-    @renderLegends()
+    if @_CONF.legends.show
+      @renderLegends()
+
 
   renderLegends: ->
+    selector = @_CONF.canvas.selector
     rectWidth = 30
     rectHeight = 10
     textWidth = 100
@@ -859,7 +864,7 @@ exp.Main = class Main
         opacity = $(this).css("opacity")
         serie = this.getAttribute("data-serieIndex")
         hide = this.getAttribute("data-hide")
-        $(".series#"+serie).toggle()
+        $(selector).find(".series#"+serie).toggle()
         if hide == "false"
           $(this).fadeTo(100, 0.3)
           this.setAttribute("data-hide", "true")

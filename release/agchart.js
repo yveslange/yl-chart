@@ -244,6 +244,9 @@ exp.Main = Main = (function() {
           }
         }
       },
+      legends: {
+        show: true
+      },
       plugins: {
         exportation: {
           enable: true,
@@ -944,11 +947,14 @@ exp.Main = Main = (function() {
       selector: this._CONF.canvas.selector,
       confPlugins: this._CONF.plugins
     });
-    return this.renderLegends();
+    if (this._CONF.legends.show) {
+      return this.renderLegends();
+    }
   };
 
   Main.prototype.renderLegends = function() {
-    var color, currentX, currentY, i, legPanel, legend, posX, posY, rect, rectHeight, rectMargin, rectWidth, serie, textWidth, widthSpace, _ref, _results;
+    var color, currentX, currentY, i, legPanel, legend, posX, posY, rect, rectHeight, rectMargin, rectWidth, selector, serie, textWidth, widthSpace, _ref, _results;
+    selector = this._CONF.canvas.selector;
     rectWidth = 30;
     rectHeight = 10;
     textWidth = 100;
@@ -980,7 +986,7 @@ exp.Main = Main = (function() {
         opacity = $(this).css("opacity");
         serie = this.getAttribute("data-serieIndex");
         hide = this.getAttribute("data-hide");
-        $(".series#" + serie).toggle();
+        $(selector).find(".series#" + serie).toggle();
         if (hide === "false") {
           $(this).fadeTo(100, 0.3);
           return this.setAttribute("data-hide", "true");
@@ -1336,6 +1342,9 @@ exp.run = function() {
           format: "%b",
           tickSize: "full"
         }
+      },
+      legends: {
+        show: true
       }
     },
     series: [
