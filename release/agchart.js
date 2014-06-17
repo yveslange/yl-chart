@@ -141,12 +141,14 @@ exp.Main = Main = (function() {
           x: {
             text: null,
             size: 10,
-            color: "#7f7f7f"
+            color: "#7f7f7f",
+            offset: 15
           },
           y: {
             text: null,
             size: 10,
-            color: "#7f7f7f"
+            color: "#7f7f7f",
+            offset: 0
           }
         },
         selector: null,
@@ -486,6 +488,7 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.renderLabel = function(params) {
+    var height, offset, padding, text, textDim, trans, width;
     if (params == null) {
       params = {
         label: {
@@ -493,12 +496,33 @@ exp.Main = Main = (function() {
           size: null,
           trans: null,
           text: "",
-          textAnchor: ""
+          textAnchor: "",
+          offset: null
         },
         "class": null
       };
     }
-    return this._CANVAS.append("text").attr("fill", params.label.color).attr("class", "label " + params["class"]).attr("font-size", params.label.size + "px").attr("text-anchor", params.label.textAnchor).attr("transform", params.label.trans).text(params.label.text);
+    params.label.offset = params.label.offset || 0;
+    width = params.width;
+    height = params.height;
+    padding = params.padding;
+    offset = params.label.offset;
+    text = this._CANVAS.append("text").attr("fill", params.label.color).attr("class", "label " + params["class"]).attr("font-size", params.label.size + "px").attr("text-anchor", params.label.textAnchor).text(params.label.text);
+    textDim = text.node().getBBox();
+    switch (params.orient) {
+      case 'bottom':
+        trans = "translate(" + (width / 2) + ", " + (height - padding[1] + textDim.height + offset) + ")";
+        break;
+      case 'top':
+        trans = "translate(" + (width / 2) + ", " + (height - 2) + ")";
+        break;
+      case 'left':
+        trans = "translate(" + padding[0] + ", 0)";
+        break;
+      case 'right':
+        trans = "translate(" + (width - padding[0]) + ", " + (padding[1] / 2) + ")";
+    }
+    return text.attr("transform", trans);
   };
 
   Main.prototype.renderAxis = function(params) {
@@ -556,31 +580,31 @@ exp.Main = Main = (function() {
 
   Main.prototype.renderXGrid = function() {
     var height, label, padding, params, tickSize, trans, width;
-    padding = this._CONF.canvas.padding[1];
+    padding = this._CONF.canvas.padding;
     height = this._CONF.canvas.height;
     width = this._CONF.canvas.width;
     label = this._CONF.canvas.label.x;
     label.textAnchor = "middle";
+    label.orient = this._CONF.axis.x.orient;
+    label.offset = this._CONF.canvas.label.x.offset;
     switch (this._CONF.axis.x.orient) {
       case 'bottom':
-        trans = "translate(0, " + padding + ")";
-        label.trans = "translate(" + (width / 2) + ", " + (height - 2) + ")";
+        trans = "translate(0, " + padding[1] + ")";
         break;
       case 'top':
-        trans = "translate(0, " + (height - padding) + ")";
-        label.trans = "translate(" + (width / 2) + ", " + (padding / 2) + ")";
+        trans = "translate(0, " + (height - padding[1]) + ")";
         break;
       default:
         throw new Error("Unknown orientation: ", this._CONF.axis.x.orient);
     }
     tickSize = this._CONF.axis.x.tickSize;
     if (tickSize === 'full') {
-      tickSize = height - padding * 2;
+      tickSize = height - padding[1] * 2;
     }
     params = {
       "class": "x",
       height: this._CONF.canvas.height,
-      width: this._CONF.canvas.width / 2,
+      width: this._CONF.canvas.width,
       scale: this._SCALE.width,
       ticks: this._CONF.axis.x.ticks,
       tickSize: tickSize,
@@ -608,12 +632,10 @@ exp.Main = Main = (function() {
     label = this._CONF.canvas.label.y;
     switch (this._CONF.axis.y.orient) {
       case 'left':
-        trans = "translate(" + padding[0] + ", 0)";
         label.trans = "rotate(-90) translate(" + (-height / 2) + ", " + (padding[0] + 10) + ")";
         break;
       case 'right':
         trans = "translate(" + (width - padding[0]) + ", 0)";
-        label.trans = "translate(" + (width - padding[0]) + ", " + (padding[1] / 2) + ")";
         label.textAnchor = "middle";
         break;
       default:
