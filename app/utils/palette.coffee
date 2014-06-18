@@ -57,4 +57,5 @@ exp.Main = class Main
     schemes.paired = ["#a6cee3","#1f78b4","#b2df8a","#33a02c","#fb9a99",
         "#e31a1c","#fdbf6f","#ff7f00","#cab2d6","#6a3d9a","#ffff99","#b15928"]
 
+    schemes.agflow = ["#0099ef","#ff009d","#56b501","#ffee52","#a34100","#0018ef","#ff89d2","#6ee801","#ef0018","#ffa468","#00efd7","#b3006e","#aefe66","#ed7446","#572200","#0010a3","#326901"]
     return schemes

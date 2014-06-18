@@ -459,14 +459,14 @@ exp.Main = Main = (function() {
       this._SCALE.width = d3.time.scale();
     }
     this._SCALE.width.domain([_domain.minX, _domain.maxX]).range([_pad[0], _canvas.width - _pad[0]]);
-    if (_canvas.scale.x.nice) {
-      this._SCALE.width.nice();
-    }
     this._SCALE.height = d3.scale.linear();
     if (this._CONF.axis.y.format != null) {
       this._SCALE.height = d3.time.scale();
     }
     this._SCALE.height.domain([_domain.minY, _domain.maxY]).range([_canvas.height - _pad[1], _pad[1]]);
+    if (_canvas.scale.x.nice) {
+      this._SCALE.width.nice();
+    }
     if (_canvas.scale.y.nice) {
       return this._SCALE.height.nice();
     }
@@ -1283,10 +1283,52 @@ genDataFunc = function(len, inter, func) {
 };
 
 exp.run = function() {
-  var agChart, mode, t, tooltipFormat, tooltipTemplate;
+  var agChart, i, mode, series, t, tooltipFormat, tooltipTemplate, _i;
   t = new time.Main({
     lang: 'en'
   });
+  series = [];
+  series.push({
+    name: "Serie 1",
+    data: genDataFunc(24 * 3600 * 120, 36 * 3600, function(d) {
+      return Math.cos(d) * 10;
+    }),
+    config: {
+      stroke: {
+        width: 1
+      }
+    }
+  });
+  series.push({
+    name: "Serie 2",
+    data: genDataFunc(24 * 3600 * 120, 36 * 3600 * 2, Math.tan),
+    config: {
+      color: "#ff0001",
+      stroke: {
+        width: 1
+      }
+    }
+  });
+  series.push({
+    name: "Serie 3",
+    data: genDataFunc(24 * 3600 * 120, 48 * 3600, Math.sin),
+    config: {
+      stroke: {
+        width: 1
+      }
+    }
+  });
+  for (i = _i = 0; _i <= 20; i = ++_i) {
+    series.push({
+      name: "Serie " + (i + 3),
+      data: [
+        {
+          x: i * 1000,
+          y: i * 10
+        }
+      ]
+    });
+  }
   tooltipFormat = function(d) {
     var date, formatDate;
     date = new Date(d);
@@ -1300,6 +1342,11 @@ exp.run = function() {
   agChart = new agchart.Main({
     config: {
       canvas: {
+        scale: {
+          x: {
+            nice: true
+          }
+        },
         render: 'dotline',
         width: 900.0,
         height: 400.0,
@@ -1358,7 +1405,7 @@ exp.run = function() {
       },
       line: {
         stroke: {
-          width: 2
+          width: 1
         }
       },
       point: {
@@ -1366,7 +1413,7 @@ exp.run = function() {
         onMouseout: mode,
         mode: 'fill',
         r: 4,
-        color: 'paired',
+        color: 'agflow',
         stroke: {
           width: 1,
           color: null
@@ -1395,22 +1442,9 @@ exp.run = function() {
       legends: {
         show: true
       },
-      pluginsIconsFolder: "ucons"
+      pluginsIconsFolder: "icons"
     },
-    series: [
-      {
-        name: "Serie 1",
-        data: [
-          {
-            x: 1,
-            y: 10
-          }, {
-            x: 24 * 60 * 60 + 10,
-            y: 10
-          }
-        ]
-      }
-    ]
+    series: series
   });
   return agChart.render();
 };
@@ -1474,6 +1508,7 @@ exp.Main = Main = (function() {
     schemes.cool = ['#5e9d2f', '#73c03a', '#4682b4', '#7bc3b8', '#a9884e', '#c1b266', '#a47493', '#c09fb5'];
     schemes.munin = ['#00cc00', '#0066b3', '#ff8000', '#ffcc00', '#330099', '#990099', '#ccff00', '#ff0000', '#808080', '#008f00', '#00487d', '#b35a00', '#b38f00', '#6b006b', '#8fb300', '#b30000', '#bebebe', '#80ff80', '#80c9ff', '#ffc080', '#ffe680', '#aa80ff', '#ee00cc', '#ff8080', '#666600', '#ffbfff', '#00ffcc', '#cc6699', '#999900'];
     schemes.paired = ["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928"];
+    schemes.agflow = ["#0099ef", "#ff009d", "#56b501", "#ffee52", "#a34100", "#0018ef", "#ff89d2", "#6ee801", "#ef0018", "#ffa468", "#00efd7", "#b3006e", "#aefe66", "#ed7446", "#572200", "#0010a3", "#326901"];
     return schemes;
   };
 

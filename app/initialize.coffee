@@ -21,6 +21,35 @@ exp.run = ->
   t = new time.Main(
     lang: 'en'
   )
+
+  series = []
+  series.push {
+      name: "Serie 1"
+      data: genDataFunc(24*3600*120, 36*3600, (d) -> Math.cos(d)*10)
+      config:
+        stroke: {width: 1}
+    }
+  series.push {
+      name: "Serie 2"
+      data: genDataFunc(24*3600*120, 36*3600*2, Math.tan)
+      config:
+        color: "#ff0001"
+        stroke: {width: 1}
+    }
+  series.push {
+    name: "Serie 3"
+    data: genDataFunc(24*3600*120, 48*3600, Math.sin)
+    config:
+      #color: "#00fffe"
+      stroke: {width: 1}
+  }
+
+  for i in [0..20]
+    series.push {
+      name: "Serie "+(i+3)
+      data: [{x: i*1000, y: i*10}]
+    }
+
   tooltipFormat = (d) ->
     date = new Date(d)
     formatDate = d3.time.format("%b '%y")
@@ -83,13 +112,13 @@ exp.run = ->
         format:
           x: tooltipFormat
       line:
-        stroke: {width: 2}
+        stroke: {width: 1}
       point:
         onMouseover: mode
         onMouseout: mode
         mode: 'fill'
         r: 4
-        color: 'paired' # Color or palette name
+        color: 'agflow' # Color or palette name
         stroke: {width: 1, color: null}
       axis:
         y:
@@ -109,35 +138,7 @@ exp.run = ->
           tickSize: "full"
       legends:
         show: true
-      pluginsIconsFolder: "ucons"
-    series: [
-      {
-        name: "Serie 1"
-        data: [{x: 1403096480*1000, y: 10},
-          {x: 24*60*60*1000+1403096480*1000, y: 10},
-          {x: 3*24*60*60*1000+1403096480*1000, y: 10},
-          {x: 4*24*60*60*1000+1403096480*1000, y: 10}]
-      }
-      #{
-      #  name: "Serie 1"
-      #  data: genDataFunc(24*3600*120, 36*3600, (d) -> Math.cos(d)*10)
-      #  config:
-      #    stroke: {width: 1}
-      #}
-      #{
-      #  name: "Serie 2"
-      #  data: genDataFunc(24*3600*120, 36*3600*2, Math.tan)
-      #  config:
-      #    color: "#ff0001"
-      #    stroke: {width: 1}
-      #}
-      #{
-      #  name: "Serie 3"
-      #  data: genDataFunc(24*3600*120, 48*3600, Math.sin)
-      #  config:
-      #    #color: "#00fffe"
-      #    stroke: {width: 1}
-      #}
-    ]
+      pluginsIconsFolder: "icons"
+    series: series
   )
   agChart.render()
