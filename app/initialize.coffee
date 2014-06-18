@@ -106,28 +106,32 @@ exp.run = ->
           tickSize: "full"
       legends:
         show: true
-      pluginsIconsFolder: "icons"
+      pluginsIconsFolder: "ucons"
     series: [
       {
         name: "Serie 1"
-        data: genDataFunc(24*3600*120, 36*3600, (d) -> Math.cos(d)*10)
-        config:
-          stroke: {width: 1}
+        data: [{x: 1, y: 10},{x: 10, y: 10}]
       }
-      {
-        name: "Serie 2"
-        data: genDataFunc(24*3600*120, 36*3600*2, Math.tan)
-        config:
-          color: "#ff0001"
-          stroke: {width: 1}
-      }
-      {
-        name: "Serie 3"
-        data: genDataFunc(24*3600*120, 48*3600, Math.sin)
-        config:
-          #color: "#00fffe"
-          stroke: {width: 1}
-      }
+      #{
+      #  name: "Serie 1"
+      #  data: genDataFunc(24*3600*120, 36*3600, (d) -> Math.cos(d)*10)
+      #  config:
+      #    stroke: {width: 1}
+      #}
+      #{
+      #  name: "Serie 2"
+      #  data: genDataFunc(24*3600*120, 36*3600*2, Math.tan)
+      #  config:
+      #    color: "#ff0001"
+      #    stroke: {width: 1}
+      #}
+      #{
+      #  name: "Serie 3"
+      #  data: genDataFunc(24*3600*120, 48*3600, Math.sin)
+      #  config:
+      #    #color: "#00fffe"
+      #    stroke: {width: 1}
+      #}
     ]
   )
   agChart.render()

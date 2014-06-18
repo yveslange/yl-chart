@@ -4,7 +4,7 @@ build:
 	@cp public/js/agchart.js release/agchart.js
 	@cp public/js/vendor.js release/vendor.js
 	@cp public/css/agchart.css release/agchart.css
-build-prod:
+build-prod: build
 	@echo "Build project for production (BRUNCH)"
 	@cd public; rm -rf *;
 	@./node_modules/brunch/bin/brunch build --production

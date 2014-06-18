@@ -217,6 +217,7 @@ exp.Main = Main = (function() {
       axis: {
         x: {
           format: null,
+          domainMargin: 5,
           ticks: "auto",
           tickSize: null,
           orient: "bottom",
@@ -232,6 +233,7 @@ exp.Main = Main = (function() {
         },
         y: {
           format: null,
+          domainMargin: 5,
           ticks: "auto",
           tickSize: null,
           orient: "left",
@@ -435,11 +437,23 @@ exp.Main = Main = (function() {
     };
   };
 
+  Main.prototype.fixDomain = function(_domain) {
+    if (_domain.maxX === _domain.minX) {
+      _domain.maxX += this._CONF.axis.x.domainMargin;
+      _domain.minX -= this._CONF.axis.x.domainMargin;
+    }
+    if (_domain.maxY === _domain.minY) {
+      _domain.maxY += this._CONF.axis.y.domainMargin;
+      return _domain.minY -= this._CONF.axis.y.domainMargin;
+    }
+  };
+
   Main.prototype.computeScales = function() {
     var _canvas, _domain, _pad;
     _canvas = this._CONF.canvas;
     _pad = _canvas.padding;
     _domain = this.getDomain();
+    this.fixDomain(_domain);
     this._SCALE.width = d3.scale.linear();
     if (this._CONF.axis.x.format != null) {
       this._SCALE.width = d3.time.scale();
@@ -1381,36 +1395,20 @@ exp.run = function() {
       legends: {
         show: true
       },
-      pluginsIconsFolder: "icons"
+      pluginsIconsFolder: "ucons"
     },
     series: [
       {
         name: "Serie 1",
-        data: genDataFunc(24 * 3600 * 120, 36 * 3600, function(d) {
-          return Math.cos(d) * 10;
-        }),
-        config: {
-          stroke: {
-            width: 1
+        data: [
+          {
+            x: 1,
+            y: 10
+          }, {
+            x: 10,
+            y: 10
           }
-        }
-      }, {
-        name: "Serie 2",
-        data: genDataFunc(24 * 3600 * 120, 36 * 3600 * 2, Math.tan),
-        config: {
-          color: "#ff0001",
-          stroke: {
-            width: 1
-          }
-        }
-      }, {
-        name: "Serie 3",
-        data: genDataFunc(24 * 3600 * 120, 48 * 3600, Math.sin),
-        config: {
-          stroke: {
-            width: 1
-          }
-        }
+        ]
       }
     ]
   });

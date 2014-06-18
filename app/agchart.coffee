@@ -97,6 +97,7 @@ exp.Main = class Main
       axis:
         x:
           format: null
+          domainMargin: 5
           ticks: "auto"
           tickSize: null
           orient: "bottom" # bottom, top
@@ -110,6 +111,7 @@ exp.Main = class Main
             weight: "normal"
         y:
           format: null
+          domainMargin: 5
           ticks: "auto"
           tickSize: null
           orient: "left" # left, right
@@ -247,10 +249,20 @@ exp.Main = class Main
         minY = point.y if point.y < minY
     {minX: minX, maxX: maxX, minY: minY, maxY: maxY}
 
+# Fix the domain if minX == maxX and same for Y
+  fixDomain: (_domain) ->
+    if _domain.maxX == _domain.minX
+      _domain.maxX += @_CONF.axis.x.domainMargin
+      _domain.minX -= @_CONF.axis.x.domainMargin
+    if _domain.maxY == _domain.minY
+      _domain.maxY += @_CONF.axis.y.domainMargin
+      _domain.minY -= @_CONF.axis.y.domainMargin
+
   computeScales: ->
     _canvas = @_CONF.canvas
     _pad = _canvas.padding
     _domain = @getDomain()
+    @fixDomain(_domain)
     @_SCALE.width = d3.scale.linear()
     if @_CONF.axis.x.format?
       @_SCALE.width = d3.time.scale()
