@@ -37,6 +37,9 @@ exp.run = ->
   agChart = new agchart.Main(
     config:
       canvas:
+        scale:
+          x:
+            nice: true
         render: 'dotline' # dot, line, dotline
         width: 900.0
         height: 400.0
@@ -110,7 +113,10 @@ exp.run = ->
     series: [
       {
         name: "Serie 1"
-        data: [{x: 1, y: 10},{x: 10, y: 10}]
+        data: [{x: 1403096480*1000, y: 10},
+          {x: 24*60*60*1000+1403096480*1000, y: 10},
+          {x: 3*24*60*60*1000+1403096480*1000, y: 10},
+          {x: 4*24*60*60*1000+1403096480*1000, y: 10}]
       }
       #{
       #  name: "Serie 1"

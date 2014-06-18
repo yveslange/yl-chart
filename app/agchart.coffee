@@ -16,10 +16,10 @@ exp.Main = class Main
         scale:
           x:
             nice: false
-            padding: [10, 10]
+            padding: [10, 10] # NOT WORKING YET
           y:
             nice: true
-            padding: [10, 10]
+            padding: [10, 10] # NOT WORKING YET
         bgcolor: "#FFFFFF"
         render: "dot" # dot, line
         title:
@@ -249,7 +249,7 @@ exp.Main = class Main
         minY = point.y if point.y < minY
     {minX: minX, maxX: maxX, minY: minY, maxY: maxY}
 
-# Fix the domain if minX == maxX and same for Y
+  # Fix the domain if minX == maxX and same for Y
   fixDomain: (_domain) ->
     if _domain.maxX == _domain.minX
       _domain.maxX += @_CONF.axis.x.domainMargin
@@ -268,13 +268,14 @@ exp.Main = class Main
       @_SCALE.width = d3.time.scale()
     @_SCALE.width.domain([_domain.minX,_domain.maxX])
       .range([_pad[0], _canvas.width-_pad[0]])
-    if _canvas.scale.x.nice
-      @_SCALE.width.nice()
     @_SCALE.height = d3.scale.linear()
     if @_CONF.axis.y.format?
       @_SCALE.height = d3.time.scale()
     @_SCALE.height.domain([_domain.minY,_domain.maxY])
       .range([_canvas.height-_pad[1], _pad[1]])
+
+    if _canvas.scale.x.nice
+      @_SCALE.width.nice()
     if _canvas.scale.y.nice
       @_SCALE.height.nice()
 
