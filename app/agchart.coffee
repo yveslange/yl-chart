@@ -123,6 +123,7 @@ exp.Main = class Main
             weight: "normal"
       legends:
         show: true
+      pluginsIconsFolder: "icons"
       plugins:
         exportation:
           enable: true
@@ -826,6 +827,7 @@ exp.Main = class Main
     )
 
     @renderPluginMenu(
+      iconsFolder: @_CONF.pluginsIconsFolder
       selector: @_CONF.canvas.selector
       confPlugins: @_CONF.plugins
     )
@@ -895,10 +897,9 @@ exp.Main = class Main
         $(selector).find(".series#"+serie).toggle()
       )
 
-
-
   renderPluginMenu: (params={
     selector: null
+    iconsFolder: 'icons'
     confPlugins: {}
   }) ->
     pluginsMenu = $("<div/>", {
@@ -918,7 +919,7 @@ exp.Main = class Main
     for plugin of params.confPlugins
       if params.confPlugins[plugin].enable
         icon = $("<img/>",{
-          src: "icons/#{plugin}.png"
+          src: "#{params.iconsFolder}/#{plugin}.png"
           width: "30px"
         }).appendTo(pluginsMenu)
         icon.css({cursor: "pointer"})

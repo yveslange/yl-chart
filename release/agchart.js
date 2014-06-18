@@ -249,6 +249,7 @@ exp.Main = Main = (function() {
       legends: {
         show: true
       },
+      pluginsIconsFolder: "icons",
       plugins: {
         exportation: {
           enable: true,
@@ -966,6 +967,7 @@ exp.Main = Main = (function() {
       padding: this._CONF.canvas.padding
     });
     this.renderPluginMenu({
+      iconsFolder: this._CONF.pluginsIconsFolder,
       selector: this._CONF.canvas.selector,
       confPlugins: this._CONF.plugins
     });
@@ -1029,6 +1031,7 @@ exp.Main = Main = (function() {
     if (params == null) {
       params = {
         selector: null,
+        iconsFolder: 'icons',
         confPlugins: {}
       };
     }
@@ -1055,7 +1058,7 @@ exp.Main = Main = (function() {
     for (plugin in params.confPlugins) {
       if (params.confPlugins[plugin].enable) {
         icon = $("<img/>", {
-          src: "icons/" + plugin + ".png",
+          src: "" + params.iconsFolder + "/" + plugin + ".png",
           width: "30px"
         }).appendTo(pluginsMenu);
         icon.css({
@@ -1377,7 +1380,8 @@ exp.run = function() {
       },
       legends: {
         show: true
-      }
+      },
+      pluginsIconsFolder: "icons"
     },
     series: [
       {

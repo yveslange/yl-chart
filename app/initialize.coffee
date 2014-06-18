@@ -106,6 +106,7 @@ exp.run = ->
           tickSize: "full"
       legends:
         show: true
+      pluginsIconsFolder: "icons"
     series: [
       {
         name: "Serie 1"
