@@ -55,9 +55,6 @@ exp.run = ->
     formatDate = d3.time.format("%b '%y")
     formatDate(date)
 
-  tooltipTemplate = (d) ->
-    console.log d
-
   # singlePoint, multipleVertical, multipleVerticalInverted
   mode = "multipleVerticalInverted"
   #mode = "multipleVertical"

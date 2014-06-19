@@ -1231,7 +1231,6 @@ exp.Main = Main = (function() {
       },
       multipleVerticalInverted: function(params) {
         var cx, res, title, x, _circleNode, _ref, _ref1;
-        console.log("callback", params);
         _circleNode = params.circleNode;
         cx = _circleNode.getAttribute('cx');
         x = parseFloat(_circleNode.getAttribute('data-x'));
@@ -1246,7 +1245,6 @@ exp.Main = Main = (function() {
         $(params.canvas[0]).find("circle[cx='" + cx + "']").each(function(e, node) {
           var serieName, _ref2;
           serieName = parseInt(node.parentNode.getAttribute("title"));
-          console.log("x", serieName);
           if (((_ref2 = params.format) != null ? _ref2.serie : void 0) != null) {
             serieName = params.format.serie(serieName);
           }
@@ -1309,7 +1307,7 @@ genDataFunc = function(len, inter, func) {
 };
 
 exp.run = function() {
-  var agChart, i, mode, series, t, tooltipFormat, tooltipTemplate, _i;
+  var agChart, i, mode, series, t, tooltipFormat, _i;
   t = new time.Main({
     lang: 'en'
   });
@@ -1360,9 +1358,6 @@ exp.run = function() {
     date = new Date(d);
     formatDate = d3.time.format("%b '%y");
     return formatDate(date);
-  };
-  tooltipTemplate = function(d) {
-    return console.log(d);
   };
   mode = "multipleVerticalInverted";
   agChart = new agchart.Main({

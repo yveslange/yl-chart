@@ -1090,7 +1090,6 @@ exp.Main = class Main
         (params) ->
           # Get all same cx value, take the fill color to
           # draw watch and show some information
-          console.log "callback", params
           _circleNode = params.circleNode
           cx = _circleNode.getAttribute('cx')
           x = parseFloat(_circleNode.getAttribute('data-x'))
@@ -1102,7 +1101,6 @@ exp.Main = class Main
           res = []
           $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
             serieName = parseInt(node.parentNode.getAttribute("title"))
-            console.log "x", serieName
             if params.format?.serie?
               serieName = params.format.serie(serieName)
             res.push {
