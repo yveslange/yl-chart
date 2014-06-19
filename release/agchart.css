@@ -10,14 +10,20 @@
 .tooltip {
   font-size: 16px;
   position: absolute;
-  background-color: #3f3f3f;
+  background-color: #ffffff;
   border: #2f2f2f 1px solid;
   border-radius: 5px;
   padding: 5px;
-  color: #efefef;
+  color: #1a1a1a;
   pointer-events: none;
   /* Trick when the tooltip was moved above other points */
 
+}
+.tooltip h1 {
+  font-size: 12px !important;
+  text-align: center;
+  font-weight: bold;
+  color: #2f2f2f;
 }
 .tooltip .swatch {
   float: right;

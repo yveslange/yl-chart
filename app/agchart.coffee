@@ -10,6 +10,8 @@ exp.Main = class Main
         format:
           x: null
           y: null
+          title: null
+          serie: null
         callback: "singlePoint"
         alwaysInside: true
       canvas:
@@ -125,6 +127,7 @@ exp.Main = class Main
             weight: "normal"
       legends:
         show: true
+        format: null
       pluginsIconsFolder: "icons"
       plugins:
         exportation:
@@ -852,10 +855,10 @@ exp.Main = class Main
   renderLegends: ->
     _series = @_SERIES
     selector = @_CONF.canvas.selector
-    rectWidth = 30
+    rectWidth = 10
     rectHeight = 10
-    textWidth = 100
-    rectMargin = 2
+    textWidth = 50
+    rectMargin = 5
 
     # Width space available
     widthSpace = @_CONF.canvas.width-@_CONF.canvas.padding[0]*2
@@ -871,6 +874,9 @@ exp.Main = class Main
       @_CANVAS.attr("height", @_CONF.canvas.height+currentY)
       i = parseInt(i)
       color = serie.data[0].config.color
+      text = serie.name
+      if @_CONF.legends.format?
+        text = @_CONF.legends.format(text)
       legend = legPanel.append("g")
         .attr("transform", "translate(#{currentX}, #{currentY})")
         .style("cursor", "pointer")
@@ -878,17 +884,20 @@ exp.Main = class Main
         .attr("data-hide", "false")
       rect = legend.append("rect")
         .attr("width", rectWidth)
-        .attr("height", 10)
+        .attr("height", rectHeight)
         .attr("fill", color)
         .attr("stroke", "#afafaf")
         .attr("stroke-width", "1")
+        .attr("rx", 5)
+        .attr("ry", 5)
       legend.append("text")
         .attr("x", rectMargin+rectWidth)
-        .attr("y", 10)
-        .attr("fill", "#3f3f3f")
+        .attr("y", rectHeight-1)
+        .attr("fill", color)
         .attr("font-size", 10)
-        .text(serie.name)
-      if currentX+rectWidth+textWidth+rectMargin> widthSpace-rectWidth-textWidth-rectMargin
+        .text(text)
+      if currentX+rectWidth+textWidth+
+      rectMargin > widthSpace-rectWidth-textWidth-rectMargin
         currentX = 0
         currentY += 15
         # Update canvas height
@@ -1013,23 +1022,23 @@ exp.Main = class Main
 
     templates:
       singlePoint: (data) ->
-        "<div class='serie' id='0'>#{data[0].serieName}"+
+        html = "<h1>#{data[0].title}</h1>"
+        html += "<div class='serie' id='0'>#{data[0].x} : #{data[0].y}"+
           "<div class='swatch'"+
             "style='background-color: #{data[0].color}'></div>"+
-        "</div>"+
-        "<div>#{data[0].x} #{data[0].y}</div>"
+        "</div>"
+
       multipleVertical: (data) ->
-        html = ""
+        html = "<h1>#{data[0].x}</h1>"
         for d, i in data
           if not d.hide
-            html += "<div class='serie' id='#{i}'>#{d.serieName}"+
+            html += "<div class='serie' id='#{i}'>#{d.serieName} : #{d.y}"+
               "<div class='swatch'"+
                 "style='background-color: #{d.color}'></div>"+
-            "</div>"+
-            "<div>#{d.x} #{d.y}</div>"
+            "</div>"
         html
       multipleVerticalInverted: (data) ->
-        html = "#{data[0].x}"
+        html = "<h1>#{data[0].x}</h1>"
         for d, i in data
           if not d.hide
             html += "<div class='serie' id='#{i}'>#{d.serieName}: #{d.y}"+
@@ -1058,10 +1067,17 @@ exp.Main = class Main
           _circleNode = params.circleNode
           cx = _circleNode.getAttribute('cx')
           x = parseFloat(_circleNode.getAttribute('data-x'))
-          x = params.format.x(x) if params.format?.x?
+          if params.format?.x?
+            x = params.format.x(x)
+
+          title = parseInt(_circleNode.parentNode.getAttribute('title'))
+          if params.format?.title?
+            title = params.format.title(title)
+
           res = []
           $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
             res.push {
+              title: title
               serieName: node.parentNode.getAttribute("title")
               color: node.getAttribute("data-color")
               y: parseFloat(node.getAttribute("data-y")).toFixed(2)
@@ -1074,14 +1090,24 @@ exp.Main = class Main
         (params) ->
           # Get all same cx value, take the fill color to
           # draw watch and show some information
+          console.log "callback", params
           _circleNode = params.circleNode
           cx = _circleNode.getAttribute('cx')
           x = parseFloat(_circleNode.getAttribute('data-x'))
-          x = params.format.x(x) if params.format?.x?
+          if params.format?.x?
+            x = params.format.x(x)
+          title = parseInt(_circleNode.parentNode.getAttribute('title'))
+          if params.format?.title?
+            title = params.format.title(title)
           res = []
           $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
+            serieName = parseInt(node.parentNode.getAttribute("title"))
+            console.log "x", serieName
+            if params.format?.serie?
+              serieName = params.format.serie(serieName)
             res.push {
-              serieName: node.parentNode.getAttribute("title")
+              title: title
+              serieName: serieName
               color: node.getAttribute("data-color")
               y: parseFloat(node.getAttribute("data-y")).toFixed(2)
               x: x

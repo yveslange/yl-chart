@@ -104,7 +104,9 @@ exp.Main = Main = (function() {
         template: "singlePoint",
         format: {
           x: null,
-          y: null
+          y: null,
+          title: null,
+          serie: null
         },
         callback: "singlePoint",
         alwaysInside: true
@@ -249,7 +251,8 @@ exp.Main = Main = (function() {
         }
       },
       legends: {
-        show: true
+        show: true,
+        format: null
       },
       pluginsIconsFolder: "icons",
       plugins: {
@@ -991,13 +994,13 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.renderLegends = function() {
-    var color, currentX, currentY, i, legPanel, legend, posX, posY, rect, rectHeight, rectMargin, rectWidth, selector, serie, textWidth, widthSpace, _ref, _results, _series;
+    var color, currentX, currentY, i, legPanel, legend, posX, posY, rect, rectHeight, rectMargin, rectWidth, selector, serie, text, textWidth, widthSpace, _ref, _results, _series;
     _series = this._SERIES;
     selector = this._CONF.canvas.selector;
-    rectWidth = 30;
+    rectWidth = 10;
     rectHeight = 10;
-    textWidth = 100;
-    rectMargin = 2;
+    textWidth = 50;
+    rectMargin = 5;
     widthSpace = this._CONF.canvas.width - this._CONF.canvas.padding[0] * 2;
     posX = this._CONF.canvas.padding[0];
     posY = this._CONF.canvas.height - 12;
@@ -1011,9 +1014,13 @@ exp.Main = Main = (function() {
       this._CANVAS.attr("height", this._CONF.canvas.height + currentY);
       i = parseInt(i);
       color = serie.data[0].config.color;
+      text = serie.name;
+      if (this._CONF.legends.format != null) {
+        text = this._CONF.legends.format(text);
+      }
       legend = legPanel.append("g").attr("transform", "translate(" + currentX + ", " + currentY + ")").style("cursor", "pointer").attr("data-serieIndex", i).attr("data-hide", "false");
-      rect = legend.append("rect").attr("width", rectWidth).attr("height", 10).attr("fill", color).attr("stroke", "#afafaf").attr("stroke-width", "1");
-      legend.append("text").attr("x", rectMargin + rectWidth).attr("y", 10).attr("fill", "#3f3f3f").attr("font-size", 10).text(serie.name);
+      rect = legend.append("rect").attr("width", rectWidth).attr("height", rectHeight).attr("fill", color).attr("stroke", "#afafaf").attr("stroke-width", "1").attr("rx", 5).attr("ry", 5);
+      legend.append("text").attr("x", rectMargin + rectWidth).attr("y", rectHeight - 1).attr("fill", color).attr("font-size", 10).text(text);
       if (currentX + rectWidth + textWidth + rectMargin > widthSpace - rectWidth - textWidth - rectMargin) {
         currentX = 0;
         currentY += 15;
@@ -1152,22 +1159,24 @@ exp.Main = Main = (function() {
     },
     templates: {
       singlePoint: function(data) {
-        return ("<div class='serie' id='0'>" + data[0].serieName) + "<div class='swatch'" + ("style='background-color: " + data[0].color + "'></div>") + "</div>" + ("<div>" + data[0].x + " " + data[0].y + "</div>");
+        var html;
+        html = "<h1>" + data[0].title + "</h1>";
+        return html += ("<div class='serie' id='0'>" + data[0].x + " : " + data[0].y) + "<div class='swatch'" + ("style='background-color: " + data[0].color + "'></div>") + "</div>";
       },
       multipleVertical: function(data) {
         var d, html, i, _i, _len;
-        html = "";
+        html = "<h1>" + data[0].x + "</h1>";
         for (i = _i = 0, _len = data.length; _i < _len; i = ++_i) {
           d = data[i];
           if (!d.hide) {
-            html += ("<div class='serie' id='" + i + "'>" + d.serieName) + "<div class='swatch'" + ("style='background-color: " + d.color + "'></div>") + "</div>" + ("<div>" + d.x + " " + d.y + "</div>");
+            html += ("<div class='serie' id='" + i + "'>" + d.serieName + " : " + d.y) + "<div class='swatch'" + ("style='background-color: " + d.color + "'></div>") + "</div>";
           }
         }
         return html;
       },
       multipleVerticalInverted: function(data) {
         var d, html, i, _i, _len;
-        html = "" + data[0].x;
+        html = "<h1>" + data[0].x + "</h1>";
         for (i = _i = 0, _len = data.length; _i < _len; i = ++_i) {
           d = data[i];
           if (!d.hide) {
@@ -1196,16 +1205,21 @@ exp.Main = Main = (function() {
         ];
       },
       multipleVertical: function(params) {
-        var cx, res, x, _circleNode, _ref;
+        var cx, res, title, x, _circleNode, _ref, _ref1;
         _circleNode = params.circleNode;
         cx = _circleNode.getAttribute('cx');
         x = parseFloat(_circleNode.getAttribute('data-x'));
         if (((_ref = params.format) != null ? _ref.x : void 0) != null) {
           x = params.format.x(x);
         }
+        title = parseInt(_circleNode.parentNode.getAttribute('title'));
+        if (((_ref1 = params.format) != null ? _ref1.title : void 0) != null) {
+          title = params.format.title(title);
+        }
         res = [];
         $(params.canvas[0]).find("circle[cx='" + cx + "']").each(function(e, node) {
           return res.push({
+            title: title,
             serieName: node.parentNode.getAttribute("title"),
             color: node.getAttribute("data-color"),
             y: parseFloat(node.getAttribute("data-y")).toFixed(2),
@@ -1216,17 +1230,29 @@ exp.Main = Main = (function() {
         return res;
       },
       multipleVerticalInverted: function(params) {
-        var cx, res, x, _circleNode, _ref;
+        var cx, res, title, x, _circleNode, _ref, _ref1;
+        console.log("callback", params);
         _circleNode = params.circleNode;
         cx = _circleNode.getAttribute('cx');
         x = parseFloat(_circleNode.getAttribute('data-x'));
         if (((_ref = params.format) != null ? _ref.x : void 0) != null) {
           x = params.format.x(x);
         }
+        title = parseInt(_circleNode.parentNode.getAttribute('title'));
+        if (((_ref1 = params.format) != null ? _ref1.title : void 0) != null) {
+          title = params.format.title(title);
+        }
         res = [];
         $(params.canvas[0]).find("circle[cx='" + cx + "']").each(function(e, node) {
+          var serieName, _ref2;
+          serieName = parseInt(node.parentNode.getAttribute("title"));
+          console.log("x", serieName);
+          if (((_ref2 = params.format) != null ? _ref2.serie : void 0) != null) {
+            serieName = params.format.serie(serieName);
+          }
           return res.push({
-            serieName: node.parentNode.getAttribute("title"),
+            title: title,
+            serieName: serieName,
             color: node.getAttribute("data-color"),
             y: parseFloat(node.getAttribute("data-y")).toFixed(2),
             x: x,
