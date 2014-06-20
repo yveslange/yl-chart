@@ -328,7 +328,8 @@ exp.Main = class Main
       text: ""
       textAnchor: ""
       offset: null
-    class: null }) ->
+      class: null
+  }) ->
 
     params.label.offset = params.label.offset || 0
 
@@ -401,7 +402,8 @@ exp.Main = class Main
     orient: null
     trans:  null
     label:  null
-    format: null }) ->
+    format: null
+  }) ->
 
     grid = d3.svg.axis()
       .scale(params.scale)
@@ -715,7 +717,9 @@ exp.Main = class Main
         else if eventX > params.confCanvas.width-params.confCanvas.padding[0]-textDim.width/2
           positionX = params.confCanvas.width-params.confCanvas.padding[0]-textDim.width/2
         text
-          .attr("y", textDim.height-textDim.height*0.25) # Seems that we need to remove 25% to have it centered. Auto magically resolved !
+          .attr("y", textDim.height-textDim.height*0.25) # Seems that we need to remove 25%
+                                                         # to have it centered. Auto magically
+                                                         # resolved !
           .attr("x", textDim.width/2)
         box
           .attr("width", textDim.width)

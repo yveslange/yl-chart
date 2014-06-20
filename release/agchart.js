@@ -515,9 +515,9 @@ exp.Main = Main = (function() {
           trans: null,
           text: "",
           textAnchor: "",
-          offset: null
-        },
-        "class": null
+          offset: null,
+          "class": null
+        }
       };
     }
     params.label.offset = params.label.offset || 0;
