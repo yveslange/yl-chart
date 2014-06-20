@@ -459,7 +459,7 @@ exp.Main = Main = (function() {
     this.fixDomain(_domain);
     this._SCALE.width = d3.scale.linear();
     if (this._CONF.axis.x.format != null) {
-      this._SCALE.width = d3.time.scale();
+      this._SCALE.width = d3.time.scale.utc();
     }
     this._SCALE.width.domain([_domain.minX, _domain.maxX]).range([_pad[0], _canvas.width - _pad[0]]);
     this._SCALE.height = d3.scale.linear();
@@ -582,9 +582,9 @@ exp.Main = Main = (function() {
     }
     if (params.format != null) {
       if (params.ticks === "auto") {
-        grid.ticks(d3.time.months, 1);
+        grid.ticks(d3.time.months.utc, 1);
       } else {
-        grid.ticks(d3.time.months, params.ticks);
+        grid.ticks(d3.time.months.utc, params.ticks);
       }
       grid.tickFormat(d3.time.format(params.format));
     }
