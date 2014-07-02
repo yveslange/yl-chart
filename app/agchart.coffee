@@ -806,6 +806,7 @@ exp.Main = class Main
       .attr("x", params.x)
       .attr("y", params.y)
       .attr("opacity", params.opacity)
+      .attr("id", "logo")
       .attr("xlink:href",@_CONF.logo.url)
 
   render: ->
@@ -958,7 +959,7 @@ exp.Main = class Main
     exportation:
       onClick: (context, selector, conf) ->
         # Replace logo by copyright text
-        image = $(selector).find("image").remove()
+        image = $(selector).find("image#logo").remove()
         text = context._CANVAS.append("text")
           .attr("fill", conf.copyright.color)
           .attr("font-size", conf.copyright.fontSize+"px")
@@ -975,17 +976,28 @@ exp.Main = class Main
         svg = $(selector).find("svg")[0]
         svg_xml = (new XMLSerializer()).serializeToString(svg)
         canvas = document.createElement('canvas')
-        $("body").append(canvas)
+        $("body").after(canvas)
         canvg(canvas, svg_xml)
         $(canvas).remove()
 
         # Convert canvas to PNG
         img = canvas.toDataURL("image/png")
-        a = document.createElement('a')
-        a.href = img
-        a.download = "agflow.png"
-        $("body").append(a)
-        a.click()
+
+        # Internet explorer can't save data URI scheme
+        ua = window.navigator.userAgent
+        msie = ua.indexOf("MSIE ")
+        if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./))
+          console.log "Internet explorer detected"
+          window.winIE = win = window.open()
+          win.document.body.innerHTML = "<center><img src='"+img+"'></img><br>Please right click on the image and choose 'Save image as...'</center>"
+          win.document.close()
+          #setTimeout('window.winIE.document.execCommand("SaveAs")', 1000)
+        else
+          a = document.createElement('a')
+          a.href = img
+          a.download = "agflow.png"
+          $("body").append(a)
+          a.click()
 
         # Trick: we need to re-render the logo
         context.renderLogo(

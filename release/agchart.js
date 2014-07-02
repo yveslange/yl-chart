@@ -941,7 +941,7 @@ exp.Main = Main = (function() {
     if (params.y === 'left') {
       params.x = this._CONF.canvas.padding[0];
     }
-    return this._CANVAS.append("image").attr("width", params.width).attr("height", params.height).attr("x", params.x).attr("y", params.y).attr("opacity", params.opacity).attr("xlink:href", this._CONF.logo.url);
+    return this._CANVAS.append("image").attr("width", params.width).attr("height", params.height).attr("x", params.x).attr("y", params.y).attr("opacity", params.opacity).attr("id", "logo").attr("xlink:href", this._CONF.logo.url);
   };
 
   Main.prototype.render = function() {
@@ -1100,8 +1100,8 @@ exp.Main = Main = (function() {
   Main.prototype.plugins = {
     exportation: {
       onClick: function(context, selector, conf) {
-        var a, canvas, height, image, img, pX, pY, svg, svg_xml, text, textDim, width;
-        image = $(selector).find("image").remove();
+        var a, canvas, height, image, img, msie, pX, pY, svg, svg_xml, text, textDim, ua, width, win;
+        image = $(selector).find("image#logo").remove();
         text = context._CANVAS.append("text").attr("fill", conf.copyright.color).attr("font-size", conf.copyright.fontSize + "px").text(conf.copyright.text);
         width = context._CONF.canvas.width;
         height = context._CONF.canvas.height;
@@ -1113,15 +1113,24 @@ exp.Main = Main = (function() {
         svg = $(selector).find("svg")[0];
         svg_xml = (new XMLSerializer()).serializeToString(svg);
         canvas = document.createElement('canvas');
-        $("body").append(canvas);
+        $("body").after(canvas);
         canvg(canvas, svg_xml);
         $(canvas).remove();
         img = canvas.toDataURL("image/png");
-        a = document.createElement('a');
-        a.href = img;
-        a.download = "agflow.png";
-        $("body").append(a);
-        a.click();
+        ua = window.navigator.userAgent;
+        msie = ua.indexOf("MSIE ");
+        if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
+          console.log("Internet explorer detected");
+          window.winIE = win = window.open();
+          win.document.body.innerHTML = "<center><img src='" + img + "'></img><br>Please right click on the image and choose 'Save image as...'</center>";
+          win.document.close();
+        } else {
+          a = document.createElement('a');
+          a.href = img;
+          a.download = "agflow.png";
+          $("body").append(a);
+          a.click();
+        }
         context.renderLogo({
           opacity: context._CONF.logo.opacity,
           url: context._CONF.logo.url,
