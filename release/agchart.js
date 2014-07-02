@@ -1115,7 +1115,7 @@ exp.Main = Main = (function() {
         canvas = document.createElement('canvas');
         $("body").append(canvas);
         canvg(canvas, svg_xml);
-        canvas.remove();
+        $(canvas).remove();
         img = canvas.toDataURL("image/png");
         a = document.createElement('a');
         a.href = img;

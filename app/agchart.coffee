@@ -977,7 +977,7 @@ exp.Main = class Main
         canvas = document.createElement('canvas')
         $("body").append(canvas)
         canvg(canvas, svg_xml)
-        canvas.remove()
+        $(canvas).remove()
 
         # Convert canvas to PNG
         img = canvas.toDataURL("image/png")
