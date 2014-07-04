@@ -24,18 +24,18 @@ exp.run = ->
 
   series = []
   series.push {
-      name: "Serie 1"
-      data: genDataFunc(24*3600*120, 36*3600, (d) -> Math.cos(d)*10)
-      config:
-        stroke: {width: 1}
-    }
+    name: "Serie 1"
+    data: genDataFunc(24*3600*120, 36*3600, (d) -> Math.cos(d)*10)
+    config:
+      stroke: {width: 1}
+  }
   series.push {
-      name: "Serie 2"
-      data: genDataFunc(24*3600*120, 36*3600*2, Math.tan)
-      config:
-        color: "#ff0001"
-        stroke: {width: 1}
-    }
+    name: "Serie 2"
+    data: genDataFunc(24*3600*120, 36*3600*2, Math.tan)
+    config:
+      color: "#ff0001"
+      stroke: {width: 1}
+  }
   series.push {
     name: "Serie 3"
     data: genDataFunc(24*3600*120, 48*3600, Math.sin)

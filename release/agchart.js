@@ -91,408 +91,69 @@
   globals.require.brunch = true;
 })();
 require.register("agchart", function(exports, require, module) {
-var Main, exp, palette;
-
-palette = require('utils/palette');
+var M, Main, exp;
 
 module.exports = exp = {};
 
+M = {
+  config: require('config'),
+  palette: require('utils/palette'),
+  tools: require('utils/tools'),
+  design: require('utils/design'),
+  effectsPoint: require('effects/point'),
+  scale: require('utils/scale'),
+  domain: require('utils/domain')
+};
+
 exp.Main = Main = (function() {
   function Main(args) {
-    this._CONF = {
-      tooltip: {
-        template: "singlePoint",
-        format: {
-          x: null,
-          y: null,
-          title: null,
-          serie: null
-        },
-        callback: "singlePoint",
-        alwaysInside: true
-      },
-      canvas: {
-        scale: {
-          x: {
-            nice: false,
-            padding: [10, 10]
-          },
-          y: {
-            nice: true,
-            padding: [10, 10]
-          }
-        },
-        bgcolor: "#FFFFFF",
-        render: "dot",
-        title: {
-          text: "",
-          color: "#2f2f2f",
-          size: 24,
-          fontFamily: "arial",
-          border: {
-            radius: 2,
-            color: "#3f3f3f",
-            padding: [8, 1]
-          },
-          position: {
-            x: 35,
-            y: 20
-          }
-        },
-        label: {
-          x: {
-            text: null,
-            size: 10,
-            color: "#7f7f7f",
-            offset: 15
-          },
-          y: {
-            text: null,
-            size: 10,
-            color: "#7f7f7f",
-            offset: 0
-          }
-        },
-        selector: null,
-        width: 600.0,
-        height: 400.0,
-        padding: [0, 0],
-        cross: {
-          x: {
-            show: false,
-            color: 'black',
-            stroke: 1,
-            offset: 0
-          },
-          y: {
-            show: false,
-            color: 'black',
-            stroke: 1,
-            offset: 0
-          }
-        },
-        crossValue: {
-          x: {
-            orient: 'bottom',
-            show: true,
-            color: '#0971b7',
-            fontColor: '#ffffff',
-            fontSize: 12,
-            format: function(d) {
-              var da, m, y;
-              da = d.toString().split(" ")[2];
-              m = d.toString().split(" ")[1];
-              y = d.toString().split(" ")[3].substring(2);
-              return "" + da + " " + m + " " + y;
-            },
-            radius: 5
-          },
-          y: {
-            show: true,
-            color: 'white'
-          }
-        }
-      },
-      logo: {
-        url: "agflow-logo.svg",
-        width: 100,
-        height: 50,
-        x: 'right',
-        y: 'bottom',
-        opacity: 0.5
-      },
-      line: {
-        stroke: {
-          width: 2
-        }
-      },
-      point: {
-        onMouseover: "singlePoint",
-        onMouseout: "singlePoint",
-        r: 4,
-        mode: 'empty',
-        color: "munin",
-        stroke: {
-          width: 1
-        }
-      },
-      axis: {
-        x: {
-          format: null,
-          domainMargin: 5,
-          ticks: "auto",
-          tickSize: null,
-          orient: "bottom",
-          tickColor: "#f5f5f5",
-          tickWidth: 2,
-          strokeWidth: 1,
-          color: "#2b2e33",
-          font: {
-            color: "#2b2e33",
-            size: 10,
-            weight: "normal"
-          }
-        },
-        y: {
-          format: null,
-          domainMargin: 5,
-          ticks: "auto",
-          tickSize: null,
-          orient: "left",
-          tickColor: "#f5f5f5",
-          tickWidth: 2,
-          strokeWidth: 1,
-          color: "#2b2e33",
-          font: {
-            color: "#2b2e33",
-            size: 10,
-            weight: "normal"
-          }
-        }
-      },
-      legends: {
-        show: true,
-        format: null
-      },
-      pluginsIconsFolder: "icons",
-      plugins: {
-        exportation: {
-          enable: true,
-          copyright: {
-            text: "(c) AgFlow 2014",
-            color: "#9f9f9f",
-            fontSize: 12
-          }
-        }
-      }
-    };
+    this._CONF = (new M.config.Main(args.config)).get();
+    this._PALETTE = new M.palette.Main(this._CONF.point.color);
     this._CANVAS = void 0;
     this._TOOLTIP = void 0;
-    this._SCALE = {
-      x: void 0,
-      y: void 0
+    this._DOMNODES = {
+      svg: void 0,
+      tooltip: void 0
     };
-    this.defaultConfig(args.config);
-    this._SERIES = this.prepareSeries(args.series);
-    this.computePadding();
-    this.computeScales();
-    return;
+    this._SERIES = M.tools.prepareSeries({
+      series: args.series,
+      palette: this._PALETTE,
+      confPoint: this._CONF.point
+    });
+    if (this._CONF.canvas.padding === 'auto') {
+      this._CONF.canvas.padding = M.design.computePadding(this._CONF.point);
+    }
+    this._DOMAIN = M.domain.computeDomain(args.series);
+    M.domain.fixDomain({
+      domain: this._DOMAIN,
+      confAxis: this._CONF.axis
+    });
+    this._SCALE = M.scale.computeScales({
+      confCanvas: this._CONF.canvas,
+      confAxis: this._CONF.axis,
+      domain: this._DOMAIN
+    });
+    this.initSVG(this._CONF.canvas);
   }
-
-  Main.prototype.updateObject = function(obj1, obj2, replace) {
-    var isNode, update;
-    if (replace == null) {
-      replace = true;
-    }
-    isNode = function(obj) {
-      var _ref;
-      if ((obj != null ? (_ref = obj["0"]) != null ? _ref.nodeName : void 0 : void 0) != null) {
-        return true;
-      }
-      return false;
-    };
-    update = function(obj1, obj2, replace) {
-      var k, _ref, _ref1, _ref2;
-      if (replace == null) {
-        replace = true;
-      }
-      if (obj2 != null) {
-        for (k in obj2) {
-          if (isNode(obj2[k])) {
-            obj1[k] = (_ref = obj2[k][0]) != null ? _ref : obj1[k][0];
-          } else if (typeof obj2[k] === 'object') {
-            if (obj1[k] == null) {
-              obj1[k] = {};
-            }
-            update(obj1[k], obj2[k], replace);
-          } else {
-            if (replace) {
-              obj1[k] = (_ref1 = obj2[k]) != null ? _ref1 : obj1[k];
-            } else {
-              obj1[k] = (_ref2 = obj1[k]) != null ? _ref2 : obj2[k];
-            }
-          }
-        }
-      }
-      return obj1;
-    };
-    return update(obj1, obj2, replace);
-  };
-
-  Main.prototype.defaultConfig = function(c) {
-    if (c == null) {
-      c = {};
-    }
-    this.updateObject(this._CONF, c);
-    return this._CONF;
-  };
-
-  Main.prototype.effects = {
-    singlePoint: {
-      onMouseover: function(params) {
-        var curStrokeWidth, _circleNode;
-        _circleNode = params.circleNode;
-        curStrokeWidth = parseFloat(_circleNode.getAttribute("stroke-width"));
-        return _circleNode.setAttribute("stroke-width", curStrokeWidth * 2);
-      },
-      onMouseout: function(params) {
-        var curStrokeWidth, _circleNode;
-        _circleNode = params.circleNode;
-        curStrokeWidth = parseFloat(_circleNode.getAttribute("stroke-width"));
-        return _circleNode.setAttribute("stroke-width", curStrokeWidth / 2);
-      }
-    },
-    multipleVertical: {
-      onMouseover: function(params) {
-        var cx, strokeWidth, _circleNode;
-        _circleNode = params.circleNode;
-        cx = _circleNode.getAttribute('cx');
-        strokeWidth = parseFloat(_circleNode.getAttribute('stroke-width')) * 2;
-        return $(params.canvas[0]).find("circle[cx='" + cx + "']").each(function(e, node) {
-          return $(node).attr("stroke-width", strokeWidth);
-        });
-      },
-      onMouseout: function(params) {
-        var cx, strokeWidth, _circleNode;
-        _circleNode = params.circleNode;
-        cx = _circleNode.getAttribute('cx');
-        strokeWidth = parseFloat(_circleNode.getAttribute('stroke-width')) / 2;
-        return $(params.canvas[0]).find("circle[cx='" + cx + "']").each(function(e, node) {
-          return $(node).attr("stroke-width", strokeWidth);
-        });
-      }
-    },
-    multipleVerticalInverted: {
-      onMouseover: function(params) {
-        var cx, strokeWidth, _circleNode;
-        _circleNode = params.circleNode;
-        cx = _circleNode.getAttribute('cx');
-        strokeWidth = parseFloat(_circleNode.getAttribute('stroke-width')) * 2;
-        return $(params.canvas[0]).find("circle[cx='" + cx + "']").each(function(e, node) {
-          var fill, stroke;
-          $(node).attr("stroke-width", strokeWidth);
-          fill = $(node).attr("fill");
-          stroke = $(node).attr("stroke");
-          $(node).attr("stroke", fill);
-          return $(node).attr("fill", stroke);
-        });
-      },
-      onMouseout: function(params) {
-        var cx, strokeWidth, _circleNode;
-        _circleNode = params.circleNode;
-        cx = _circleNode.getAttribute('cx');
-        strokeWidth = parseFloat(_circleNode.getAttribute('stroke-width')) / 2;
-        return $(params.canvas[0]).find("circle[cx='" + cx + "']").each(function(e, node) {
-          var fill, stroke;
-          $(node).attr("stroke-width", strokeWidth);
-          fill = $(node).attr("fill");
-          stroke = $(node).attr("stroke");
-          $(node).attr("stroke", fill);
-          return $(node).attr("fill", stroke);
-        });
-      }
-    }
-  };
 
   Main.prototype.toString = function() {
     console.log("Canvas in " + this._CONF.selector);
     console.log("Config", this._CONF);
-    console.log("Datas:", this._SERIES);
+    console.log("Series:", this._SERIES);
   };
 
-  Main.prototype.computePadding = function() {
-    var pad;
-    pad = this._CONF.point.r + this._CONF.point.stroke.width / 2.0;
-    if (this._CONF.canvas.padding === 'auto') {
-      return this._CONF.canvas.padding = [pad, pad];
-    }
-  };
-
-  Main.prototype.getDomain = function() {
-    var maxX, maxY, minX, minY, point, serie, _i, _j, _len, _len1, _ref, _ref1;
-    maxX = maxY = Number.MIN_VALUE;
-    minX = minY = Number.MAX_VALUE;
-    _ref = this._SERIES;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      serie = _ref[_i];
-      _ref1 = serie.data;
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        point = _ref1[_j];
-        if (point.x > maxX) {
-          maxX = point.x;
-        }
-        if (point.x < minX) {
-          minX = point.x;
-        }
-        if (point.y > maxY) {
-          maxY = point.y;
-        }
-        if (point.y < minY) {
-          minY = point.y;
-        }
-      }
-    }
-    return {
-      minX: minX,
-      maxX: maxX,
-      minY: minY,
-      maxY: maxY
-    };
-  };
-
-  Main.prototype.fixDomain = function(_domain) {
-    if (_domain.maxX === _domain.minX) {
-      _domain.maxX += this._CONF.axis.x.domainMargin;
-      _domain.minX -= this._CONF.axis.x.domainMargin;
-    }
-    if (_domain.maxY === _domain.minY) {
-      _domain.maxY += this._CONF.axis.y.domainMargin;
-      return _domain.minY -= this._CONF.axis.y.domainMargin;
-    }
-  };
-
-  Main.prototype.computeScales = function() {
-    var _canvas, _domain, _pad;
-    _canvas = this._CONF.canvas;
-    _pad = _canvas.padding;
-    _domain = this.getDomain();
-    this.fixDomain(_domain);
-    this._SCALE.width = d3.scale.linear();
-    if (this._CONF.axis.x.format != null) {
-      this._SCALE.width = d3.time.scale.utc();
-    }
-    this._SCALE.width.domain([_domain.minX, _domain.maxX]).range([_pad[0], _canvas.width - _pad[0]]);
-    this._SCALE.height = d3.scale.linear();
-    if (this._CONF.axis.y.format != null) {
-      this._SCALE.height = d3.time.scale();
-    }
-    this._SCALE.height.domain([_domain.minY, _domain.maxY]).range([_canvas.height - _pad[1], _pad[1]]);
-    if (_canvas.scale.x.nice) {
-      this._SCALE.width.nice();
-    }
-    if (_canvas.scale.y.nice) {
-      return this._SCALE.height.nice();
-    }
-  };
-
-  Main.prototype.createCanvas = function() {
-    if (this._CONF.canvas.selector == null) {
+  Main.prototype.initSVG = function(confCanvas) {
+    if (confCanvas.selector == null) {
       throw new Error("No selector defined");
     }
-    $(this._CONF.canvas.selector).css({
+    $(confCanvas.selector).css({
       "position": "relative"
     });
-    return this._CANVAS = d3.select(this._CONF.canvas.selector).append('svg').attr("fill", this._CONF.canvas.bgcolor).attr('width', this._CONF.canvas.width).attr('height', this._CONF.canvas.height);
+    return this._CANVAS = d3.select(confCanvas.selector).append('svg').attr("fill", confCanvas.bgcolor).attr('width', confCanvas.width).attr('height', confCanvas.height);
   };
 
   Main.prototype.renderTitle = function(params) {
     var gbox, posX, posY, rect, text, textDim;
-    if (params == null) {
-      params = {
-        title: null,
-        padding: null
-      };
-    }
     posX = params.title.position.x;
     posY = params.title.position.y;
     gbox = this._CANVAS.append("g").attr("transform", "translate(" + posX + "," + posY + ")");
@@ -529,7 +190,7 @@ exp.Main = Main = (function() {
     textDim = text.node().getBBox();
     switch (params.orient) {
       case 'bottom':
-        trans = "translate(" + (width / 2) + ", " + (height - padding[1] + textDim.height + offset) + ")";
+        trans = "translate(" + (width / 2) + ",          " + (height - padding[1] + textDim.height + offset) + ")";
         break;
       case 'top':
         trans = "translate(" + (width / 2) + ", " + (height - 2) + ")";
@@ -623,7 +284,7 @@ exp.Main = Main = (function() {
       "class": "x",
       height: this._CONF.canvas.height,
       width: this._CONF.canvas.width,
-      scale: this._SCALE.width,
+      scale: this._SCALE.x,
       ticks: this._CONF.axis.x.ticks,
       tickSize: tickSize,
       padding: padding,
@@ -667,7 +328,7 @@ exp.Main = Main = (function() {
       "class": "y",
       height: this._CONF.canvas.height,
       width: this._CONF.canvas.width,
-      scale: this._SCALE.height,
+      scale: this._SCALE.y,
       ticks: this._CONF.axis.y.ticks,
       tickSize: tickSize,
       padding: padding,
@@ -686,41 +347,11 @@ exp.Main = Main = (function() {
     return this.renderGrid(params);
   };
 
-  Main.prototype.prepareSeries = function(data) {
-    var i, point, serie, _i, _j, _len, _len1, _palette, _ref, _ref1, _ref2, _ref3, _ref4;
-    _palette = new palette.Main(this._CONF.point.color);
-    for (i = _i = 0, _len = data.length; _i < _len; i = ++_i) {
-      serie = data[i];
-      _ref = serie.data;
-      for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
-        point = _ref[_j];
-        point.serie = i;
-        point.config = {};
-        point.config.color = this._CONF.point.color;
-        if (_palette.isDefined()) {
-          point.config.color = _palette.color(i);
-        }
-        if (((_ref1 = serie.config) != null ? _ref1.color : void 0) != null) {
-          point.config.color = serie.config.color;
-        }
-        point.config.r = ((_ref2 = serie.config) != null ? _ref2.r : void 0) || this._CONF.point.r;
-        point.config.stroke = {
-          width: this._CONF.point.stroke.width
-        };
-        if (((_ref3 = serie.config) != null ? (_ref4 = _ref3.stroke) != null ? _ref4.width : void 0 : void 0) != null) {
-          point.config.stroke.width = serie.config.stroke.width;
-        }
-      }
-    }
-    return data;
-  };
-
   Main.prototype.renderPoints = function() {
-    var scaleH, scaleW, series, valueline, _canvas, _conf, _effects, _scope, _tooltipCallback, _tooltipHide, _tooltipNode, _tooltipShow, _tooltipTemplate;
+    var scaleH, scaleW, series, valueline, _canvas, _conf, _scope, _tooltipCallback, _tooltipHide, _tooltipNode, _tooltipShow, _tooltipTemplate;
     _scope = this;
     _conf = this._CONF;
     _canvas = this._CANVAS;
-    _effects = this.effects;
     _tooltipShow = this.tooltip.show;
     _tooltipHide = this.tooltip.hide;
     _tooltipNode = this._TOOLTIP;
@@ -732,8 +363,8 @@ exp.Main = Main = (function() {
     if (typeof _tooltipTemplate === "string") {
       _tooltipTemplate = this.tooltip.templates[_tooltipTemplate];
     }
-    scaleW = this._SCALE.width;
-    scaleH = this._SCALE.height;
+    scaleW = this._SCALE.x;
+    scaleH = this._SCALE.y;
     series = this._CANVAS.selectAll(".series").data(this._SERIES).enter().append("g").attr("class", "series").attr("id", function(s, i) {
       return "" + i;
     }).attr("title", function(s) {
@@ -789,7 +420,7 @@ exp.Main = Main = (function() {
         var data, effect;
         effect = _conf.point.onMouseover;
         if (typeof effect === 'string') {
-          effect = _effects[effect].onMouseover;
+          effect = M.effectsPoint[effect].onMouseover;
         }
         effect({
           canvas: _canvas,
@@ -817,7 +448,7 @@ exp.Main = Main = (function() {
         var effect;
         effect = _conf.point.onMouseout;
         if (typeof effect === 'string') {
-          effect = _effects[effect].onMouseout;
+          effect = M.effectsPoint[effect].onMouseout;
         }
         effect({
           canvas: _canvas,
@@ -872,7 +503,7 @@ exp.Main = Main = (function() {
         }
         text.attr("y", textDim.height - textDim.height * 0.25).attr("x", textDim.width / 2);
         box.attr("width", textDim.width).attr("height", textDim.height);
-        valueX = params.scale.width.invert(eventX);
+        valueX = params.scale.x.invert(eventX);
         switch (params.confCrossV.x.orient) {
           case 'top':
             eventY = params.confCanvas.padding[1];
@@ -894,7 +525,7 @@ exp.Main = Main = (function() {
     var height, offsetX, offsetY, padX, padY, timeoutUnmoved, width, _crossX, _crossY;
     if (params == null) {
       params = {
-        canvas: nulle,
+        canvas: null,
         confCanvas: null,
         confCross: null
       };
@@ -946,7 +577,7 @@ exp.Main = Main = (function() {
 
   Main.prototype.render = function() {
     if (this._CANVAS == null) {
-      this._CANVAS = this.createCanvas();
+      this._CANVAS = this.createSVG();
     }
     this.renderLogo({
       opacity: this._CONF.logo.opacity,
@@ -1276,6 +907,268 @@ exp.Main = Main = (function() {
 })();
 });
 
+;require.register("config", function(exports, require, module) {
+var Main, exp, tools;
+
+module.exports = exp = {};
+
+tools = require('utils/tools');
+
+exp.Main = Main = (function() {
+  function Main(userConfig) {
+    tools.updateObject(this.defaultConfig, userConfig);
+  }
+
+  Main.prototype.get = function() {
+    return this.defaultConfig;
+  };
+
+  Main.prototype.defaultConfig = {
+    tooltip: {
+      template: "singlePoint",
+      format: {
+        title: null,
+        serie: null,
+        x: null,
+        y: null
+      },
+      callback: "singlePoint",
+      alwaysInside: true
+    },
+    canvas: {
+      scale: {
+        x: {
+          nice: false,
+          padding: [10, 10]
+        },
+        y: {
+          nice: true,
+          padding: [10, 10]
+        }
+      },
+      bgcolor: "#FFFFFF",
+      render: "dot",
+      title: {
+        text: "",
+        color: "#2f2f2f",
+        size: 24,
+        fontFamily: "arial",
+        border: {
+          radius: 2,
+          color: "#3f3f3f",
+          padding: [8, 1]
+        },
+        position: {
+          x: 35,
+          y: 20
+        }
+      },
+      label: {
+        x: {
+          text: null,
+          size: 10,
+          color: "#7f7f7f",
+          offset: 15
+        },
+        y: {
+          text: null,
+          size: 10,
+          color: "#7f7f7f",
+          offset: 0
+        }
+      },
+      selector: null,
+      width: 600.0,
+      height: 400.0,
+      padding: [0, 0],
+      cross: {
+        x: {
+          show: false,
+          color: 'black',
+          stroke: 1,
+          offset: 0
+        },
+        y: {
+          show: false,
+          color: 'black',
+          stroke: 1,
+          offset: 0
+        }
+      },
+      crossValue: {
+        x: {
+          orient: 'bottom',
+          show: true,
+          color: '#0971b7',
+          fontColor: '#ffffff',
+          fontSize: 12,
+          format: function(d) {
+            var da, m, y;
+            da = d.toString().split(" ")[2];
+            m = d.toString().split(" ")[1];
+            y = d.toString().split(" ")[3].substring(2);
+            return "" + da + " " + m + " " + y;
+          },
+          radius: 5
+        },
+        y: {
+          show: true,
+          color: 'white'
+        }
+      }
+    },
+    logo: {
+      url: "agflow-logo.svg",
+      width: 100,
+      height: 50,
+      x: 'right',
+      y: 'bottom',
+      opacity: 0.5
+    },
+    line: {
+      stroke: {
+        width: 2
+      }
+    },
+    point: {
+      onMouseover: "singlePoint",
+      onMouseout: "singlePoint",
+      r: 4,
+      mode: 'empty',
+      color: "munin",
+      stroke: {
+        width: 1
+      }
+    },
+    axis: {
+      x: {
+        format: null,
+        domainMargin: 5,
+        ticks: "auto",
+        tickSize: null,
+        orient: "bottom",
+        tickColor: "#f5f5f5",
+        tickWidth: 2,
+        strokeWidth: 1,
+        color: "#2b2e33",
+        font: {
+          color: "#2b2e33",
+          size: 10,
+          weight: "normal"
+        }
+      },
+      y: {
+        format: null,
+        domainMargin: 5,
+        ticks: "auto",
+        tickSize: null,
+        orient: "left",
+        tickColor: "#f5f5f5",
+        tickWidth: 2,
+        strokeWidth: 1,
+        color: "#2b2e33",
+        font: {
+          color: "#2b2e33",
+          size: 10,
+          weight: "normal"
+        }
+      }
+    },
+    legends: {
+      show: true,
+      format: null
+    },
+    pluginsIconsFolder: "icons",
+    plugins: {
+      exportation: {
+        enable: true,
+        copyright: {
+          text: "(c) AgFlow 2014",
+          color: "#9f9f9f",
+          fontSize: 12
+        }
+      }
+    }
+  };
+
+  return Main;
+
+})();
+});
+
+;require.register("effects/point", function(exports, require, module) {
+var exp;
+
+module.exports = exp = {};
+
+exp.singlePoint = {
+  onMouseover: function(params) {
+    var curStrokeWidth, _circleNode;
+    _circleNode = params.circleNode;
+    curStrokeWidth = parseFloat(_circleNode.getAttribute("stroke-width"));
+    return _circleNode.setAttribute("stroke-width", curStrokeWidth * 2);
+  },
+  onMouseout: function(params) {
+    var curStrokeWidth, _circleNode;
+    _circleNode = params.circleNode;
+    curStrokeWidth = parseFloat(_circleNode.getAttribute("stroke-width"));
+    return _circleNode.setAttribute("stroke-width", curStrokeWidth / 2);
+  }
+};
+
+exp.multipleVertical = {
+  onMouseover: function(params) {
+    var cx, strokeWidth, _circleNode;
+    _circleNode = params.circleNode;
+    cx = _circleNode.getAttribute('cx');
+    strokeWidth = parseFloat(_circleNode.getAttribute('stroke-width')) * 2;
+    return $(params.canvas[0]).find("circle[cx='" + cx + "']").each(function(e, node) {
+      return $(node).attr("stroke-width", strokeWidth);
+    });
+  },
+  onMouseout: function(params) {
+    var cx, strokeWidth, _circleNode;
+    _circleNode = params.circleNode;
+    cx = _circleNode.getAttribute('cx');
+    strokeWidth = parseFloat(_circleNode.getAttribute('stroke-width')) / 2;
+    return $(params.canvas[0]).find("circle[cx='" + cx + "']").each(function(e, node) {
+      return $(node).attr("stroke-width", strokeWidth);
+    });
+  }
+};
+
+exp.multipleVerticalInverted = {
+  onMouseover: function(params) {
+    var cx, strokeWidth, _circleNode;
+    _circleNode = params.circleNode;
+    cx = _circleNode.getAttribute('cx');
+    strokeWidth = parseFloat(_circleNode.getAttribute('stroke-width')) * 2;
+    return $(params.canvas[0]).find("circle[cx='" + cx + "']").each(function(e, node) {
+      var fill, stroke;
+      $(node).attr("stroke-width", strokeWidth);
+      fill = $(node).attr("fill");
+      stroke = $(node).attr("stroke");
+      $(node).attr("stroke", fill);
+      return $(node).attr("fill", stroke);
+    });
+  },
+  onMouseout: function(params) {
+    var cx, strokeWidth, _circleNode;
+    _circleNode = params.circleNode;
+    cx = _circleNode.getAttribute('cx');
+    strokeWidth = parseFloat(_circleNode.getAttribute('stroke-width')) / 2;
+    return $(params.canvas[0]).find("circle[cx='" + cx + "']").each(function(e, node) {
+      var fill, stroke;
+      $(node).attr("stroke-width", strokeWidth);
+      fill = $(node).attr("fill");
+      stroke = $(node).attr("stroke");
+      $(node).attr("stroke", fill);
+      return $(node).attr("fill", stroke);
+    });
+  }
+};
+});
+
 ;require.register("initialize", function(exports, require, module) {
 var agchart, exp, genData, genDataFunc, time;
 
@@ -1480,6 +1373,69 @@ exp.run = function() {
 };
 });
 
+;require.register("utils/design", function(exports, require, module) {
+var computePadding, exp;
+
+module.exports = exp = {};
+
+exp.computePadding = computePadding = function(confPoint) {
+  var pad;
+  pad = confPoint.r + confPoint.stroke.width / 2.0;
+  return [pad, pad];
+};
+});
+
+;require.register("utils/domain", function(exports, require, module) {
+var exp, fixDomain, getDomain;
+
+module.exports = exp = {};
+
+exp.computeDomain = getDomain = function(series) {
+  var maxX, maxY, minX, minY, point, serie, _i, _j, _len, _len1, _ref;
+  maxX = maxY = Number.MIN_VALUE;
+  minX = minY = Number.MAX_VALUE;
+  for (_i = 0, _len = series.length; _i < _len; _i++) {
+    serie = series[_i];
+    _ref = serie.data;
+    for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+      point = _ref[_j];
+      if (point.x > maxX) {
+        maxX = point.x;
+      }
+      if (point.x < minX) {
+        minX = point.x;
+      }
+      if (point.y > maxY) {
+        maxY = point.y;
+      }
+      if (point.y < minY) {
+        minY = point.y;
+      }
+    }
+  }
+  return {
+    minX: minX,
+    maxX: maxX,
+    minY: minY,
+    maxY: maxY
+  };
+};
+
+exp.fixDomain = fixDomain = function(args) {
+  var confAxis, domain;
+  domain = args.domain;
+  confAxis = args.confAxis;
+  if (domain.maxX === domain.minX) {
+    domain.maxX += confAxis.x.domainMargin;
+    domain.minX -= confAxis.x.domainMargin;
+  }
+  if (domain.maxY === domain.minY) {
+    domain.maxY += confAxis.y.domainMargin;
+    return domain.minY -= confAxis.y.domainMargin;
+  }
+};
+});
+
 ;require.register("utils/palette", function(exports, require, module) {
 var Main, exp;
 
@@ -1547,6 +1503,43 @@ exp.Main = Main = (function() {
 })();
 });
 
+;require.register("utils/scale", function(exports, require, module) {
+var M, computeScales, exp;
+
+module.exports = exp = {};
+
+M = {
+  domain: require('utils/domain')
+};
+
+exp.computeScales = computeScales = function(args) {
+  var scales, _axis, _canvas, _domain, _pad;
+  _axis = args.confAxis;
+  _domain = args.domain;
+  _canvas = args.confCanvas;
+  _pad = _canvas.padding;
+  scales = {
+    x: d3.scale.linear(),
+    y: d3.scale.linear()
+  };
+  if (_axis.x.format != null) {
+    scales.x = d3.time.scale.utc();
+  }
+  scales.x.domain([_domain.minX, _domain.maxX]).range([_pad[0], _canvas.width - _pad[0]]);
+  if (_canvas.scale.x.nice) {
+    scales.x.nice();
+  }
+  if (_axis.y.format != null) {
+    scales.y = d3.time.scale();
+  }
+  scales.y.domain([_domain.minY, _domain.maxY]).range([_canvas.height - _pad[1], _pad[1]]);
+  if (_canvas.scale.y.nice) {
+    scales.y.nice();
+  }
+  return scales;
+};
+});
+
 ;require.register("utils/time", function(exports, require, module) {
 var Main, exp;
 
@@ -1601,6 +1594,89 @@ exp.Main = Main = (function() {
   return Main;
 
 })();
+});
+
+;require.register("utils/tools", function(exports, require, module) {
+var exp, prepareSeries, updateObject;
+
+module.exports = exp = {};
+
+exp.updateObject = updateObject = function(obj1, obj2, replace) {
+  var isNode, update;
+  if (replace == null) {
+    replace = true;
+  }
+  isNode = function(obj) {
+    var _ref;
+    if ((obj != null ? (_ref = obj["0"]) != null ? _ref.nodeName : void 0 : void 0) != null) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+  update = function(obj1, obj2, replace) {
+    var k, _ref, _ref1, _ref2;
+    if (replace == null) {
+      replace = true;
+    }
+    if (obj2 != null) {
+      for (k in obj2) {
+        if (isNode(obj2[k])) {
+          obj1[k] = (_ref = obj2[k][0]) != null ? _ref : obj1[k][0];
+        } else if (typeof obj2[k] === 'object') {
+          if (obj1[k] == null) {
+            obj1[k] = {};
+          }
+          update(obj1[k], obj2[k], replace);
+        } else {
+          if (replace) {
+            obj1[k] = (_ref1 = obj2[k]) != null ? _ref1 : obj1[k];
+          } else {
+            obj1[k] = (_ref2 = obj1[k]) != null ? _ref2 : obj2[k];
+          }
+        }
+      }
+    }
+    return obj1;
+  };
+  return update(obj1, obj2, replace);
+};
+
+exp.prepareSeries = prepareSeries = function(args) {
+  var i, point, serie, _i, _j, _len, _len1, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6;
+  if (((_ref = args.series) != null ? _ref.length : void 0) == null) {
+    throw new Error(("No series defined, " + args.series) + "should be an array of objects");
+  }
+  if (args.series.length < 1) {
+    throw new Error("At least one serie must be defined");
+  }
+  _ref1 = args.series;
+  for (i = _i = 0, _len = _ref1.length; _i < _len; i = ++_i) {
+    serie = _ref1[i];
+    _ref2 = serie.data;
+    for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+      point = _ref2[_j];
+      point.serie = i;
+      point.config = {
+        color: args.confPoint.color
+      };
+      if (args.palette.isDefined()) {
+        point.config.color = args.palette.color(i);
+      }
+      if (((_ref3 = serie.config) != null ? _ref3.color : void 0) != null) {
+        point.config.color = serie.config.color;
+      }
+      point.config.r = ((_ref4 = serie.config) != null ? _ref4.r : void 0) || args.confPoint.r;
+      point.config.stroke = {
+        width: args.confPoint.stroke.width
+      };
+      if (((_ref5 = serie.config) != null ? (_ref6 = _ref5.stroke) != null ? _ref6.width : void 0 : void 0) != null) {
+        point.config.stroke.width = serie.config.stroke.width;
+      }
+    }
+  }
+  return args.series;
+};
 });
 
 ;
