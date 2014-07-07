@@ -7,19 +7,26 @@ M = {
   effectsPoint : require 'effects/point'
   scale   : require 'utils/scale'
   domain  : require 'utils/domain'
+
+  # Components
+  title: require 'components/title'
+  label: require 'components/label'
+  tooltip: require 'components/tooltip'
 }
 
 exp.Main = class Main
   constructor: (args) ->
     # Loading default configuration merged with user
     # configuration
-    @_CONF = (new M.config.Main(args.config)).get()
+    @_CONF = new M.config.Main(args.config).get()
     @_PALETTE = new M.palette.Main(@_CONF.point.color)
-    @_CANVAS = undefined # THIS IS A DOM
-    @_TOOLTIP = undefined
-    @_DOMNODES = {
-      svg: undefined
+    @_CANVAS = undefined # THIS IS A DOM, rename to SVG
+    @_TOOLTIP = undefined # THIS IS A CLASS
+
+    # Class components
+    @_CLASS = {
       tooltip: undefined
+      title: undefined
     }
 
     # TODO: Might be better ?
@@ -31,6 +38,7 @@ exp.Main = class Main
     #}
 
     # TODO: We can't change args.series !
+    # thus it must be the same after executing this function
     @_SERIES = M.tools.prepareSeries({
       series: args.series
       palette: @_PALETTE
@@ -71,73 +79,8 @@ exp.Main = class Main
       .attr("fill", confCanvas.bgcolor)
       .attr('width', confCanvas.width)
       .attr('height', confCanvas.height)
-
-  renderTitle: (params) ->
-    posX = params.title.position.x
-    posY = params.title.position.y
-    gbox = @_CANVAS.append("g")
-      .attr("transform", "translate(#{posX},#{posY})")
-    rect = gbox.append("rect")
-    text = gbox.append("text")
-      .attr("class", "chart-title")
-      .attr("fill", params.title.color)
-      .attr("font-size", params.title.size)
-      .attr("font-weight", "bold")
-      .attr("font-family", params.title.fontFamily) #Important to fix the font !
-      .text(params.title.text)
-    textDim = text.node().getBBox()
-    text
-      .attr("x", params.title.border.padding[0])
-      .attr("y", textDim.height-params.title.border.padding[1]-2)
-    if params.title.text
-      rect
-        .attr("width", textDim.width+params.title.border.padding[0]*2)
-        .attr("height", textDim.height+params.title.border.padding[1]*2)
-        .attr("ry", params.title.border.radius)
-        .attr("rx", params.title.border.radius)
-        .attr("stroke", params.title.border.color)
-
-
-  renderLabel: (params={
-    label:
-      color: null
-      size: null
-      trans: null
-      text: ""
-      textAnchor: ""
-      offset: null
-      class: null
-  }) ->
-
-    params.label.offset = params.label.offset || 0
-
-    width = params.width
-    height = params.height
-    padding = params.padding
-    offset = params.label.offset
-
-    text = @_CANVAS.append("text")
-      .attr("fill", params.label.color)
-      .attr("class", "label #{params.class}")
-      .attr("font-size", params.label.size+"px")
-      .attr("text-anchor", params.label.textAnchor)
-      .text(params.label.text)
-
-    textDim = text.node().getBBox()
-
-    switch params.orient
-      when 'bottom'
-        trans = "translate(#{width/2},
-          #{height-padding[1]+textDim.height+offset})"
-      when 'top'
-        trans = "translate(#{width/2}, #{height-2})"
-      when 'left'
-        trans = "translate(#{padding[0]}, 0)"
-      when 'right'
-        trans = "translate(#{width-padding[0]}, #{padding[1]/2})"
-
-    text.attr("transform", trans)
-
+    @_CLASS.tooltip = new M.tooltip.Main(@_CONF.canvas.selector)
+    @_CLASS.title = new M.title.Main(@_CANVAS)
 
   renderAxis: (params) ->
     line = @_CANVAS.append("line")
@@ -207,7 +150,9 @@ exp.Main = class Main
       .attr("class", "axis #{params.class}")
       .call(grid)
 
-    @renderLabel(params)
+    # TODO: remove @renderLabel(params)
+    @_CLASS.label = new M.label.Main(@_CANVAS)
+    @_CLASS.label.render(params)
 
     ggrid.selectAll("line")
       .attr("stroke", params.color)
@@ -312,16 +257,16 @@ exp.Main = class Main
     _scope  = @
     _conf   = @_CONF
     _canvas = @_CANVAS
-    _tooltipShow = @tooltip.show
-    _tooltipHide = @tooltip.hide
-    _tooltipNode = @_TOOLTIP
+    _tooltipNode = @_CLASS.tooltip.getDOM().root
+    _tooltipShow = @_CLASS.tooltip.show
+    _tooltipHide = @_CLASS.tooltip.hide
     _tooltipCallback = _conf.tooltip.callback
     _tooltipTemplate = _conf.tooltip.template
 
     if typeof(_tooltipCallback) == "string"
-      _tooltipCallback = @tooltip.callbacks[_tooltipCallback]
+      _tooltipCallback = @_CLASS.tooltip.getCallback(_tooltipCallback)
     if typeof(_tooltipTemplate) == "string"
-      _tooltipTemplate = @tooltip.templates[_tooltipTemplate]
+      _tooltipTemplate = @_CLASS.tooltip.getTemplate(_tooltipTemplate)
     scaleW = @_SCALE.x
     scaleH = @_SCALE.y
 
@@ -419,13 +364,6 @@ exp.Main = class Main
     else
       throw new Error("Unknown render value '#{_canvas.render}'")
 
-  renderTooltip: ->
-    if not @_TOOLTIP?
-      @_TOOLTIP = d3.select(@_CONF.canvas.selector).append("div")
-        .attr('class', 'tooltip')
-        .style('opacity', 0)
-        .attr('left', 0)
-        .attr('top', 0)
 
   renderCrossValue: (params={
     scale: null
@@ -591,9 +529,10 @@ exp.Main = class Main
       confCanvas: @_CONF.canvas
       confCrossV: @_CONF.canvas.crossValue
     )
-    @renderTooltip()
+
     @renderPoints() # Depends on axis and tooltip
-    @renderTitle(
+
+    @_CLASS.title.render(
       title: @_CONF.canvas.title
       padding: @_CONF.canvas.padding
     )
@@ -740,7 +679,8 @@ exp.Main = class Main
         if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./))
           console.log "Internet explorer detected"
           window.winIE = win = window.open()
-          win.document.body.innerHTML = "<center><img src='"+img+"'></img><br>Please right click on the image and choose 'Save image as...'</center>"
+          win.document.body.innerHTML = "<center><img src='"+img+"'>"+
+            "</img><br>Please right click on the image and choose 'Save image as...'</center>"
           win.document.close()
           #setTimeout('window.winIE.document.execCommand("SaveAs")', 1000)
         else
@@ -760,122 +700,3 @@ exp.Main = class Main
           y: context._CONF.logo.y
         )
         text.remove()
-
-  tooltip:
-    show: (context, conf, tooltipNode, d) ->
-      eventX = d3.mouse(context)[0]
-      eventY = d3.mouse(context)[1]
-      left = eventX+d.config.stroke.width
-      top = eventY+d.config.stroke.width
-      if conf.tooltip.alwaysInside
-        if eventX > conf.canvas.width/2.0
-          widthTooltip = parseFloat(
-            tooltipNode.style('width').replace("px", ''))
-          left = eventX-d.config.stroke.width-
-            widthTooltip
-        if eventY > conf.canvas.height/2.0
-          heightTooltip = parseFloat(
-            tooltipNode.style('height').replace("px", ''))
-          top = eventY-d.config.stroke.width-
-            heightTooltip
-      tooltipNode
-        .style("left", left+'px')
-        .style("top", top+'px')
-        .transition().duration(200).style("opacity", 0.9)
-
-    hide: (tooltipNode) ->
-      tooltipNode.transition()
-        .duration(500).style("opacity", 0)
-
-    templates:
-      singlePoint: (data) ->
-        html = "<h1>#{data[0].title}</h1>"
-        html += "<div class='serie' id='0'>#{data[0].x} : #{data[0].y}"+
-          "<div class='swatch'"+
-            "style='background-color: #{data[0].color}'></div>"+
-        "</div>"
-
-      multipleVertical: (data) ->
-        html = "<h1>#{data[0].x}</h1>"
-        for d, i in data
-          if not d.hide
-            html += "<div class='serie' id='#{i}'>#{d.serieName} : #{d.y}"+
-              "<div class='swatch'"+
-                "style='background-color: #{d.color}'></div>"+
-            "</div>"
-        html
-      multipleVerticalInverted: (data) ->
-        html = "<h1>#{data[0].x}</h1>"
-        for d, i in data
-          if not d.hide
-            html += "<div class='serie' id='#{i}'>#{d.serieName}: #{d.y}"+
-              "<div class='swatch'"+
-                "style='background-color: #{d.color}'></div>"+
-            "</div>"
-        html
-
-    callbacks:
-      singlePoint:
-        (params) ->
-          _circleNode = params.circleNode
-          x = parseFloat(_circleNode.getAttribute('data-x'))
-          x = params.format.x(x) if params.format?.x?
-          [{
-            color: params.data.config.color
-            serieName: params.circleNode.parentNode.getAttribute("title")
-            x: x
-            y: params.data.y.toFixed(2)
-            hide: node.parentNode.getAttribute("data-hide") == "true"
-          }]
-      multipleVertical:
-        (params) ->
-          # Get all same cx value, take the fill color to
-          # draw watch and show some information
-          _circleNode = params.circleNode
-          cx = _circleNode.getAttribute('cx')
-          x = parseFloat(_circleNode.getAttribute('data-x'))
-          if params.format?.x?
-            x = params.format.x(x)
-
-          title = parseInt(_circleNode.parentNode.getAttribute('title'))
-          if params.format?.title?
-            title = params.format.title(title)
-
-          res = []
-          $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
-            res.push {
-              title: title
-              serieName: node.parentNode.getAttribute("title")
-              color: node.getAttribute("data-color")
-              y: parseFloat(node.getAttribute("data-y")).toFixed(2)
-              x: x
-              hide: node.parentNode.getAttribute("data-hide") == "true"
-            })
-          res
-
-      multipleVerticalInverted:
-        (params) ->
-          # Get all same cx value, take the fill color to
-          # draw watch and show some information
-          _circleNode = params.circleNode
-          cx = _circleNode.getAttribute('cx')
-          x = parseFloat(_circleNode.getAttribute('data-x'))
-          if params.format?.x?
-            x = params.format.x(x)
-          title = parseInt(_circleNode.parentNode.getAttribute('title'))
-          if params.format?.title?
-            title = params.format.title(title)
-          res = []
-          $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
-            serieName = parseInt(node.parentNode.getAttribute("title"))
-            if params.format?.serie?
-              serieName = params.format.serie(serieName)
-            res.push {
-              title: title
-              serieName: serieName
-              color: node.getAttribute("data-color")
-              y: parseFloat(node.getAttribute("data-y")).toFixed(2)
-              x: x
-              hide: node.parentNode.getAttribute("data-hide") == "true"
-            })
-          res

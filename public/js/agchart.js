@@ -102,18 +102,21 @@ M = {
   design: require('utils/design'),
   effectsPoint: require('effects/point'),
   scale: require('utils/scale'),
-  domain: require('utils/domain')
+  domain: require('utils/domain'),
+  title: require('components/title'),
+  label: require('components/label'),
+  tooltip: require('components/tooltip')
 };
 
 exp.Main = Main = (function() {
   function Main(args) {
-    this._CONF = (new M.config.Main(args.config)).get();
+    this._CONF = new M.config.Main(args.config).get();
     this._PALETTE = new M.palette.Main(this._CONF.point.color);
     this._CANVAS = void 0;
     this._TOOLTIP = void 0;
-    this._DOMNODES = {
-      svg: void 0,
-      tooltip: void 0
+    this._CLASS = {
+      tooltip: void 0,
+      title: void 0
     };
     this._SERIES = M.tools.prepareSeries({
       series: args.series,
@@ -149,59 +152,9 @@ exp.Main = Main = (function() {
     $(confCanvas.selector).css({
       "position": "relative"
     });
-    return this._CANVAS = d3.select(confCanvas.selector).append('svg').attr("fill", confCanvas.bgcolor).attr('width', confCanvas.width).attr('height', confCanvas.height);
-  };
-
-  Main.prototype.renderTitle = function(params) {
-    var gbox, posX, posY, rect, text, textDim;
-    posX = params.title.position.x;
-    posY = params.title.position.y;
-    gbox = this._CANVAS.append("g").attr("transform", "translate(" + posX + "," + posY + ")");
-    rect = gbox.append("rect");
-    text = gbox.append("text").attr("class", "chart-title").attr("fill", params.title.color).attr("font-size", params.title.size).attr("font-weight", "bold").attr("font-family", params.title.fontFamily).text(params.title.text);
-    textDim = text.node().getBBox();
-    text.attr("x", params.title.border.padding[0]).attr("y", textDim.height - params.title.border.padding[1] - 2);
-    if (params.title.text) {
-      return rect.attr("width", textDim.width + params.title.border.padding[0] * 2).attr("height", textDim.height + params.title.border.padding[1] * 2).attr("ry", params.title.border.radius).attr("rx", params.title.border.radius).attr("stroke", params.title.border.color);
-    }
-  };
-
-  Main.prototype.renderLabel = function(params) {
-    var height, offset, padding, text, textDim, trans, width;
-    if (params == null) {
-      params = {
-        label: {
-          color: null,
-          size: null,
-          trans: null,
-          text: "",
-          textAnchor: "",
-          offset: null,
-          "class": null
-        }
-      };
-    }
-    params.label.offset = params.label.offset || 0;
-    width = params.width;
-    height = params.height;
-    padding = params.padding;
-    offset = params.label.offset;
-    text = this._CANVAS.append("text").attr("fill", params.label.color).attr("class", "label " + params["class"]).attr("font-size", params.label.size + "px").attr("text-anchor", params.label.textAnchor).text(params.label.text);
-    textDim = text.node().getBBox();
-    switch (params.orient) {
-      case 'bottom':
-        trans = "translate(" + (width / 2) + ",          " + (height - padding[1] + textDim.height + offset) + ")";
-        break;
-      case 'top':
-        trans = "translate(" + (width / 2) + ", " + (height - 2) + ")";
-        break;
-      case 'left':
-        trans = "translate(" + padding[0] + ", 0)";
-        break;
-      case 'right':
-        trans = "translate(" + (width - padding[0]) + ", " + (padding[1] / 2) + ")";
-    }
-    return text.attr("transform", trans);
+    this._CANVAS = d3.select(confCanvas.selector).append('svg').attr("fill", confCanvas.bgcolor).attr('width', confCanvas.width).attr('height', confCanvas.height);
+    this._CLASS.tooltip = new M.tooltip.Main(this._CONF.canvas.selector);
+    return this._CLASS.title = new M.title.Main(this._CANVAS);
   };
 
   Main.prototype.renderAxis = function(params) {
@@ -250,7 +203,8 @@ exp.Main = Main = (function() {
       grid.tickFormat(d3.time.format(params.format));
     }
     ggrid = this._CANVAS.append("g").attr("transform", params.trans).attr("class", "axis " + params["class"]).call(grid);
-    this.renderLabel(params);
+    this._CLASS.label = new M.label.Main(this._CANVAS);
+    this._CLASS.label.render(params);
     ggrid.selectAll("line").attr("stroke", params.color).attr("stroke-width", params.strokeWidth);
     ggrid.selectAll("line").attr("stroke", params.tickColor).attr("width-stroke", params.tickWidth);
     ggrid.selectAll("path").style("display", "none");
@@ -352,16 +306,16 @@ exp.Main = Main = (function() {
     _scope = this;
     _conf = this._CONF;
     _canvas = this._CANVAS;
-    _tooltipShow = this.tooltip.show;
-    _tooltipHide = this.tooltip.hide;
-    _tooltipNode = this._TOOLTIP;
+    _tooltipNode = this._CLASS.tooltip.getDOM().root;
+    _tooltipShow = this._CLASS.tooltip.show;
+    _tooltipHide = this._CLASS.tooltip.hide;
     _tooltipCallback = _conf.tooltip.callback;
     _tooltipTemplate = _conf.tooltip.template;
     if (typeof _tooltipCallback === "string") {
-      _tooltipCallback = this.tooltip.callbacks[_tooltipCallback];
+      _tooltipCallback = this._CLASS.tooltip.getCallback(_tooltipCallback);
     }
     if (typeof _tooltipTemplate === "string") {
-      _tooltipTemplate = this.tooltip.templates[_tooltipTemplate];
+      _tooltipTemplate = this._CLASS.tooltip.getTemplate(_tooltipTemplate);
     }
     scaleW = this._SCALE.x;
     scaleH = this._SCALE.y;
@@ -459,12 +413,6 @@ exp.Main = Main = (function() {
       });
     } else {
       throw new Error("Unknown render value '" + _canvas.render + "'");
-    }
-  };
-
-  Main.prototype.renderTooltip = function() {
-    if (this._TOOLTIP == null) {
-      return this._TOOLTIP = d3.select(this._CONF.canvas.selector).append("div").attr('class', 'tooltip').style('opacity', 0).attr('left', 0).attr('top', 0);
     }
   };
 
@@ -608,9 +556,8 @@ exp.Main = Main = (function() {
       confCanvas: this._CONF.canvas,
       confCrossV: this._CONF.canvas.crossValue
     });
-    this.renderTooltip();
     this.renderPoints();
-    this.renderTitle({
+    this._CLASS.title.render({
       title: this._CONF.canvas.title,
       padding: this._CONF.canvas.padding
     });
@@ -753,7 +700,7 @@ exp.Main = Main = (function() {
         if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
           console.log("Internet explorer detected");
           window.winIE = win = window.open();
-          win.document.body.innerHTML = "<center><img src='" + img + "'></img><br>Please right click on the image and choose 'Save image as...'</center>";
+          win.document.body.innerHTML = "<center><img src='" + img + "'>" + "</img><br>Please right click on the image and choose 'Save image as...'</center>";
           win.document.close();
         } else {
           a = document.createElement('a');
@@ -775,130 +722,249 @@ exp.Main = Main = (function() {
     }
   };
 
-  Main.prototype.tooltip = {
-    show: function(context, conf, tooltipNode, d) {
-      var eventX, eventY, heightTooltip, left, top, widthTooltip;
-      eventX = d3.mouse(context)[0];
-      eventY = d3.mouse(context)[1];
-      left = eventX + d.config.stroke.width;
-      top = eventY + d.config.stroke.width;
-      if (conf.tooltip.alwaysInside) {
-        if (eventX > conf.canvas.width / 2.0) {
-          widthTooltip = parseFloat(tooltipNode.style('width').replace("px", ''));
-          left = eventX - d.config.stroke.width - widthTooltip;
-        }
-        if (eventY > conf.canvas.height / 2.0) {
-          heightTooltip = parseFloat(tooltipNode.style('height').replace("px", ''));
-          top = eventY - d.config.stroke.width - heightTooltip;
+  return Main;
+
+})();
+});
+
+;require.register("components/label", function(exports, require, module) {
+var Main, exp;
+
+module.exports = exp = {};
+
+exp.Main = Main = (function() {
+  function Main(svg) {
+    this._LABEL = svg.append("text");
+  }
+
+  Main.prototype.getDOM = function() {
+    return {
+      root: this._LABEL
+    };
+  };
+
+  Main.prototype.render = function(params) {
+    var height, offset, padding, textDim, trans, width;
+    if (params == null) {
+      return;
+    }
+    width = params.width;
+    height = params.height;
+    padding = params.padding;
+    offset = params.label.offset || 0;
+    this._LABEL.attr("fill", params.label.color).attr("class", "label " + params["class"]).attr("font-size", params.label.size + "px").attr("text-anchor", params.label.textAnchor).text(params.label.text);
+    textDim = this._LABEL.node().getBBox();
+    switch (params.orient) {
+      case 'bottom':
+        trans = "translate(" + (width / 2) + ",          " + (height - padding[1] + textDim.height + offset) + ")";
+        break;
+      case 'top':
+        trans = "translate(" + (width / 2) + ", " + (height - 2) + ")";
+        break;
+      case 'left':
+        trans = "translate(" + padding[0] + ", 0)";
+        break;
+      case 'right':
+        trans = "translate(" + (width - padding[0]) + ", " + (padding[1] / 2) + ")";
+    }
+    return this._LABEL.attr("transform", trans);
+  };
+
+  return Main;
+
+})();
+});
+
+;require.register("components/title", function(exports, require, module) {
+var Main, exp;
+
+module.exports = exp = {};
+
+exp.Main = Main = (function() {
+  function Main(svg) {
+    this.boxTitle = svg.append("g");
+    this.boxText = this.boxTitle.append("text");
+    this.boxBorder = this.boxTitle.append("rect");
+  }
+
+  Main.prototype.getDOM = function() {
+    return {
+      root: this.boxTitle,
+      border: this.boxBorder,
+      text: this.boxText
+    };
+  };
+
+  Main.prototype.render = function(params) {
+    var posX, posY, textDim;
+    posX = params.title.position.x;
+    posY = params.title.position.y;
+    this.boxTitle;
+    this.boxText = this.boxTitle.attr("transform", "translate(" + posX + "," + posY + ")").append("text").attr("class", "chart-title").attr("fill", params.title.color).attr("font-size", params.title.size).attr("font-weight", "bold").attr("font-family", params.title.fontFamily).text(params.title.text);
+    textDim = this.boxText.node().getBBox();
+    this.boxText.attr("x", params.title.border.padding[0]).attr("y", textDim.height - params.title.border.padding[1] - 2);
+    if (params.title.text) {
+      return this.boxBorder.attr("width", textDim.width + params.title.border.padding[0] * 2).attr("height", textDim.height + params.title.border.padding[1] * 2).attr("ry", params.title.border.radius).attr("rx", params.title.border.radius).attr("stroke", params.title.border.color);
+    }
+  };
+
+  return Main;
+
+})();
+});
+
+;require.register("components/tooltip", function(exports, require, module) {
+var Main, exp;
+
+module.exports = exp = {};
+
+exp.Main = Main = (function() {
+  function Main(selector) {
+    if (this._TOOLTIP == null) {
+      this._TOOLTIP = d3.select(selector).append("div").attr('class', 'tooltip').style('opacity', 0).style('left', 0).style('top', 0);
+    }
+  }
+
+  Main.prototype.getDOM = function() {
+    return {
+      root: this._TOOLTIP
+    };
+  };
+
+  Main.prototype.show = function(context, conf, tooltipNode, d) {
+    var eventX, eventY, heightTooltip, left, top, widthTooltip;
+    tooltipNode.attr("width", 200).attr("height", 100);
+    eventX = d3.mouse(context)[0];
+    eventY = d3.mouse(context)[1];
+    left = eventX + d.config.stroke.width;
+    top = eventY + d.config.stroke.width;
+    if (conf.tooltip.alwaysInside) {
+      if (eventX > conf.canvas.width / 2.0) {
+        widthTooltip = parseFloat(tooltipNode.style('width').replace("px", ''));
+        left = eventX - d.config.stroke.width - widthTooltip;
+      }
+      if (eventY > conf.canvas.height / 2.0) {
+        heightTooltip = parseFloat(tooltipNode.style('height').replace("px", ''));
+        top = eventY - d.config.stroke.width - heightTooltip;
+      }
+    }
+    return tooltipNode.style("left", left + 'px').style("top", top + 'px').transition().duration(200).style("opacity", 0.9);
+  };
+
+  Main.prototype.hide = function(tooltipNode) {
+    return tooltipNode.transition().duration(500).style("opacity", 0);
+  };
+
+  Main.prototype.getTemplate = function(str) {
+    return this._templates[str];
+  };
+
+  Main.prototype.getCallback = function(str) {
+    return this._callbacks[str];
+  };
+
+  Main.prototype._templates = {
+    singlePoint: function(data) {
+      var html;
+      html = "<h1>" + data[0].title + "</h1>";
+      return html += ("<div class='serie' id='0'>" + data[0].x + " : " + data[0].y) + "<div class='swatch'" + ("style='background-color: " + data[0].color + "'></div>") + "</div>";
+    },
+    multipleVertical: function(data) {
+      var d, html, i, _i, _len;
+      html = "<h1>" + data[0].x + "</h1>";
+      for (i = _i = 0, _len = data.length; _i < _len; i = ++_i) {
+        d = data[i];
+        if (!d.hide) {
+          html += ("<div class='serie' id='" + i + "'>" + d.serieName + " : " + d.y) + "<div class='swatch'" + ("style='background-color: " + d.color + "'></div>") + "</div>";
         }
       }
-      return tooltipNode.style("left", left + 'px').style("top", top + 'px').transition().duration(200).style("opacity", 0.9);
+      return html;
     },
-    hide: function(tooltipNode) {
-      return tooltipNode.transition().duration(500).style("opacity", 0);
-    },
-    templates: {
-      singlePoint: function(data) {
-        var html;
-        html = "<h1>" + data[0].title + "</h1>";
-        return html += ("<div class='serie' id='0'>" + data[0].x + " : " + data[0].y) + "<div class='swatch'" + ("style='background-color: " + data[0].color + "'></div>") + "</div>";
-      },
-      multipleVertical: function(data) {
-        var d, html, i, _i, _len;
-        html = "<h1>" + data[0].x + "</h1>";
-        for (i = _i = 0, _len = data.length; _i < _len; i = ++_i) {
-          d = data[i];
-          if (!d.hide) {
-            html += ("<div class='serie' id='" + i + "'>" + d.serieName + " : " + d.y) + "<div class='swatch'" + ("style='background-color: " + d.color + "'></div>") + "</div>";
-          }
+    multipleVerticalInverted: function(data) {
+      var d, html, i, _i, _len;
+      html = "<h1>" + data[0].x + "</h1>";
+      for (i = _i = 0, _len = data.length; _i < _len; i = ++_i) {
+        d = data[i];
+        if (!d.hide) {
+          html += ("<div class='serie' id='" + i + "'>" + d.serieName + ": " + d.y) + "<div class='swatch'" + ("style='background-color: " + d.color + "'></div>") + "</div>";
         }
-        return html;
-      },
-      multipleVerticalInverted: function(data) {
-        var d, html, i, _i, _len;
-        html = "<h1>" + data[0].x + "</h1>";
-        for (i = _i = 0, _len = data.length; _i < _len; i = ++_i) {
-          d = data[i];
-          if (!d.hide) {
-            html += ("<div class='serie' id='" + i + "'>" + d.serieName + ": " + d.y) + "<div class='swatch'" + ("style='background-color: " + d.color + "'></div>") + "</div>";
-          }
-        }
-        return html;
       }
+      return html;
+    }
+  };
+
+  Main.prototype._callbacks = {
+    singlePoint: function(params) {
+      var x, _circleNode, _ref;
+      _circleNode = params.circleNode;
+      x = parseFloat(_circleNode.getAttribute('data-x'));
+      if (((_ref = params.format) != null ? _ref.x : void 0) != null) {
+        x = params.format.x(x);
+      }
+      return [
+        {
+          color: params.data.config.color,
+          serieName: params.circleNode.parentNode.getAttribute("title"),
+          x: x,
+          y: params.data.y.toFixed(2),
+          hide: node.parentNode.getAttribute("data-hide") === "true"
+        }
+      ];
     },
-    callbacks: {
-      singlePoint: function(params) {
-        var x, _circleNode, _ref;
-        _circleNode = params.circleNode;
-        x = parseFloat(_circleNode.getAttribute('data-x'));
-        if (((_ref = params.format) != null ? _ref.x : void 0) != null) {
-          x = params.format.x(x);
-        }
-        return [
-          {
-            color: params.data.config.color,
-            serieName: params.circleNode.parentNode.getAttribute("title"),
-            x: x,
-            y: params.data.y.toFixed(2),
-            hide: node.parentNode.getAttribute("data-hide") === "true"
-          }
-        ];
-      },
-      multipleVertical: function(params) {
-        var cx, res, title, x, _circleNode, _ref, _ref1;
-        _circleNode = params.circleNode;
-        cx = _circleNode.getAttribute('cx');
-        x = parseFloat(_circleNode.getAttribute('data-x'));
-        if (((_ref = params.format) != null ? _ref.x : void 0) != null) {
-          x = params.format.x(x);
-        }
-        title = parseInt(_circleNode.parentNode.getAttribute('title'));
-        if (((_ref1 = params.format) != null ? _ref1.title : void 0) != null) {
-          title = params.format.title(title);
-        }
-        res = [];
-        $(params.canvas[0]).find("circle[cx='" + cx + "']").each(function(e, node) {
-          return res.push({
-            title: title,
-            serieName: node.parentNode.getAttribute("title"),
-            color: node.getAttribute("data-color"),
-            y: parseFloat(node.getAttribute("data-y")).toFixed(2),
-            x: x,
-            hide: node.parentNode.getAttribute("data-hide") === "true"
-          });
+    multipleVertical: function(params) {
+      var cx, res, title, x, _circleNode, _ref, _ref1;
+      _circleNode = params.circleNode;
+      cx = _circleNode.getAttribute('cx');
+      x = parseFloat(_circleNode.getAttribute('data-x'));
+      if (((_ref = params.format) != null ? _ref.x : void 0) != null) {
+        x = params.format.x(x);
+      }
+      title = parseInt(_circleNode.parentNode.getAttribute('title'));
+      if (((_ref1 = params.format) != null ? _ref1.title : void 0) != null) {
+        title = params.format.title(title);
+      }
+      res = [];
+      $(params.canvas[0]).find("circle[cx='" + cx + "']").each(function(e, node) {
+        return res.push({
+          title: title,
+          serieName: node.parentNode.getAttribute("title"),
+          color: node.getAttribute("data-color"),
+          y: parseFloat(node.getAttribute("data-y")).toFixed(2),
+          x: x,
+          hide: node.parentNode.getAttribute("data-hide") === "true"
         });
-        return res;
-      },
-      multipleVerticalInverted: function(params) {
-        var cx, res, title, x, _circleNode, _ref, _ref1;
-        _circleNode = params.circleNode;
-        cx = _circleNode.getAttribute('cx');
-        x = parseFloat(_circleNode.getAttribute('data-x'));
-        if (((_ref = params.format) != null ? _ref.x : void 0) != null) {
-          x = params.format.x(x);
-        }
-        title = parseInt(_circleNode.parentNode.getAttribute('title'));
-        if (((_ref1 = params.format) != null ? _ref1.title : void 0) != null) {
-          title = params.format.title(title);
-        }
-        res = [];
-        $(params.canvas[0]).find("circle[cx='" + cx + "']").each(function(e, node) {
-          var serieName, _ref2;
-          serieName = parseInt(node.parentNode.getAttribute("title"));
-          if (((_ref2 = params.format) != null ? _ref2.serie : void 0) != null) {
-            serieName = params.format.serie(serieName);
-          }
-          return res.push({
-            title: title,
-            serieName: serieName,
-            color: node.getAttribute("data-color"),
-            y: parseFloat(node.getAttribute("data-y")).toFixed(2),
-            x: x,
-            hide: node.parentNode.getAttribute("data-hide") === "true"
-          });
-        });
-        return res;
+      });
+      return res;
+    },
+    multipleVerticalInverted: function(params) {
+      var cx, res, title, x, _circleNode, _ref, _ref1;
+      _circleNode = params.circleNode;
+      cx = _circleNode.getAttribute('cx');
+      x = parseFloat(_circleNode.getAttribute('data-x'));
+      if (((_ref = params.format) != null ? _ref.x : void 0) != null) {
+        x = params.format.x(x);
       }
+      title = parseInt(_circleNode.parentNode.getAttribute('title'));
+      if (((_ref1 = params.format) != null ? _ref1.title : void 0) != null) {
+        title = params.format.title(title);
+      }
+      res = [];
+      $(params.canvas[0]).find("circle[cx='" + cx + "']").each(function(e, node) {
+        var serieName, _ref2;
+        serieName = parseInt(node.parentNode.getAttribute("title"));
+        if (((_ref2 = params.format) != null ? _ref2.serie : void 0) != null) {
+          serieName = params.format.serie(serieName);
+        }
+        return res.push({
+          title: title,
+          serieName: serieName,
+          color: node.getAttribute("data-color"),
+          y: parseFloat(node.getAttribute("data-y")).toFixed(2),
+          x: x,
+          hide: node.parentNode.getAttribute("data-hide") === "true"
+        });
+      });
+      return res;
     }
   };
 
@@ -1276,7 +1342,7 @@ exp.run = function() {
         title: {
           color: "#4f4f4f",
           size: 16,
-          text: null,
+          text: "Helo",
           border: {
             padding: [8, 1]
           }
