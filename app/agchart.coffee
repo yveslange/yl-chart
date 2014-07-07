@@ -367,77 +367,8 @@ exp.Main = class Main
             )
             _tooltipHide(_tooltipNode)
           )
-
     else
       throw new Error("Unknown render value '#{_canvas.render}'")
-
-
-  renderCrossValue: (params={
-    scale: null
-    canvas: null
-    confCanvas: null
-    confCrossV: null
-  }) ->
-    # We append the container at the begining
-    gbox = params.canvas.append("g")
-      .style("opacity", 0)
-    box = gbox.append("rect")
-    text = gbox.append("text")
-      .text("AgChartPile")
-      .attr("font-size", params.confCrossV.x.fontSize)
-      .attr("text-anchor", "middle")
-      .attr("fill", params.confCrossV.x.fontColor)
-    textDim = text.node().getBBox()
-    box
-      .attr("fill", params.confCrossV.x.color)
-      .attr("rx", params.confCrossV.x.radius)
-      .attr("ry", params.confCrossV.x.radius)
-
-    if params.confCrossV.x.show
-      timeoutUnmoved = null
-      params.canvas.on("mousemove.crossValue", ->
-        gbox.transition().duration(300).style('opacity', 1)
-        clearTimeout(timeoutUnmoved)
-        eventX = d3.mouse(@)[0]
-
-        # Blocking the X value
-        if eventX < params.confCanvas.padding[0]
-          eventX = params.confCanvas.padding[0]
-        else if eventX > params.confCanvas.width-params.confCanvas.padding[0]
-          eventX = params.confCanvas.width-params.confCanvas.padding[0]
-
-        # Blocking the position of the pile
-        positionX = eventX
-        if eventX < params.confCanvas.padding[0]+textDim.width/2
-          positionX = params.confCanvas.padding[0]+textDim.width/2
-        else if eventX > params.confCanvas.width-params.confCanvas.padding[0]-textDim.width/2
-          positionX = params.confCanvas.width-params.confCanvas.padding[0]-textDim.width/2
-        text
-          .attr("y", textDim.height-textDim.height*0.25) # Seems that we need to remove 25%
-                                                         # to have it centered. Auto magically
-                                                         # resolved !
-          .attr("x", textDim.width/2)
-        box
-          .attr("width", textDim.width)
-          .attr("height", textDim.height)
-
-        valueX = params.scale.x.invert(eventX)
-        switch params.confCrossV.x.orient
-          when 'top'
-            eventY = params.confCanvas.padding[1]
-          when 'bottom'
-            eventY = params.confCanvas.height-params.confCanvas.padding[1]
-        text.text(params.confCrossV.x.format(valueX))
-        gbox.attr("transform", "translate(#{positionX-textDim.width/2}, #{eventY})")
-        gbox.attr("cy", d3.mouse(@)[1])
-
-        # Detect unmoved mouse
-        timeoutUnmoved = setTimeout(( ->
-          gbox.transition().duration(500).style('opacity', 0)
-        ), 2000)
-      )
-
-
 
 
   render: ->
@@ -462,7 +393,7 @@ exp.Main = class Main
       canvas: @_CONF.canvas
       axis: @_CONF.axis.y
     )
-    @renderCrossValue(
+    @_CLASS.cross.renderValue(
       scale: @_SCALE
       canvas: @_CANVAS
       confCanvas: @_CONF.canvas

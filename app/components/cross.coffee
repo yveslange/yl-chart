@@ -4,6 +4,14 @@ exp.Main = class Main
   constructor: (svg) ->
     @_CROSSX = svg.append("line")
     @_CROSSY = svg.append("line")
+    @_VALUE = svg.append("g").style("opacity", 0)
+
+  getDOM: ->
+    return {
+      crossX: @_CROSSX
+      crossY: @_CROSSY
+      value: @_VALUE
+    }
 
   render: (params)->
     padX    = params.confCanvas.padding[0]
@@ -28,7 +36,7 @@ exp.Main = class Main
       .attr("stroke", params.confCross.y.color)
       .attr("stroke-width", params.confCross.y.stroke)
     timeoutUnmoved = null
-    params.svg.on("mousemove.tooltip", (d)->
+    params.svg.on("mousemove.cross", (d)->
       clearTimeout(timeoutUnmoved)
       _crossX.transition().style('opacity', 1)
       _crossY.transition().style('opacity', 1)
@@ -52,3 +60,61 @@ exp.Main = class Main
         _crossX.transition().duration(500).style('opacity', 0)
       ), 2000)
     )
+
+  renderValue: (params)->
+    box = @_VALUE.append("rect")
+    text = @_VALUE.append("text")
+      .text("AgChartPile")
+      .attr("font-size", params.confCrossV.x.fontSize)
+      .attr("text-anchor", "middle")
+      .attr("fill", params.confCrossV.x.fontColor)
+    textDim = text.node().getBBox()
+    box
+      .attr("fill", params.confCrossV.x.color)
+      .attr("rx", params.confCrossV.x.radius)
+      .attr("ry", params.confCrossV.x.radius)
+
+    if params.confCrossV.x.show
+      timeoutUnmoved = null
+      VALUE = @_VALUE
+      params.canvas.on("mousemove.crossValue", ->
+        VALUE.transition().duration(300).style('opacity', 1)
+        clearTimeout(timeoutUnmoved)
+        eventX = d3.mouse(@)[0]
+
+        # Blocking the X value
+        if eventX < params.confCanvas.padding[0]
+          eventX = params.confCanvas.padding[0]
+        else if eventX > params.confCanvas.width-params.confCanvas.padding[0]
+          eventX = params.confCanvas.width-params.confCanvas.padding[0]
+
+        # Blocking the position of the pile
+        positionX = eventX
+        if eventX < params.confCanvas.padding[0]+textDim.width/2
+          positionX = params.confCanvas.padding[0]+textDim.width/2
+        else if eventX > params.confCanvas.width-params.confCanvas.padding[0]-textDim.width/2
+          positionX = params.confCanvas.width-params.confCanvas.padding[0]-textDim.width/2
+        text
+          .attr("y", textDim.height-textDim.height*0.25) # Seems that we need to remove 25%
+                                                         # to have it centered. Auto magically
+                                                         # resolved !
+          .attr("x", textDim.width/2)
+        box
+          .attr("width", textDim.width)
+          .attr("height", textDim.height)
+
+        valueX = params.scale.x.invert(eventX)
+        switch params.confCrossV.x.orient
+          when 'top'
+            eventY = params.confCanvas.padding[1]
+          when 'bottom'
+            eventY = params.confCanvas.height-params.confCanvas.padding[1]
+        text.text(params.confCrossV.x.format(valueX))
+        VALUE.attr("transform", "translate(#{positionX-textDim.width/2}, #{eventY})")
+        VALUE.attr("cy", d3.mouse(@)[1])
+
+        # Detect unmoved mouse
+        timeoutUnmoved = setTimeout(( ->
+          VALUE.transition().duration(500).style('opacity', 0)
+        ), 2000)
+      )

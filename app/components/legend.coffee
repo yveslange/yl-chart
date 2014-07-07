@@ -11,68 +11,96 @@ exp.Main = class Main
     SERIES = params.series
     SELECTOR = params.canvas.selector
     # TODO: add to configuration parameters
-    rectWidth = 10
-    rectHeight = 10
-    textWidth = 50
-    rectMargin = 5
+    rectWidth = params.legends.rect.width
+    rectHeight = params.legends.rect.height
+    textWidth = params.legends.text.width
+    rectMargin = params.legends.margin
 
     # Width space available
     widthSpace = params.canvas.width-params.canvas.padding[0]*2
 
-    posX = params.canvas.padding[0]
-    posY = params.canvas.height-12
+    posX = params.canvas.padding[0]-params.legends.padding[0]
+    posY = params.canvas.height-params.legends.padding[1]
     @_LEGENDS.attr("transform", "translate(#{posX}, #{posY})")
 
     currentX = 0
-    currentY = 15
-    for i, serie of SERIES
+    currentY = params.legends.padding[1]
+
+    nbrLegends = SERIES.length-1
+    nbrLegends++ if params.legends.toggleAll.show # Special options to toggle
+
+    for i in [0..nbrLegends] by 1
       params.svg.attr("height", params.canvas.height+currentY)
-      i = parseInt(i)
-      color = serie.data[0].config.color
-      text = serie.name
-      if params.legends.format?
-        text = params.legends.format(text)
-      legend = @_LEGENDS.append("g")
-        .style("cursor", "pointer")
-        .attr("transform", "translate(#{currentX}, #{currentY})")
-        .attr("data-serieIndex", i)
-        .attr("data-hide", "false")
-      rect = legend.append("rect")
-        .attr("width", rectWidth)
-        .attr("height", rectHeight)
-        .attr("fill", color)
-        .attr("stroke", "#afafaf")
-        .attr("stroke-width", "1")
-        .attr("rx", 5)
-        .attr("ry", 5)
-      legend.append("text")
-        .attr("x", rectMargin+rectWidth)
-        .attr("y", rectHeight-1)
-        .attr("fill", color)
-        .attr("font-size", 10)
-        .text(text)
+
+      # Toggle for all hide
+      if i == nbrLegends && params.legends.toggleAll.show
+        legend = @drawLegend(@_LEGENDS, i, currentX, currentY,
+          rectWidth, rectHeight, rectMargin,
+          params.legends.toggleAll.color,
+          params.legends.toggleAll.text)
+        callback = @toggleSeries
+      else
+        serie = SERIES[i]
+        color = serie.data[0].config.color
+        text = serie.name
+        if params.legends.format?
+          text = params.legends.format(text)
+        legend = @drawLegend(@_LEGENDS, i, currentX, currentY,
+          rectWidth, rectHeight, rectMargin, color, text)
+        callback = @toggleSerie
+
+      # Update canvas height
       if currentX+rectWidth+textWidth+
-      rectMargin > widthSpace-rectWidth-textWidth-rectMargin
+          rectMargin > widthSpace-rectWidth-textWidth-rectMargin
         currentX = 0
         currentY += 15
-        # Update canvas height
       else
         currentX += rectWidth+textWidth+rectMargin
-      callback = @onClick
-      legend.on("click", ()  -> callback(@, SELECTOR))
 
-  onClick: (SCOPE, selector) ->
-    opacity = $(SCOPE).css("opacity")
-    serie = SCOPE.getAttribute("data-serieIndex")
-    hide = SCOPE.getAttribute("data-hide")
+      # Careful, a closure is needed here !
+      legend.on("click",
+        ((cb, index) ->
+          return ->
+            cb.call(this, SELECTOR, index)
+        )(callback, i)
+      )
+
+  drawLegend: (LEGENDS, i, currentX, currentY, rectWidth,
+    rectHeight, rectMargin, color, text) ->
+    legend = LEGENDS.append("g")
+      .style("cursor", "pointer")
+      .attr("transform", "translate(#{currentX}, #{currentY})")
+      .attr("data-index", i)
+      .attr("data-hide", "false")
+      .attr("class", "legend")
+    rect = legend.append("rect")
+      .attr("width", rectWidth)
+      .attr("height", rectHeight)
+      .attr("fill", color)
+      .attr("stroke", "#afafaf")
+      .attr("stroke-width", "1")
+      .attr("rx", 5)
+      .attr("ry", 5)
+    legend.append("text")
+      .attr("x", rectMargin+rectWidth)
+      .attr("y", rectHeight-1)
+      .attr("fill", color)
+      .attr("font-size", 10)
+      .text(text)
+    return legend
+
+  toggleSerie: (selector, index) ->
+    opacity = $(@).find("rect").css("opacity")
+    hide = @getAttribute("data-hide")
     if hide == "false"
-      $(SCOPE).find("rect").fadeTo(100, 0.1)
-      $(selector).find(".series#"+serie)[0].setAttribute("data-hide", "true")
-      SCOPE.setAttribute("data-hide", "true")
+      $(@).find("rect").fadeTo(100, 0.1)
+      $(selector).find(".series#"+index).attr("data-hide", "true")
+      @setAttribute("data-hide", "true")
     else
-      $(SCOPE).find("rect").fadeTo(100, 1)
-      $(selector).find(".series#"+serie)[0].setAttribute("data-hide", "false")
-      SCOPE.setAttribute("data-hide", "false")
-    $(selector).find(".series#"+serie).toggle("normal")
+      $(@).find("rect").fadeTo(100, 1)
+      $(selector).find(".series#"+index).attr("data-hide", "false")
+      @setAttribute("data-hide", "false")
+    $(selector).find(".series#"+index).toggle("normal")
 
-
+  toggleSeries: (selector) ->
+    $(selector).find(".series").toggle("normal")

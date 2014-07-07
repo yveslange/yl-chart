@@ -423,59 +423,6 @@ exp.Main = Main = (function() {
     }
   };
 
-  Main.prototype.renderCrossValue = function(params) {
-    var box, gbox, text, textDim, timeoutUnmoved;
-    if (params == null) {
-      params = {
-        scale: null,
-        canvas: null,
-        confCanvas: null,
-        confCrossV: null
-      };
-    }
-    gbox = params.canvas.append("g").style("opacity", 0);
-    box = gbox.append("rect");
-    text = gbox.append("text").text("AgChartPile").attr("font-size", params.confCrossV.x.fontSize).attr("text-anchor", "middle").attr("fill", params.confCrossV.x.fontColor);
-    textDim = text.node().getBBox();
-    box.attr("fill", params.confCrossV.x.color).attr("rx", params.confCrossV.x.radius).attr("ry", params.confCrossV.x.radius);
-    if (params.confCrossV.x.show) {
-      timeoutUnmoved = null;
-      return params.canvas.on("mousemove.crossValue", function() {
-        var eventX, eventY, positionX, valueX;
-        gbox.transition().duration(300).style('opacity', 1);
-        clearTimeout(timeoutUnmoved);
-        eventX = d3.mouse(this)[0];
-        if (eventX < params.confCanvas.padding[0]) {
-          eventX = params.confCanvas.padding[0];
-        } else if (eventX > params.confCanvas.width - params.confCanvas.padding[0]) {
-          eventX = params.confCanvas.width - params.confCanvas.padding[0];
-        }
-        positionX = eventX;
-        if (eventX < params.confCanvas.padding[0] + textDim.width / 2) {
-          positionX = params.confCanvas.padding[0] + textDim.width / 2;
-        } else if (eventX > params.confCanvas.width - params.confCanvas.padding[0] - textDim.width / 2) {
-          positionX = params.confCanvas.width - params.confCanvas.padding[0] - textDim.width / 2;
-        }
-        text.attr("y", textDim.height - textDim.height * 0.25).attr("x", textDim.width / 2);
-        box.attr("width", textDim.width).attr("height", textDim.height);
-        valueX = params.scale.x.invert(eventX);
-        switch (params.confCrossV.x.orient) {
-          case 'top':
-            eventY = params.confCanvas.padding[1];
-            break;
-          case 'bottom':
-            eventY = params.confCanvas.height - params.confCanvas.padding[1];
-        }
-        text.text(params.confCrossV.x.format(valueX));
-        gbox.attr("transform", "translate(" + (positionX - textDim.width / 2) + ", " + eventY + ")");
-        gbox.attr("cy", d3.mouse(this)[1]);
-        return timeoutUnmoved = setTimeout((function() {
-          return gbox.transition().duration(500).style('opacity', 0);
-        }), 2000);
-      });
-    }
-  };
-
   Main.prototype.render = function() {
     if (this._CANVAS == null) {
       this._CANVAS = this.createSVG();
@@ -499,7 +446,7 @@ exp.Main = Main = (function() {
       canvas: this._CONF.canvas,
       axis: this._CONF.axis.y
     });
-    this.renderCrossValue({
+    this._CLASS.cross.renderValue({
       scale: this._SCALE,
       canvas: this._CANVAS,
       confCanvas: this._CONF.canvas,
@@ -633,7 +580,16 @@ exp.Main = Main = (function() {
   function Main(svg) {
     this._CROSSX = svg.append("line");
     this._CROSSY = svg.append("line");
+    this._VALUE = svg.append("g").style("opacity", 0);
   }
+
+  Main.prototype.getDOM = function() {
+    return {
+      crossX: this._CROSSX,
+      crossY: this._CROSSY,
+      value: this._VALUE
+    };
+  };
 
   Main.prototype.render = function(params) {
     var height, offsetX, offsetY, padX, padY, timeoutUnmoved, width, _crossX, _crossY;
@@ -648,7 +604,7 @@ exp.Main = Main = (function() {
     _crossX.attr("class", "crossX").attr("x1", -width).attr("y1", padY).attr("x2", -width).attr("y2", height - padY).attr("stroke", params.confCross.x.color).attr("stroke-width", params.confCross.x.stroke);
     _crossY.attr("class", "crossY").attr("x1", padX).attr("y1", -height).attr("x2", width - padX).attr("y2", -height).attr("stroke", params.confCross.y.color).attr("stroke-width", params.confCross.y.stroke);
     timeoutUnmoved = null;
-    return params.svg.on("mousemove.tooltip", function(d) {
+    return params.svg.on("mousemove.cross", function(d) {
       var eventX, eventY;
       clearTimeout(timeoutUnmoved);
       _crossX.transition().style('opacity', 1);
@@ -666,6 +622,51 @@ exp.Main = Main = (function() {
         return _crossX.transition().duration(500).style('opacity', 0);
       }), 2000);
     });
+  };
+
+  Main.prototype.renderValue = function(params) {
+    var VALUE, box, text, textDim, timeoutUnmoved;
+    box = this._VALUE.append("rect");
+    text = this._VALUE.append("text").text("AgChartPile").attr("font-size", params.confCrossV.x.fontSize).attr("text-anchor", "middle").attr("fill", params.confCrossV.x.fontColor);
+    textDim = text.node().getBBox();
+    box.attr("fill", params.confCrossV.x.color).attr("rx", params.confCrossV.x.radius).attr("ry", params.confCrossV.x.radius);
+    if (params.confCrossV.x.show) {
+      timeoutUnmoved = null;
+      VALUE = this._VALUE;
+      return params.canvas.on("mousemove.crossValue", function() {
+        var eventX, eventY, positionX, valueX;
+        VALUE.transition().duration(300).style('opacity', 1);
+        clearTimeout(timeoutUnmoved);
+        eventX = d3.mouse(this)[0];
+        if (eventX < params.confCanvas.padding[0]) {
+          eventX = params.confCanvas.padding[0];
+        } else if (eventX > params.confCanvas.width - params.confCanvas.padding[0]) {
+          eventX = params.confCanvas.width - params.confCanvas.padding[0];
+        }
+        positionX = eventX;
+        if (eventX < params.confCanvas.padding[0] + textDim.width / 2) {
+          positionX = params.confCanvas.padding[0] + textDim.width / 2;
+        } else if (eventX > params.confCanvas.width - params.confCanvas.padding[0] - textDim.width / 2) {
+          positionX = params.confCanvas.width - params.confCanvas.padding[0] - textDim.width / 2;
+        }
+        text.attr("y", textDim.height - textDim.height * 0.25).attr("x", textDim.width / 2);
+        box.attr("width", textDim.width).attr("height", textDim.height);
+        valueX = params.scale.x.invert(eventX);
+        switch (params.confCrossV.x.orient) {
+          case 'top':
+            eventY = params.confCanvas.padding[1];
+            break;
+          case 'bottom':
+            eventY = params.confCanvas.height - params.confCanvas.padding[1];
+        }
+        text.text(params.confCrossV.x.format(valueX));
+        VALUE.attr("transform", "translate(" + (positionX - textDim.width / 2) + ", " + eventY + ")");
+        VALUE.attr("cy", d3.mouse(this)[1]);
+        return timeoutUnmoved = setTimeout((function() {
+          return VALUE.transition().duration(500).style('opacity', 0);
+        }), 2000);
+      });
+    }
   };
 
   return Main;
@@ -738,61 +739,80 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.render = function(params) {
-    var SELECTOR, SERIES, callback, color, currentX, currentY, i, legend, posX, posY, rect, rectHeight, rectMargin, rectWidth, serie, text, textWidth, widthSpace, _results;
+    var SELECTOR, SERIES, callback, color, currentX, currentY, i, legend, nbrLegends, posX, posY, rectHeight, rectMargin, rectWidth, serie, text, textWidth, widthSpace, _i, _results;
     SERIES = params.series;
     SELECTOR = params.canvas.selector;
-    rectWidth = 10;
-    rectHeight = 10;
-    textWidth = 50;
-    rectMargin = 5;
+    rectWidth = params.legends.rect.width;
+    rectHeight = params.legends.rect.height;
+    textWidth = params.legends.text.width;
+    rectMargin = params.legends.margin;
     widthSpace = params.canvas.width - params.canvas.padding[0] * 2;
-    posX = params.canvas.padding[0];
-    posY = params.canvas.height - 12;
+    posX = params.canvas.padding[0] - params.legends.padding[0];
+    posY = params.canvas.height - params.legends.padding[1];
     this._LEGENDS.attr("transform", "translate(" + posX + ", " + posY + ")");
     currentX = 0;
-    currentY = 15;
+    currentY = params.legends.padding[1];
+    nbrLegends = SERIES.length - 1;
+    if (params.legends.toggleAll.show) {
+      nbrLegends++;
+    }
     _results = [];
-    for (i in SERIES) {
-      serie = SERIES[i];
+    for (i = _i = 0; _i <= nbrLegends; i = _i += 1) {
       params.svg.attr("height", params.canvas.height + currentY);
-      i = parseInt(i);
-      color = serie.data[0].config.color;
-      text = serie.name;
-      if (params.legends.format != null) {
-        text = params.legends.format(text);
+      if (i === nbrLegends && params.legends.toggleAll.show) {
+        legend = this.drawLegend(this._LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, params.legends.toggleAll.color, params.legends.toggleAll.text);
+        callback = this.toggleSeries;
+      } else {
+        serie = SERIES[i];
+        color = serie.data[0].config.color;
+        text = serie.name;
+        if (params.legends.format != null) {
+          text = params.legends.format(text);
+        }
+        legend = this.drawLegend(this._LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, color, text);
+        callback = this.toggleSerie;
       }
-      legend = this._LEGENDS.append("g").style("cursor", "pointer").attr("transform", "translate(" + currentX + ", " + currentY + ")").attr("data-serieIndex", i).attr("data-hide", "false");
-      rect = legend.append("rect").attr("width", rectWidth).attr("height", rectHeight).attr("fill", color).attr("stroke", "#afafaf").attr("stroke-width", "1").attr("rx", 5).attr("ry", 5);
-      legend.append("text").attr("x", rectMargin + rectWidth).attr("y", rectHeight - 1).attr("fill", color).attr("font-size", 10).text(text);
       if (currentX + rectWidth + textWidth + rectMargin > widthSpace - rectWidth - textWidth - rectMargin) {
         currentX = 0;
         currentY += 15;
       } else {
         currentX += rectWidth + textWidth + rectMargin;
       }
-      callback = this.onClick;
-      _results.push(legend.on("click", function() {
-        return callback(this, SELECTOR);
-      }));
+      _results.push(legend.on("click", (function(cb, index) {
+        return function() {
+          return cb.call(this, SELECTOR, index);
+        };
+      })(callback, i)));
     }
     return _results;
   };
 
-  Main.prototype.onClick = function(SCOPE, selector) {
-    var hide, opacity, serie;
-    opacity = $(SCOPE).css("opacity");
-    serie = SCOPE.getAttribute("data-serieIndex");
-    hide = SCOPE.getAttribute("data-hide");
+  Main.prototype.drawLegend = function(LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, color, text) {
+    var legend, rect;
+    legend = LEGENDS.append("g").style("cursor", "pointer").attr("transform", "translate(" + currentX + ", " + currentY + ")").attr("data-index", i).attr("data-hide", "false").attr("class", "legend");
+    rect = legend.append("rect").attr("width", rectWidth).attr("height", rectHeight).attr("fill", color).attr("stroke", "#afafaf").attr("stroke-width", "1").attr("rx", 5).attr("ry", 5);
+    legend.append("text").attr("x", rectMargin + rectWidth).attr("y", rectHeight - 1).attr("fill", color).attr("font-size", 10).text(text);
+    return legend;
+  };
+
+  Main.prototype.toggleSerie = function(selector, index) {
+    var hide, opacity;
+    opacity = $(this).find("rect").css("opacity");
+    hide = this.getAttribute("data-hide");
     if (hide === "false") {
-      $(SCOPE).find("rect").fadeTo(100, 0.1);
-      $(selector).find(".series#" + serie)[0].setAttribute("data-hide", "true");
-      SCOPE.setAttribute("data-hide", "true");
+      $(this).find("rect").fadeTo(100, 0.1);
+      $(selector).find(".series#" + index).attr("data-hide", "true");
+      this.setAttribute("data-hide", "true");
     } else {
-      $(SCOPE).find("rect").fadeTo(100, 1);
-      $(selector).find(".series#" + serie)[0].setAttribute("data-hide", "false");
-      SCOPE.setAttribute("data-hide", "false");
+      $(this).find("rect").fadeTo(100, 1);
+      $(selector).find(".series#" + index).attr("data-hide", "false");
+      this.setAttribute("data-hide", "false");
     }
-    return $(selector).find(".series#" + serie).toggle("normal");
+    return $(selector).find(".series#" + index).toggle("normal");
+  };
+
+  Main.prototype.toggleSeries = function(selector) {
+    return $(selector).find(".series").toggle("normal");
   };
 
   return Main;
@@ -1209,7 +1229,21 @@ exp.Main = Main = (function() {
     },
     legends: {
       show: true,
-      format: null
+      format: null,
+      toggleAll: {
+        show: true,
+        color: "#5f5f5f",
+        text: "Toggle all"
+      },
+      text: {
+        width: 50
+      },
+      rect: {
+        width: 10,
+        height: 10
+      },
+      margin: 5,
+      padding: [0, 15]
     },
     pluginsIconsFolder: "icons",
     plugins: {

@@ -132,6 +132,18 @@ exp.Main = class Main
     legends:
       show: true
       format: null
+      toggleAll:
+        show: true
+        color: "#5f5f5f"
+        text: "Toggle all"
+      text:
+        width: 50
+      rect:
+        width: 10
+        height: 10
+      margin: 5
+      padding: [0, 15] # If you don't display some values !
+
     pluginsIconsFolder: "icons"
     plugins:
       exportation:
