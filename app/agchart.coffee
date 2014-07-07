@@ -1,17 +1,21 @@
 module.exports = exp = {}
 M = {
+  # Init
   config  : require 'config'
-  palette : require 'utils/palette'
   tools   : require 'utils/tools'
-  design  : require 'utils/design'
-  effectsPoint : require 'effects/point'
   scale   : require 'utils/scale'
   domain  : require 'utils/domain'
+  palette : require 'utils/palette'
+  design  : require 'utils/design'
+  effectsPoint : require 'effects/point'
 
   # Components
-  title: require 'components/title'
-  label: require 'components/label'
-  tooltip: require 'components/tooltip'
+  title:    require 'components/title'
+  label:    require 'components/label'
+  tooltip:  require 'components/tooltip'
+  logo:     require 'components/logo'
+  legend:   require 'components/legend'
+  cross:    require 'components/cross'
 }
 
 exp.Main = class Main
@@ -62,11 +66,11 @@ exp.Main = class Main
 
     @initSVG(@_CONF.canvas)
 
-
   # Returns information about the chart
   toString: ->
     console.log "Canvas in #{@_CONF.selector}"
     console.log "Config", @_CONF
+    console.log "Classes:", @_CLASS
     console.log "Series:", @_SERIES
     return
 
@@ -80,7 +84,10 @@ exp.Main = class Main
       .attr('width', confCanvas.width)
       .attr('height', confCanvas.height)
     @_CLASS.tooltip = new M.tooltip.Main(@_CONF.canvas.selector)
-    @_CLASS.title = new M.title.Main(@_CANVAS)
+    @_CLASS.title   = new M.title.Main(@_CANVAS)
+    @_CLASS.logo    = new M.logo.Main(@_CANVAS)
+    @_CLASS.legend  = new M.legend.Main(@_CANVAS)
+    @_CLASS.cross   = new M.cross.Main(@_CANVAS)
 
   renderAxis: (params) ->
     line = @_CANVAS.append("line")
@@ -252,7 +259,6 @@ exp.Main = class Main
     }
     @renderGrid(params)
 
-
   renderPoints: ->
     _scope  = @
     _conf   = @_CONF
@@ -267,6 +273,7 @@ exp.Main = class Main
       _tooltipCallback = @_CLASS.tooltip.getCallback(_tooltipCallback)
     if typeof(_tooltipTemplate) == "string"
       _tooltipTemplate = @_CLASS.tooltip.getTemplate(_tooltipTemplate)
+
     scaleW = @_SCALE.x
     scaleH = @_SCALE.y
 
@@ -431,85 +438,17 @@ exp.Main = class Main
       )
 
 
-  renderCross: (params={
-    canvas: null
-    confCanvas: null
-    confCross: null
-  })->
-    padX = params.confCanvas.padding[0]
-    padY = params.confCanvas.padding[1]
-    offsetX = params.confCross.x.offset
-    offsetY = params.confCross.y.offset
-    width = params.confCanvas.width
-    height = params.confCanvas.height
-    _crossX = params.canvas.append("line")
-      .attr("class", "crossX")
-      .attr("x1", -width).attr("y1", padY)
-      .attr("x2", -width).attr("y2", height-padY)
-      .attr("stroke", params.confCross.x.color)
-      .attr("stroke-width", params.confCross.x.stroke)
-    _crossY = params.canvas.append("line")
-      .attr("class", "crossY")
-      .attr("x1", padX).attr("y1", -height)
-      .attr("x2", width-padX).attr("y2", -height)
-      .attr("stroke", params.confCross.y.color)
-      .attr("stroke-width", params.confCross.y.stroke)
-    timeoutUnmoved = null
-    params.canvas.on("mousemove.tooltip", (d)->
-      clearTimeout(timeoutUnmoved)
-      _crossY.transition().style('opacity', 1)
-      _crossX.transition().style('opacity', 1)
-      eventX = d3.mouse(@)[0]
-      eventY = d3.mouse(@)[1]
-      if params.confCross.x.show and
-      eventX >= padX+offsetX and
-      eventX <= width-padX+offsetX
-        _crossX
-          .attr("x1", eventX-offsetX)
-          .attr("x2", eventX-offsetX)
-      if params.confCross.y.show and
-      eventY >= padY+offsetY and
-      eventY <= height-padY+offsetY
-        _crossY
-          .attr("y1", eventY-offsetY)
-          .attr("y2", eventY-offsetY)
-      # Detect unmoved mouse
-      timeoutUnmoved = setTimeout(( ->
-        _crossY.transition().duration(500).style('opacity', 0)
-        _crossX.transition().duration(500).style('opacity', 0)
-      ), 2000)
-    )
 
-  renderLogo: (params) ->
-    if params.y == 'bottom'
-      params.y = @_CONF.canvas.height-@_CONF.canvas.padding[1]-params.height
-    params.y = @_CONF.canvas.padding[1] if params.y == 'top'
-    if params.x == 'right'
-      params.x = @_CONF.canvas.width-@_CONF.canvas.padding[0]-params.width
-    params.x = @_CONF.canvas.padding[0] if params.y == 'left'
-
-    @_CANVAS
-      .append("image")
-      .attr("width", params.width)
-      .attr("height", params.height)
-      .attr("x", params.x)
-      .attr("y", params.y)
-      .attr("opacity", params.opacity)
-      .attr("id", "logo")
-      .attr("xlink:href",@_CONF.logo.url)
 
   render: ->
     @_CANVAS = @createSVG() if not @_CANVAS?
-    @renderLogo(
-      opacity: @_CONF.logo.opacity
-      url: @_CONF.logo.url
-      width: @_CONF.logo.width
-      height: @_CONF.logo.height
-      x: @_CONF.logo.x
-      y: @_CONF.logo.y
+
+    @_CLASS.logo.render(
+      canvas: @_CONF.canvas
+      logo: @_CONF.logo
     )
-    @renderCross(
-      canvas: @_CANVAS
+    @_CLASS.cross.render(
+      svg: @_CANVAS
       confCanvas: @_CONF.canvas
       confCross: @_CONF.canvas.cross
     )
@@ -537,82 +476,19 @@ exp.Main = class Main
       padding: @_CONF.canvas.padding
     )
 
+    @_CLASS.legend.render(
+      svg: @_CANVAS
+      canvas: @_CONF.canvas
+      series: @_SERIES
+      legends: @_CONF.legends
+    ) if @_CONF.legends.show
+
     @renderPluginMenu(
       iconsFolder: @_CONF.pluginsIconsFolder
       selector: @_CONF.canvas.selector
       confPlugins: @_CONF.plugins
     )
 
-    if @_CONF.legends.show
-      @renderLegends()
-
-
-  renderLegends: ->
-    _series = @_SERIES
-    selector = @_CONF.canvas.selector
-    rectWidth = 10
-    rectHeight = 10
-    textWidth = 50
-    rectMargin = 5
-
-    # Width space available
-    widthSpace = @_CONF.canvas.width-@_CONF.canvas.padding[0]*2
-
-    posX = @_CONF.canvas.padding[0]
-    posY = @_CONF.canvas.height-12
-
-    currentX = 0
-    currentY = 15
-    legPanel = @_CANVAS.append("g")
-      .attr("transform", "translate(#{posX}, #{posY})")
-    for i, serie of @_SERIES
-      @_CANVAS.attr("height", @_CONF.canvas.height+currentY)
-      i = parseInt(i)
-      color = serie.data[0].config.color
-      text = serie.name
-      if @_CONF.legends.format?
-        text = @_CONF.legends.format(text)
-      legend = legPanel.append("g")
-        .attr("transform", "translate(#{currentX}, #{currentY})")
-        .style("cursor", "pointer")
-        .attr("data-serieIndex", i)
-        .attr("data-hide", "false")
-      rect = legend.append("rect")
-        .attr("width", rectWidth)
-        .attr("height", rectHeight)
-        .attr("fill", color)
-        .attr("stroke", "#afafaf")
-        .attr("stroke-width", "1")
-        .attr("rx", 5)
-        .attr("ry", 5)
-      legend.append("text")
-        .attr("x", rectMargin+rectWidth)
-        .attr("y", rectHeight-1)
-        .attr("fill", color)
-        .attr("font-size", 10)
-        .text(text)
-      if currentX+rectWidth+textWidth+
-      rectMargin > widthSpace-rectWidth-textWidth-rectMargin
-        currentX = 0
-        currentY += 15
-        # Update canvas height
-      else
-        currentX += rectWidth+textWidth+rectMargin
-
-      legend.on("click", ()  ->
-        opacity = $(this).css("opacity")
-        serie = this.getAttribute("data-serieIndex")
-        hide = this.getAttribute("data-hide")
-        if hide == "false"
-          $(this).fadeTo(100, 0.3)
-          $(selector).find(".series#"+serie)[0].setAttribute("data-hide", "true")
-          this.setAttribute("data-hide", "true")
-        else
-          $(this).fadeTo(100, 1)
-          $(selector).find(".series#"+serie)[0].setAttribute("data-hide", "false")
-          this.setAttribute("data-hide", "false")
-        $(selector).find(".series#"+serie).toggle()
-      )
 
   renderPluginMenu: (params={
     selector: null
@@ -649,7 +525,7 @@ exp.Main = class Main
     exportation:
       onClick: (context, selector, conf) ->
         # Replace logo by copyright text
-        image = $(selector).find("image#logo").remove()
+        image = context._CLASS.logo.getDOM().root.remove()
         text = context._CANVAS.append("text")
           .attr("fill", conf.copyright.color)
           .attr("font-size", conf.copyright.fontSize+"px")
@@ -691,12 +567,9 @@ exp.Main = class Main
           a.click()
 
         # Trick: we need to re-render the logo
-        context.renderLogo(
-          opacity: context._CONF.logo.opacity
-          url: context._CONF.logo.url
-          width:context._CONF.logo.width
-          height: context._CONF.logo.height
-          x: context._CONF.logo.x
-          y: context._CONF.logo.y
+        context._CLASS.logo = new M.logo.Main(context._CANVAS)
+        context._CLASS.logo.render(
+          canvas: context._CONF.canvas
+          logo: context._CONF.logo
         )
         text.remove()
