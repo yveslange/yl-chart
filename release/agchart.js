@@ -108,7 +108,8 @@ M = {
   tooltip: require('components/tooltip'),
   logo: require('components/logo'),
   legend: require('components/legend'),
-  cross: require('components/cross')
+  cross: require('components/cross'),
+  plugin: require('components/plugin')
 };
 
 exp.Main = Main = (function() {
@@ -161,7 +162,8 @@ exp.Main = Main = (function() {
     this._CLASS.title = new M.title.Main(this._CANVAS);
     this._CLASS.logo = new M.logo.Main(this._CANVAS);
     this._CLASS.legend = new M.legend.Main(this._CANVAS);
-    return this._CLASS.cross = new M.cross.Main(this._CANVAS);
+    this._CLASS.cross = new M.cross.Main(this._CANVAS);
+    return this._CLASS.plugin = new M.plugin.Main(this._CONF.canvas.selector);
   };
 
   Main.prototype.renderAxis = function(params) {
@@ -465,105 +467,12 @@ exp.Main = Main = (function() {
         legends: this._CONF.legends
       });
     }
-    return this.renderPluginMenu({
+    return this._CLASS.plugin.render({
+      canvas: this._CONF.canvas,
+      context: this,
       iconsFolder: this._CONF.pluginsIconsFolder,
-      selector: this._CONF.canvas.selector,
       confPlugins: this._CONF.plugins
     });
-  };
-
-  Main.prototype.renderPluginMenu = function(params) {
-    var callback, context, icon, plugin, pluginsMenu, _results;
-    if (params == null) {
-      params = {
-        selector: null,
-        iconsFolder: 'icons',
-        confPlugins: {}
-      };
-    }
-    pluginsMenu = $("<div/>", {
-      id: "pluginsMenu"
-    }).appendTo(params.selector);
-    pluginsMenu.css({
-      "position": "absolute",
-      "left": this._CONF.canvas.width + 1,
-      "top": "0px",
-      "opacity": 0.1
-    });
-    pluginsMenu.on("mouseover.menuPlugin", function() {
-      return pluginsMenu.animate({
-        opacity: 1
-      }, 10);
-    });
-    pluginsMenu.on("mouseout.menuPlugin", function() {
-      return pluginsMenu.animate({
-        opacity: 0.1
-      }, 10);
-    });
-    _results = [];
-    for (plugin in params.confPlugins) {
-      if (params.confPlugins[plugin].enable) {
-        icon = $("<img/>", {
-          src: "" + params.iconsFolder + "/" + plugin + ".png",
-          width: "30px"
-        }).appendTo(pluginsMenu);
-        icon.css({
-          cursor: "pointer"
-        });
-        callback = this.plugins[plugin].onClick;
-        context = this;
-        _results.push(icon.click(function() {
-          return callback(context, params.selector, params.confPlugins[plugin]);
-        }));
-      } else {
-        _results.push(void 0);
-      }
-    }
-    return _results;
-  };
-
-  Main.prototype.plugins = {
-    exportation: {
-      onClick: function(context, selector, conf) {
-        var a, canvas, height, image, img, msie, pX, pY, svg, svg_xml, text, textDim, ua, width, win;
-        image = context._CLASS.logo.getDOM().root.remove();
-        text = context._CANVAS.append("text").attr("fill", conf.copyright.color).attr("font-size", conf.copyright.fontSize + "px").text(conf.copyright.text);
-        width = context._CONF.canvas.width;
-        height = context._CONF.canvas.height;
-        textDim = text.node().getBBox();
-        pX = width - context._CONF.canvas.padding[0] - 10;
-        pY = height - context._CONF.canvas.padding[1] - 3;
-        text.attr("text-anchor", "end");
-        text.attr("transform", "translate(" + pX + ", " + pY + ")");
-        svg = $(selector).find("svg")[0];
-        svg_xml = (new XMLSerializer()).serializeToString(svg);
-        canvas = document.createElement('canvas');
-        $("body").after(canvas);
-        canvg(canvas, svg_xml);
-        $(canvas).remove();
-        img = canvas.toDataURL("image/png");
-        ua = window.navigator.userAgent;
-        msie = ua.indexOf("MSIE ");
-        if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
-          console.log("Internet explorer detected");
-          window.winIE = win = window.open();
-          win.document.body.innerHTML = "<center><img src='" + img + "'>" + "</img><br>Please right click on the image and choose 'Save image as...'</center>";
-          win.document.close();
-        } else {
-          a = document.createElement('a');
-          a.href = img;
-          a.download = "agflow.png";
-          $("body").append(a);
-          a.click();
-        }
-        context._CLASS.logo = new M.logo.Main(context._CANVAS);
-        context._CLASS.logo.render({
-          canvas: context._CONF.canvas,
-          logo: context._CONF.logo
-        });
-        return text.remove();
-      }
-    }
   };
 
   return Main;
@@ -761,7 +670,7 @@ exp.Main = Main = (function() {
     for (i = _i = 0; _i <= nbrLegends; i = _i += 1) {
       params.svg.attr("height", params.canvas.height + currentY);
       if (i === nbrLegends && params.legends.toggleAll.show) {
-        legend = this.drawLegend(this._LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, params.legends.toggleAll.color, params.legends.toggleAll.text);
+        legend = this.drawLegend(this._LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, params.legends.toggleAll.color, "legend option", params.legends.toggleAll.text);
         callback = this.toggleSeries;
       } else {
         serie = SERIES[i];
@@ -770,7 +679,7 @@ exp.Main = Main = (function() {
         if (params.legends.format != null) {
           text = params.legends.format(text);
         }
-        legend = this.drawLegend(this._LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, color, text);
+        legend = this.drawLegend(this._LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, color, "legend", text);
         callback = this.toggleSerie;
       }
       if (currentX + rectWidth + textWidth + rectMargin > widthSpace - rectWidth - textWidth - rectMargin) {
@@ -788,9 +697,9 @@ exp.Main = Main = (function() {
     return _results;
   };
 
-  Main.prototype.drawLegend = function(LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, color, text) {
+  Main.prototype.drawLegend = function(LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, color, className, text) {
     var legend, rect;
-    legend = LEGENDS.append("g").style("cursor", "pointer").attr("transform", "translate(" + currentX + ", " + currentY + ")").attr("data-index", i).attr("data-hide", "false").attr("class", "legend");
+    legend = LEGENDS.append("g").style("cursor", "pointer").attr("transform", "translate(" + currentX + ", " + currentY + ")").attr("data-index", i).attr("data-hide", "false").attr("class", className);
     rect = legend.append("rect").attr("width", rectWidth).attr("height", rectHeight).attr("fill", color).attr("stroke", "#afafaf").attr("stroke-width", "1").attr("rx", 5).attr("ry", 5);
     legend.append("text").attr("x", rectMargin + rectWidth).attr("y", rectHeight - 1).attr("fill", color).attr("font-size", 10).text(text);
     return legend;
@@ -867,6 +776,72 @@ exp.Main = Main = (function() {
       posX = PADDING[0];
     }
     return this._IMAGE.attr("width", params.logo.width).attr("height", params.logo.height).attr("x", posX).attr("y", posY).attr("opacity", params.logo.opacity).attr("id", "logo").attr("xlink:href", params.logo.url);
+  };
+
+  return Main;
+
+})();
+});
+
+;require.register("components/plugin", function(exports, require, module) {
+var Main, exp;
+
+module.exports = exp = {};
+
+exp.Main = Main = (function() {
+  function Main(svg) {
+    this._MENU = $("<div/>", {
+      id: "pluginsMenu"
+    }).appendTo(svg);
+  }
+
+  Main.prototype.getDOM = function() {
+    return {
+      root: this._MENU
+    };
+  };
+
+  Main.prototype.render = function(PARAMS) {
+    var callback, context, icon, plugin, pluginModule, pluginsMenu, _results;
+    pluginsMenu = this._MENU;
+    pluginsMenu.css({
+      "position": "absolute",
+      "left": PARAMS.canvas.width + 1,
+      "top": "0px",
+      "opacity": 0.1
+    });
+    pluginsMenu.on("mouseover.menuPlugin", function() {
+      return pluginsMenu.animate({
+        opacity: 1
+      }, 10);
+    });
+    pluginsMenu.on("mouseout.menuPlugin", function() {
+      return pluginsMenu.animate({
+        opacity: 0.1
+      }, 10);
+    });
+    _results = [];
+    for (plugin in PARAMS.confPlugins) {
+      if (PARAMS.confPlugins[plugin].enable) {
+        icon = $("<img/>", {
+          src: "" + PARAMS.iconsFolder + "/" + plugin + ".png",
+          title: PARAMS.confPlugins[plugin].displayName,
+          width: "30px"
+        }).appendTo(pluginsMenu);
+        icon.css({
+          cursor: "pointer"
+        });
+        pluginModule = require('plugins/' + plugin);
+        callback = pluginModule.onClick;
+        context = PARAMS.context;
+        _results.push(icon.click(function() {
+          return callback(context, PARAMS.canvas.selector, PARAMS.confPlugins[plugin]);
+        }));
+      } else {
+        _results.push(void 0);
+      }
+    }
+    return _results;
   };
 
   return Main;
@@ -1260,6 +1235,7 @@ exp.Main = Main = (function() {
     pluginsIconsFolder: "icons",
     plugins: {
       exportation: {
+        displayName: "Exports the chart to a PNG file",
         enable: true,
         copyright: {
           text: "(c) AgFlow 2014",
@@ -1549,6 +1525,58 @@ exp.run = function() {
     series: series
   });
   return agChart.render();
+};
+});
+
+;require.register("plugins/exportation", function(exports, require, module) {
+var M, exp;
+
+module.exports = exp = {};
+
+M = {
+  logo: require('components/logo')
+};
+
+exp.onClick = function(context, selector, conf) {
+  var a, canvas, height, image, img, msie, pX, pY, svg, svg_xml, text, textDim, ua, width, win;
+  image = context._CLASS.logo.getDOM().root.remove();
+  text = context._CANVAS.append("text").attr("fill", conf.copyright.color).attr("font-size", conf.copyright.fontSize + "px").text(conf.copyright.text);
+  $(context._CLASS.legend.getDOM().root.node()).find(".legend.option").hide();
+  width = context._CONF.canvas.width;
+  height = context._CONF.canvas.height;
+  textDim = text.node().getBBox();
+  pX = width - context._CONF.canvas.padding[0] - 10;
+  pY = height - context._CONF.canvas.padding[1] - 3;
+  text.attr("text-anchor", "end");
+  text.attr("transform", "translate(" + pX + ", " + pY + ")");
+  svg = $(selector).find("svg")[0];
+  svg_xml = (new XMLSerializer()).serializeToString(svg);
+  canvas = document.createElement('canvas');
+  $("body").after(canvas);
+  canvg(canvas, svg_xml);
+  $(canvas).remove();
+  img = canvas.toDataURL("image/png");
+  ua = window.navigator.userAgent;
+  msie = ua.indexOf("MSIE ");
+  if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
+    console.log("Internet explorer detected");
+    window.winIE = win = window.open();
+    win.document.body.innerHTML = "<center><img src='" + img + "'>" + "</img><br>Please right click on the image and choose 'Save image as...'</center>";
+    win.document.close();
+  } else {
+    a = document.createElement('a');
+    a.href = img;
+    a.download = "agflow.png";
+    $("body").append(a);
+    a.click();
+  }
+  context._CLASS.logo = new M.logo.Main(context._CANVAS);
+  context._CLASS.logo.render({
+    canvas: context._CONF.canvas,
+    logo: context._CONF.logo
+  });
+  text.remove();
+  return $(context._CLASS.legend.getDOM().root.node()).find(".legend.option").show();
 };
 });
 

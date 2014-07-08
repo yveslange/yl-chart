@@ -11,7 +11,6 @@ exp.Main = class Main
   render:(params) ->
     SERIES = params.series
     SELECTOR = params.canvas.selector
-    # TODO: add to configuration parameters
     rectWidth = params.legends.rect.width
     rectHeight = params.legends.rect.height
     textWidth = params.legends.text.width
@@ -34,10 +33,12 @@ exp.Main = class Main
       params.svg.attr("height", params.canvas.height+currentY)
 
       # Toggle for all hide
+      # TODO: better to create a function add legend than doing this tricky hard loop
       if i == nbrLegends && params.legends.toggleAll.show
         legend = @drawLegend(@_LEGENDS, i, currentX, currentY,
           rectWidth, rectHeight, rectMargin,
           params.legends.toggleAll.color,
+          "legend option",
           params.legends.toggleAll.text)
         callback = @toggleSeries
       else
@@ -47,7 +48,7 @@ exp.Main = class Main
         if params.legends.format?
           text = params.legends.format(text)
         legend = @drawLegend(@_LEGENDS, i, currentX, currentY,
-          rectWidth, rectHeight, rectMargin, color, text)
+          rectWidth, rectHeight, rectMargin, color, "legend", text)
         callback = @toggleSerie
 
       # Update canvas height
@@ -67,13 +68,13 @@ exp.Main = class Main
       )
 
   drawLegend: (LEGENDS, i, currentX, currentY, rectWidth,
-    rectHeight, rectMargin, color, text) ->
+    rectHeight, rectMargin, color, className, text) ->
     legend = LEGENDS.append("g")
       .style("cursor", "pointer")
       .attr("transform", "translate(#{currentX}, #{currentY})")
       .attr("data-index", i)
       .attr("data-hide", "false")
-      .attr("class", "legend")
+      .attr("class", className)
     rect = legend.append("rect")
       .attr("width", rectWidth)
       .attr("height", rectHeight)

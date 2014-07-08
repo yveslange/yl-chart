@@ -147,6 +147,7 @@ exp.Main = class Main
     pluginsIconsFolder: "icons"
     plugins:
       exportation:
+        displayName: "Exports the chart to a PNG file"
         enable: true
         copyright:
           text: "(c) AgFlow 2014"
