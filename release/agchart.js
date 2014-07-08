@@ -104,11 +104,12 @@ M = {
   design: require('agchart/utils/design'),
   effectsPoint: require('agchart/effects/point'),
   title: require('agchart/components/title'),
-  label: require('agchart/components/label'),
   tooltip: require('agchart/components/tooltip'),
   logo: require('agchart/components/logo'),
   legend: require('agchart/components/legend'),
   cross: require('agchart/components/cross'),
+  axis: require('agchart/components/axis'),
+  grid: require('agchart/components/grid'),
   plugin: require('agchart/components/plugin')
 };
 
@@ -117,7 +118,6 @@ exp.Main = Main = (function() {
     this._CONF = new M.config.Main(args.config).get();
     this._PALETTE = new M.palette.Main(this._CONF.point.color);
     this._CANVAS = void 0;
-    this._TOOLTIP = void 0;
     this._CLASS = {
       tooltip: void 0,
       title: void 0
@@ -159,65 +159,15 @@ exp.Main = Main = (function() {
     });
     this._CANVAS = d3.select(confCanvas.selector).append('svg').attr("fill", confCanvas.bgcolor).attr('width', confCanvas.width).attr('height', confCanvas.height);
     this._CLASS.tooltip = new M.tooltip.Main(this._CONF.canvas.selector);
+    this._CLASS.plugin = new M.plugin.Main(this._CONF.canvas.selector);
     this._CLASS.title = new M.title.Main(this._CANVAS);
     this._CLASS.logo = new M.logo.Main(this._CANVAS);
-    this._CLASS.legend = new M.legend.Main(this._CANVAS);
+    this._CLASS.axisX = new M.axis.Main(this._CANVAS, this._CONF.canvas);
+    this._CLASS.axisY = new M.axis.Main(this._CANVAS, this._CONF.canvas);
     this._CLASS.cross = new M.cross.Main(this._CANVAS);
-    return this._CLASS.plugin = new M.plugin.Main(this._CONF.canvas.selector);
-  };
-
-  Main.prototype.renderAxis = function(params) {
-    var line;
-    line = this._CANVAS.append("line").attr("stroke", params.axis.color).attr("stroke-width", params.axis.strokeWidth);
-    switch (params.axis.orient) {
-      case 'bottom':
-        return line.attr("x1", params.canvas.padding[0]).attr("y1", params.canvas.height - params.canvas.padding[1]).attr("x2", params.canvas.width - params.canvas.padding[0]).attr("y2", params.canvas.height - params.canvas.padding[1]);
-      case "top":
-        return line.attr("x1", params.canvas.padding[0]).attr("y1", params.canvas.padding[1]).attr("x2", params.canvas.width - params.canvas.padding[0]).attr("y2", params.canvas.padding[1]);
-      case "left":
-        return line.attr("x1", params.canvas.padding[0]).attr("y1", params.canvas.padding[1]).attr("x2", params.canvas.padding[0]).attr("y2", params.canvas.height - params.canvas.padding[1]);
-      case "right":
-        return line.attr("x1", params.canvas.width - params.canvas.padding[0]).attr("y1", params.canvas.padding[1]).attr("x2", params.canvas.width - params.canvas.padding[0]).attr("y2", params.canvas.height - params.canvas.padding[1]);
-      default:
-        throw new Error("Unknown orientation: ", params.axis.orient);
-    }
-  };
-
-  Main.prototype.renderGrid = function(params) {
-    var ggrid, grid;
-    if (params == null) {
-      params = {
-        "class": null,
-        color: null,
-        scale: null,
-        height: null,
-        width: null,
-        padding: null,
-        orient: null,
-        trans: null,
-        label: null,
-        format: null
-      };
-    }
-    grid = d3.svg.axis().scale(params.scale).orient(params.orient).tickSize(params.tickSize);
-    if (params.ticks !== "auto") {
-      grid.ticks(params.ticks);
-    }
-    if (params.format != null) {
-      if (params.ticks === "auto") {
-        grid.ticks(d3.time.months.utc, 1);
-      } else {
-        grid.ticks(d3.time.months.utc, params.ticks);
-      }
-      grid.tickFormat(d3.time.format(params.format));
-    }
-    ggrid = this._CANVAS.append("g").attr("transform", params.trans).attr("class", "axis " + params["class"]).call(grid);
-    this._CLASS.label = new M.label.Main(this._CANVAS);
-    this._CLASS.label.render(params);
-    ggrid.selectAll("line").attr("stroke", params.color).attr("stroke-width", params.strokeWidth);
-    ggrid.selectAll("line").attr("stroke", params.tickColor).attr("width-stroke", params.tickWidth);
-    ggrid.selectAll("path").style("display", "none");
-    return ggrid.selectAll("text").attr("fill", params.fontColor).attr("font-size", params.fontSize).attr("font-weight", params.fontWeight);
+    this._CLASS.legend = new M.legend.Main(this._CANVAS);
+    this._CLASS.gridX = new M.grid.Main(this._CANVAS);
+    return this._CLASS.gridY = new M.grid.Main(this._CANVAS);
   };
 
   Main.prototype.renderXGrid = function() {
@@ -263,7 +213,7 @@ exp.Main = Main = (function() {
       fontColor: this._CONF.axis.x.font.color,
       fontWeight: this._CONF.axis.x.font.weight
     };
-    return this.renderGrid(params);
+    return this._CLASS.gridX.render(params);
   };
 
   Main.prototype.renderYGrid = function() {
@@ -307,7 +257,7 @@ exp.Main = Main = (function() {
       fontColor: this._CONF.axis.y.font.color,
       fontWeight: this._CONF.axis.y.font.weight
     };
-    return this.renderGrid(params);
+    return this._CLASS.gridY.render(params);
   };
 
   Main.prototype.renderPoints = function() {
@@ -433,26 +383,15 @@ exp.Main = Main = (function() {
       canvas: this._CONF.canvas,
       logo: this._CONF.logo
     });
-    this._CLASS.cross.render({
-      svg: this._CANVAS,
-      confCanvas: this._CONF.canvas,
-      confCross: this._CONF.canvas.cross
-    });
     this.renderXGrid();
     this.renderYGrid();
-    this.renderAxis({
-      canvas: this._CONF.canvas,
-      axis: this._CONF.axis.x
+    this._CLASS.axisX.render({
+      confAxis: this._CONF.axis.x,
+      confCanvas: this._CONF.canvas
     });
-    this.renderAxis({
-      canvas: this._CONF.canvas,
-      axis: this._CONF.axis.y
-    });
-    this._CLASS.cross.renderValue({
-      scale: this._SCALE,
-      canvas: this._CANVAS,
-      confCanvas: this._CONF.canvas,
-      confCrossV: this._CONF.canvas.crossValue
+    this._CLASS.axisY.render({
+      confAxis: this._CONF.axis.y,
+      confCanvas: this._CONF.canvas
     });
     this.renderPoints();
     this._CLASS.title.render({
@@ -467,13 +406,63 @@ exp.Main = Main = (function() {
         legends: this._CONF.legends
       });
     }
-    this._CLASS.plugin.render({
-      canvas: this._CONF.canvas,
+    this._CLASS.cross.render({
+      svg: this._CANVAS,
+      confCanvas: this._CONF.canvas,
+      confCross: this._CONF.canvas.cross
+    });
+    this._CLASS.cross.renderValue({
+      scale: this._SCALE,
+      canvas: this._CANVAS,
+      confCanvas: this._CONF.canvas,
+      confCrossV: this._CONF.canvas.crossValue
+    });
+    return this._CLASS.plugin.render({
       context: this,
+      canvas: this._CONF.canvas,
       iconsFolder: this._CONF.pluginsIconsFolder,
       confPlugins: this._CONF.plugins
     });
-    return console.log(this._CLASS.plugin.getDOM());
+  };
+
+  return Main;
+
+})();
+});
+
+;require.register("agchart/components/axis", function(exports, require, module) {
+var Main, exp;
+
+module.exports = exp = {};
+
+exp.Main = Main = (function() {
+  function Main(svg) {
+    this._AXIS = svg.append("line");
+  }
+
+  Main.prototype.getDOM = function() {
+    return {
+      root: this._AXIS
+    };
+  };
+
+  Main.prototype.render = function(params) {
+    var confAxis, confCanvas;
+    confAxis = params.confAxis;
+    confCanvas = params.confCanvas;
+    this._AXIS.attr("stroke", confAxis.color).attr("stroke-width", confAxis.strokeWidth);
+    switch (confAxis.orient) {
+      case 'bottom':
+        return this._AXIS.attr("x1", confCanvas.padding[0]).attr("y1", confCanvas.height - confCanvas.padding[1]).attr("x2", confCanvas.width - confCanvas.padding[0]).attr("y2", confCanvas.height - confCanvas.padding[1]);
+      case "top":
+        return this._AXIS.attr("x1", confCanvas.padding[0]).attr("y1", confCanvas.padding[1]).attr("x2", confCanvas.width - confCanvas.padding[0]).attr("y2", confCanvas.padding[1]);
+      case "left":
+        return this._AXIS.attr("x1", confCanvas.padding[0]).attr("y1", confCanvas.padding[1]).attr("x2", confCanvas.padding[0]).attr("y2", confCanvas.height - confCanvas.padding[1]);
+      case "right":
+        return this._AXIS.attr("x1", confCanvas.width - confCanvas.padding[0]).attr("y1", confCanvas.padding[1]).attr("x2", confCanvas.width - confCanvas.padding[0]).attr("y2", confCanvas.height - confCanvas.padding[1]);
+      default:
+        throw new Error("Unknown orientation: ", confAxis.orient);
+    }
   };
 
   return Main;
@@ -586,6 +575,49 @@ exp.Main = Main = (function() {
 })();
 });
 
+;require.register("agchart/components/grid", function(exports, require, module) {
+var M, Main, exp;
+
+module.exports = exp = {};
+
+M = {
+  label: require('agchart/components/label')
+};
+
+exp.Main = Main = (function() {
+  function Main(svg) {
+    console.log("Hello");
+    this._GRID = svg.append("g");
+    this._LABEL = new M.label.Main(svg);
+  }
+
+  Main.prototype.render = function(params) {
+    var grid;
+    grid = d3.svg.axis().scale(params.scale).orient(params.orient).tickSize(params.tickSize);
+    if (params.ticks !== "auto") {
+      grid.ticks(params.ticks);
+    }
+    if (params.format != null) {
+      if (params.ticks === "auto") {
+        grid.ticks(d3.time.months.utc, 1);
+      } else {
+        grid.ticks(d3.time.months.utc, params.ticks);
+      }
+      grid.tickFormat(d3.time.format(params.format));
+    }
+    this._GRID.attr("transform", params.trans).attr("class", "axis " + params["class"]).call(grid);
+    this._GRID.selectAll("line").attr("stroke", params.color).attr("stroke-width", params.strokeWidth);
+    this._GRID.selectAll("line").attr("stroke", params.tickColor).attr("width-stroke", params.tickWidth);
+    this._GRID.selectAll("path").style("display", "none");
+    this._GRID.selectAll("text").attr("fill", params.fontColor).attr("font-size", params.fontSize).attr("font-weight", params.fontWeight);
+    return this._LABEL.render(params);
+  };
+
+  return Main;
+
+})();
+});
+
 ;require.register("agchart/components/label", function(exports, require, module) {
 var Main, exp;
 
@@ -665,14 +697,12 @@ exp.Main = Main = (function() {
     this._LEGENDS.attr("transform", "translate(" + posX + ", " + posY + ")");
     currentX = 0;
     currentY = params.legends.padding[1];
-    console.log(SERIES);
     nbrLegends = SERIES.length - 1;
     if (params.legends.toggleAll.show) {
       nbrLegends++;
     }
     _results = [];
     for (i = _i = 0; _i <= nbrLegends; i = _i += 1) {
-      console.log(">", i);
       params.svg.attr("height", params.canvas.height + currentY);
       if (i === nbrLegends && params.legends.toggleAll.show) {
         legend = this.drawLegend(this._LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, params.legends.toggleAll.color, "legend option", params.legends.toggleAll.text);
@@ -731,7 +761,7 @@ exp.Main = Main = (function() {
     hide = !scope._HIDEALL;
     scope._HIDEALL = hide;
     if (hide) {
-      $(this).parent().find("rect").fadeTo(100, 0.1);
+      $(this).parent().find("rect").fadeTo(500, 0.1);
       $(selector).find(".series").hide("normal");
     } else {
       $(this).parent().find("rect").fadeTo(100, 1);

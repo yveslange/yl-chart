@@ -4,7 +4,7 @@
 exports.config =
   modules:
     nameCleaner: (path) ->
-      "#{name}/#{path.replace(/^app\//, '')}"
+      path.replace /^app/, name
 
   path:
     public: 'public'
