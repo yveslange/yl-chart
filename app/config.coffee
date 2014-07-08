@@ -1,8 +1,10 @@
 module.exports = exp = {}
-tools = require 'utils/tools'
+M = {
+  tools: require 'utils/agchart_tools'
+}
 
 exp.Main = class Main
-  constructor: (userConfig) -> tools.updateObject(@defaultConfig,userConfig)
+  constructor: (userConfig) -> M.tools.updateObject(@defaultConfig,userConfig)
 
   # Get the configuration object
   get: () -> @defaultConfig

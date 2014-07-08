@@ -25,11 +25,12 @@ exp.Main = class Main
 
     currentX = 0
     currentY = params.legends.padding[1]
-
+    console.log SERIES
     nbrLegends = SERIES.length-1
     nbrLegends++ if params.legends.toggleAll.show # Special options to toggle
 
     for i in [0..nbrLegends] by 1
+      console.log ">", i
       params.svg.attr("height", params.canvas.height+currentY)
 
       # Toggle for all hide

@@ -2,7 +2,7 @@ module.exports = exp = {}
 M = {
   # Init
   config  : require 'config'
-  tools   : require 'utils/tools'
+  tools   : require 'utils/agchart_tools'
   scale   : require 'utils/scale'
   domain  : require 'utils/domain'
   palette : require 'utils/palette'

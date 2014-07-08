@@ -97,7 +97,7 @@ module.exports = exp = {};
 
 M = {
   config: require('config'),
-  tools: require('utils/tools'),
+  tools: require('utils/agchart_tools'),
   scale: require('utils/scale'),
   domain: require('utils/domain'),
   palette: require('utils/palette'),
@@ -643,6 +643,7 @@ exp.Main = Main = (function() {
   function Main(svg) {
     this._LEGENDS = svg.append("g");
     this._HIDEALL = false;
+    console.log("ok");
   }
 
   Main.prototype.getDOM = function() {
@@ -665,12 +666,14 @@ exp.Main = Main = (function() {
     this._LEGENDS.attr("transform", "translate(" + posX + ", " + posY + ")");
     currentX = 0;
     currentY = params.legends.padding[1];
+    console.log(SERIES);
     nbrLegends = SERIES.length - 1;
     if (params.legends.toggleAll.show) {
       nbrLegends++;
     }
     _results = [];
     for (i = _i = 0; _i <= nbrLegends; i = _i += 1) {
+      console.log(">", i);
       params.svg.attr("height", params.canvas.height + currentY);
       if (i === nbrLegends && params.legends.toggleAll.show) {
         legend = this.drawLegend(this._LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, params.legends.toggleAll.color, "legend option", params.legends.toggleAll.text);
@@ -1054,15 +1057,17 @@ exp.Main = Main = (function() {
 });
 
 ;require.register("config", function(exports, require, module) {
-var Main, exp, tools;
+var M, Main, exp;
 
 module.exports = exp = {};
 
-tools = require('utils/tools');
+M = {
+  tools: require('utils/agchart_tools')
+};
 
 exp.Main = Main = (function() {
   function Main(userConfig) {
-    tools.updateObject(this.defaultConfig, userConfig);
+    M.tools.updateObject(this.defaultConfig, userConfig);
   }
 
   Main.prototype.get = function() {
@@ -1586,6 +1591,89 @@ exp.onClick = function(context, selector, conf) {
 };
 });
 
+;require.register("utils/agchart_tools", function(exports, require, module) {
+var exp, prepareSeries, updateObject;
+
+module.exports = exp = {};
+
+exp.updateObject = updateObject = function(obj1, obj2, replace) {
+  var isNode, update;
+  if (replace == null) {
+    replace = true;
+  }
+  isNode = function(obj) {
+    var _ref;
+    if ((obj != null ? (_ref = obj["0"]) != null ? _ref.nodeName : void 0 : void 0) != null) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+  update = function(obj1, obj2, replace) {
+    var k, _ref, _ref1, _ref2;
+    if (replace == null) {
+      replace = true;
+    }
+    if (obj2 != null) {
+      for (k in obj2) {
+        if (isNode(obj2[k])) {
+          obj1[k] = (_ref = obj2[k][0]) != null ? _ref : obj1[k][0];
+        } else if (typeof obj2[k] === 'object') {
+          if (obj1[k] == null) {
+            obj1[k] = {};
+          }
+          update(obj1[k], obj2[k], replace);
+        } else {
+          if (replace) {
+            obj1[k] = (_ref1 = obj2[k]) != null ? _ref1 : obj1[k];
+          } else {
+            obj1[k] = (_ref2 = obj1[k]) != null ? _ref2 : obj2[k];
+          }
+        }
+      }
+    }
+    return obj1;
+  };
+  return update(obj1, obj2, replace);
+};
+
+exp.prepareSeries = prepareSeries = function(args) {
+  var i, point, serie, _i, _j, _len, _len1, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6;
+  if (((_ref = args.series) != null ? _ref.length : void 0) == null) {
+    throw new Error(("No series defined, " + args.series) + "should be an array of objects");
+  }
+  if (args.series.length < 1) {
+    throw new Error("At least one serie must be defined");
+  }
+  _ref1 = args.series;
+  for (i = _i = 0, _len = _ref1.length; _i < _len; i = ++_i) {
+    serie = _ref1[i];
+    _ref2 = serie.data;
+    for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+      point = _ref2[_j];
+      point.serie = i;
+      point.config = {
+        color: args.confPoint.color
+      };
+      if (args.palette.isDefined()) {
+        point.config.color = args.palette.color(i);
+      }
+      if (((_ref3 = serie.config) != null ? _ref3.color : void 0) != null) {
+        point.config.color = serie.config.color;
+      }
+      point.config.r = ((_ref4 = serie.config) != null ? _ref4.r : void 0) || args.confPoint.r;
+      point.config.stroke = {
+        width: args.confPoint.stroke.width
+      };
+      if (((_ref5 = serie.config) != null ? (_ref6 = _ref5.stroke) != null ? _ref6.width : void 0 : void 0) != null) {
+        point.config.stroke.width = serie.config.stroke.width;
+      }
+    }
+  }
+  return args.series;
+};
+});
+
 ;require.register("utils/design", function(exports, require, module) {
 var computePadding, exp;
 
@@ -1807,89 +1895,6 @@ exp.Main = Main = (function() {
   return Main;
 
 })();
-});
-
-;require.register("utils/tools", function(exports, require, module) {
-var exp, prepareSeries, updateObject;
-
-module.exports = exp = {};
-
-exp.updateObject = updateObject = function(obj1, obj2, replace) {
-  var isNode, update;
-  if (replace == null) {
-    replace = true;
-  }
-  isNode = function(obj) {
-    var _ref;
-    if ((obj != null ? (_ref = obj["0"]) != null ? _ref.nodeName : void 0 : void 0) != null) {
-      return true;
-    } else {
-      return false;
-    }
-  };
-  update = function(obj1, obj2, replace) {
-    var k, _ref, _ref1, _ref2;
-    if (replace == null) {
-      replace = true;
-    }
-    if (obj2 != null) {
-      for (k in obj2) {
-        if (isNode(obj2[k])) {
-          obj1[k] = (_ref = obj2[k][0]) != null ? _ref : obj1[k][0];
-        } else if (typeof obj2[k] === 'object') {
-          if (obj1[k] == null) {
-            obj1[k] = {};
-          }
-          update(obj1[k], obj2[k], replace);
-        } else {
-          if (replace) {
-            obj1[k] = (_ref1 = obj2[k]) != null ? _ref1 : obj1[k];
-          } else {
-            obj1[k] = (_ref2 = obj1[k]) != null ? _ref2 : obj2[k];
-          }
-        }
-      }
-    }
-    return obj1;
-  };
-  return update(obj1, obj2, replace);
-};
-
-exp.prepareSeries = prepareSeries = function(args) {
-  var i, point, serie, _i, _j, _len, _len1, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6;
-  if (((_ref = args.series) != null ? _ref.length : void 0) == null) {
-    throw new Error(("No series defined, " + args.series) + "should be an array of objects");
-  }
-  if (args.series.length < 1) {
-    throw new Error("At least one serie must be defined");
-  }
-  _ref1 = args.series;
-  for (i = _i = 0, _len = _ref1.length; _i < _len; i = ++_i) {
-    serie = _ref1[i];
-    _ref2 = serie.data;
-    for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
-      point = _ref2[_j];
-      point.serie = i;
-      point.config = {
-        color: args.confPoint.color
-      };
-      if (args.palette.isDefined()) {
-        point.config.color = args.palette.color(i);
-      }
-      if (((_ref3 = serie.config) != null ? _ref3.color : void 0) != null) {
-        point.config.color = serie.config.color;
-      }
-      point.config.r = ((_ref4 = serie.config) != null ? _ref4.r : void 0) || args.confPoint.r;
-      point.config.stroke = {
-        width: args.confPoint.stroke.width
-      };
-      if (((_ref5 = serie.config) != null ? (_ref6 = _ref5.stroke) != null ? _ref6.width : void 0 : void 0) != null) {
-        point.config.stroke.width = serie.config.stroke.width;
-      }
-    }
-  }
-  return args.series;
-};
 });
 
 ;
