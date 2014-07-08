@@ -4,7 +4,6 @@ M = {
 }
 exp.Main = class Main
   constructor: (svg) ->
-    console.log "Hello"
     @_GRID = svg.append("g")
     @_LABEL = new M.label.Main(svg)
 
