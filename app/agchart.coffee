@@ -425,4 +425,5 @@ exp.Main = class Main
       iconsFolder: @_CONF.pluginsIconsFolder
       confPlugins: @_CONF.plugins
     )
+    console.log @_CLASS.plugin.getDOM()
 

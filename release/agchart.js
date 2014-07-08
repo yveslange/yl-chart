@@ -467,12 +467,13 @@ exp.Main = Main = (function() {
         legends: this._CONF.legends
       });
     }
-    return this._CLASS.plugin.render({
+    this._CLASS.plugin.render({
       canvas: this._CONF.canvas,
       context: this,
       iconsFolder: this._CONF.pluginsIconsFolder,
       confPlugins: this._CONF.plugins
     });
+    return console.log(this._CLASS.plugin.getDOM());
   };
 
   return Main;
@@ -487,13 +488,15 @@ module.exports = exp = {};
 
 exp.Main = Main = (function() {
   function Main(svg) {
-    this._CROSSX = svg.append("line");
-    this._CROSSY = svg.append("line");
-    this._VALUE = svg.append("g").style("opacity", 0);
+    this._CROSSPANEL = svg.append("g");
+    this._CROSSX = this._CROSSPANEL.append("line");
+    this._CROSSY = this._CROSSPANEL.append("line");
+    this._VALUE = this._CROSSPANEL.append("g").style("opacity", 0);
   }
 
   Main.prototype.getDOM = function() {
     return {
+      root: this._CROSSPANEL,
       crossX: this._CROSSX,
       crossY: this._CROSSY,
       value: this._VALUE
@@ -793,11 +796,13 @@ exp.Main = Main = (function() {
     this._MENU = $("<div/>", {
       id: "pluginsMenu"
     }).appendTo(svg);
+    this._PLUGINSDOM = {};
   }
 
   Main.prototype.getDOM = function() {
     return {
-      root: this._MENU
+      root: this._MENU,
+      plugins: this._PLUGINSDOM
     };
   };
 
@@ -834,9 +839,10 @@ exp.Main = Main = (function() {
         pluginModule = require('plugins/' + plugin);
         callback = pluginModule.onClick;
         context = PARAMS.context;
-        _results.push(icon.click(function() {
+        icon.click(function() {
           return callback(context, PARAMS.canvas.selector, PARAMS.confPlugins[plugin]);
-        }));
+        });
+        _results.push(this._PLUGINSDOM[plugin] = icon);
       } else {
         _results.push(void 0);
       }

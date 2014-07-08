@@ -5,9 +5,9 @@ exp.Main = class Main
     @_MENU = $("<div/>", {
       id: "pluginsMenu"
     }).appendTo(svg)
-
+    @_PLUGINSDOM = {}
   getDOM: ->
-    return {root: @_MENU}
+    return {root: @_MENU, plugins: @_PLUGINSDOM}
 
   render: (PARAMS) ->
     pluginsMenu = @_MENU
@@ -35,4 +35,5 @@ exp.Main = class Main
         context = PARAMS.context
         icon.click(-> callback(context, PARAMS.canvas.selector,
           PARAMS.confPlugins[plugin]))
+        @_PLUGINSDOM[plugin] = icon
 

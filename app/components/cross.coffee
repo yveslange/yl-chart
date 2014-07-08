@@ -2,12 +2,14 @@ module.exports = exp = {}
 
 exp.Main = class Main
   constructor: (svg) ->
-    @_CROSSX = svg.append("line")
-    @_CROSSY = svg.append("line")
-    @_VALUE = svg.append("g").style("opacity", 0)
+    @_CROSSPANEL = svg.append("g")
+    @_CROSSX = @_CROSSPANEL.append("line")
+    @_CROSSY = @_CROSSPANEL.append("line")
+    @_VALUE = @_CROSSPANEL.append("g").style("opacity", 0)
 
   getDOM: ->
     return {
+      root: @_CROSSPANEL
       crossX: @_CROSSX
       crossY: @_CROSSY
       value: @_VALUE
