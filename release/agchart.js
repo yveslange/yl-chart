@@ -90,26 +90,26 @@
   globals.require.list = list;
   globals.require.brunch = true;
 })();
-require.register("agchart", function(exports, require, module) {
+require.register("agchart/app", function(exports, require, module) {
 var M, Main, exp;
 
 module.exports = exp = {};
 
 M = {
-  config: require('config'),
-  tools: require('utils/agchart_tools'),
-  scale: require('utils/scale'),
-  domain: require('utils/domain'),
-  palette: require('utils/palette'),
-  design: require('utils/design'),
-  effectsPoint: require('effects/point'),
-  title: require('components/title'),
-  label: require('components/label'),
-  tooltip: require('components/tooltip'),
-  logo: require('components/logo'),
-  legend: require('components/legend'),
-  cross: require('components/cross'),
-  plugin: require('components/plugin')
+  config: require('agchart/config'),
+  tools: require('agchart/utils/tools'),
+  scale: require('agchart/utils/scale'),
+  domain: require('agchart/utils/domain'),
+  palette: require('agchart/utils/palette'),
+  design: require('agchart/utils/design'),
+  effectsPoint: require('agchart/effects/point'),
+  title: require('agchart/components/title'),
+  label: require('agchart/components/label'),
+  tooltip: require('agchart/components/tooltip'),
+  logo: require('agchart/components/logo'),
+  legend: require('agchart/components/legend'),
+  cross: require('agchart/components/cross'),
+  plugin: require('agchart/components/plugin')
 };
 
 exp.Main = Main = (function() {
@@ -481,7 +481,7 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("components/cross", function(exports, require, module) {
+;require.register("agchart/components/cross", function(exports, require, module) {
 var Main, exp;
 
 module.exports = exp = {};
@@ -586,7 +586,7 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("components/label", function(exports, require, module) {
+;require.register("agchart/components/label", function(exports, require, module) {
 var Main, exp;
 
 module.exports = exp = {};
@@ -634,7 +634,7 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("components/legend", function(exports, require, module) {
+;require.register("agchart/components/legend", function(exports, require, module) {
 var Main, exp;
 
 module.exports = exp = {};
@@ -643,7 +643,6 @@ exp.Main = Main = (function() {
   function Main(svg) {
     this._LEGENDS = svg.append("g");
     this._HIDEALL = false;
-    console.log("ok");
   }
 
   Main.prototype.getDOM = function() {
@@ -747,7 +746,7 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("components/logo", function(exports, require, module) {
+;require.register("agchart/components/logo", function(exports, require, module) {
 var Main, exp;
 
 module.exports = exp = {};
@@ -789,7 +788,7 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("components/plugin", function(exports, require, module) {
+;require.register("agchart/components/plugin", function(exports, require, module) {
 var Main, exp;
 
 module.exports = exp = {};
@@ -839,7 +838,7 @@ exp.Main = Main = (function() {
         icon.css({
           cursor: "pointer"
         });
-        pluginModule = require('plugins/' + plugin);
+        pluginModule = require('agchart/plugins/' + plugin);
         callback = pluginModule.onClick;
         context = PARAMS.context;
         icon.click(function() {
@@ -858,7 +857,7 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("components/title", function(exports, require, module) {
+;require.register("agchart/components/title", function(exports, require, module) {
 var Main, exp;
 
 module.exports = exp = {};
@@ -896,7 +895,7 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("components/tooltip", function(exports, require, module) {
+;require.register("agchart/components/tooltip", function(exports, require, module) {
 var Main, exp;
 
 module.exports = exp = {};
@@ -1056,13 +1055,13 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("config", function(exports, require, module) {
+;require.register("agchart/config", function(exports, require, module) {
 var M, Main, exp;
 
 module.exports = exp = {};
 
 M = {
-  tools: require('utils/agchart_tools')
+  tools: require('agchart/utils/tools')
 };
 
 exp.Main = Main = (function() {
@@ -1262,7 +1261,7 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("effects/point", function(exports, require, module) {
+;require.register("agchart/effects/point", function(exports, require, module) {
 var exp;
 
 module.exports = exp = {};
@@ -1335,14 +1334,14 @@ exp.multipleVerticalInverted = {
 };
 });
 
-;require.register("initialize", function(exports, require, module) {
+;require.register("agchart/initialize", function(exports, require, module) {
 var agchart, exp, genData, genDataFunc, time;
 
 module.exports = exp = {};
 
-agchart = require('agchart');
+agchart = require('agchart/app');
 
-time = require('utils/time');
+time = require('agchart/utils/time');
 
 genData = function(len, inter) {
   var els, i, _i, _ref;
@@ -1539,13 +1538,13 @@ exp.run = function() {
 };
 });
 
-;require.register("plugins/exportation", function(exports, require, module) {
+;require.register("agchart/plugins/exportation", function(exports, require, module) {
 var M, exp;
 
 module.exports = exp = {};
 
 M = {
-  logo: require('components/logo')
+  logo: require('agchart/components/logo')
 };
 
 exp.onClick = function(context, selector, conf) {
@@ -1591,7 +1590,230 @@ exp.onClick = function(context, selector, conf) {
 };
 });
 
-;require.register("utils/agchart_tools", function(exports, require, module) {
+;require.register("agchart/utils/design", function(exports, require, module) {
+var computePadding, exp;
+
+module.exports = exp = {};
+
+exp.computePadding = computePadding = function(confPoint) {
+  var pad;
+  pad = confPoint.r + confPoint.stroke.width / 2.0;
+  return [pad, pad];
+};
+});
+
+;require.register("agchart/utils/domain", function(exports, require, module) {
+var exp, fixDomain, getDomain;
+
+module.exports = exp = {};
+
+exp.computeDomain = getDomain = function(series) {
+  var maxX, maxY, minX, minY, point, serie, _i, _j, _len, _len1, _ref;
+  maxX = maxY = Number.MIN_VALUE;
+  minX = minY = Number.MAX_VALUE;
+  for (_i = 0, _len = series.length; _i < _len; _i++) {
+    serie = series[_i];
+    _ref = serie.data;
+    for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+      point = _ref[_j];
+      if (point.x > maxX) {
+        maxX = point.x;
+      }
+      if (point.x < minX) {
+        minX = point.x;
+      }
+      if (point.y > maxY) {
+        maxY = point.y;
+      }
+      if (point.y < minY) {
+        minY = point.y;
+      }
+    }
+  }
+  return {
+    minX: minX,
+    maxX: maxX,
+    minY: minY,
+    maxY: maxY
+  };
+};
+
+exp.fixDomain = fixDomain = function(args) {
+  var confAxis, domain;
+  domain = args.domain;
+  confAxis = args.confAxis;
+  if (domain.maxX === domain.minX) {
+    domain.maxX += confAxis.x.domainMargin;
+    domain.minX -= confAxis.x.domainMargin;
+  }
+  if (domain.maxY === domain.minY) {
+    domain.maxY += confAxis.y.domainMargin;
+    return domain.minY -= confAxis.y.domainMargin;
+  }
+};
+});
+
+;require.register("agchart/utils/palette", function(exports, require, module) {
+var Main, exp;
+
+module.exports = exp = {};
+
+exp.Main = Main = (function() {
+  function Main(palette) {
+    var _palettes;
+    _palettes = this.palettes();
+    this._PALETTE = _palettes[palette];
+    this._INDEX = 0;
+  }
+
+  Main.prototype.isDefined = function() {
+    if (this._PALETTE != null) {
+      return true;
+    }
+    return false;
+  };
+
+  Main.prototype.color = function(i) {
+    return this._PALETTE[i % this._PALETTE.length];
+  };
+
+  Main.prototype.palettes = function() {
+    var schemes;
+    schemes = {};
+    schemes.spectrum14 = ['#ecb796', '#dc8f70', '#b2a470', '#92875a', '#716c49', '#d2ed82', '#bbe468', '#a1d05d', '#e7cbe6', '#d8aad6', '#a888c2', '#9dc2d3', '#649eb9', '#387aa3'].reverse();
+    schemes.spectrum2000 = ['#57306f', '#514c76', '#646583', '#738394', '#6b9c7d', '#84b665', '#a7ca50', '#bfe746', '#e2f528', '#fff726', '#ecdd00', '#d4b11d', '#de8800', '#de4800', '#c91515', '#9a0000', '#7b0429', '#580839', '#31082b'];
+    schemes.spectrum2001 = ['#2f243f', '#3c2c55', '#4a3768', '#565270', '#6b6b7c', '#72957f', '#86ad6e', '#a1bc5e', '#b8d954', '#d3e04e', '#ccad2a', '#cc8412', '#c1521d', '#ad3821', '#8a1010', '#681717', '#531e1e', '#3d1818', '#320a1b'];
+    schemes.classic9 = ['#423d4f', '#4a6860', '#848f39', '#a2b73c', '#ddcb53', '#c5a32f', '#7d5836', '#963b20', '#7c2626', '#491d37', '#2f254a'].reverse();
+    schemes.httpStatus = {
+      503: '#ea5029',
+      502: '#d23f14',
+      500: '#bf3613',
+      410: '#efacea',
+      409: '#e291dc',
+      403: '#f457e8',
+      408: '#e121d2',
+      401: '#b92dae',
+      405: '#f47ceb',
+      404: '#a82a9f',
+      400: '#b263c6',
+      301: '#6fa024',
+      302: '#87c32b',
+      307: '#a0d84c',
+      304: '#28b55c',
+      200: '#1a4f74',
+      206: '#27839f',
+      201: '#52adc9',
+      202: '#7c979f',
+      203: '#a5b8bd',
+      204: '#c1cdd1'
+    };
+    schemes.colorwheel = ['#b5b6a9', '#858772', '#785f43', '#96557e', '#4682b4', '#65b9ac', '#73c03a', '#cb513a'].reverse();
+    schemes.cool = ['#5e9d2f', '#73c03a', '#4682b4', '#7bc3b8', '#a9884e', '#c1b266', '#a47493', '#c09fb5'];
+    schemes.munin = ['#00cc00', '#0066b3', '#ff8000', '#ffcc00', '#330099', '#990099', '#ccff00', '#ff0000', '#808080', '#008f00', '#00487d', '#b35a00', '#b38f00', '#6b006b', '#8fb300', '#b30000', '#bebebe', '#80ff80', '#80c9ff', '#ffc080', '#ffe680', '#aa80ff', '#ee00cc', '#ff8080', '#666600', '#ffbfff', '#00ffcc', '#cc6699', '#999900'];
+    schemes.paired = ["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928"];
+    schemes.agflow = ["#0099ef", "#ff009d", "#56b501", "#ffee52", "#a34100", "#0018ef", "#ff89d2", "#6ee801", "#ef0018", "#ffa468", "#00efd7", "#b3006e", "#aefe66", "#ed7446", "#572200", "#0010a3", "#326901"];
+    return schemes;
+  };
+
+  return Main;
+
+})();
+});
+
+;require.register("agchart/utils/scale", function(exports, require, module) {
+var M, computeScales, exp;
+
+module.exports = exp = {};
+
+M = {
+  domain: require('agchart/utils/domain')
+};
+
+exp.computeScales = computeScales = function(args) {
+  var scales, _axis, _canvas, _domain, _pad;
+  _axis = args.confAxis;
+  _domain = args.domain;
+  _canvas = args.confCanvas;
+  _pad = _canvas.padding;
+  scales = {
+    x: d3.scale.linear(),
+    y: d3.scale.linear()
+  };
+  if (_axis.x.format != null) {
+    scales.x = d3.time.scale.utc();
+  }
+  scales.x.domain([_domain.minX, _domain.maxX]).range([_pad[0], _canvas.width - _pad[0]]);
+  if (_canvas.scale.x.nice) {
+    scales.x.nice();
+  }
+  if (_axis.y.format != null) {
+    scales.y = d3.time.scale();
+  }
+  scales.y.domain([_domain.minY, _domain.maxY]).range([_canvas.height - _pad[1], _pad[1]]);
+  if (_canvas.scale.y.nice) {
+    scales.y.nice();
+  }
+  return scales;
+};
+});
+
+;require.register("agchart/utils/time", function(exports, require, module) {
+var Main, exp;
+
+module.exports = exp = {};
+
+exp.Main = Main = (function() {
+  function Main(params) {
+    var _ref;
+    if (params == null) {
+      params = {};
+    }
+    this._CONF = {
+      lang: (_ref = params.lang) != null ? _ref : 'enl'
+    };
+    this._DATE = new Date();
+    this._TIMESTAMP = this._DATE.getTime();
+    this._MONTHSNAME = {};
+    this._MONTHSNAME.en = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    this._MONTHSNAME.enl = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    this._MONTHSNAME.fr = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+    this._MONTHSNAME.frl = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juil', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+  }
+
+  Main.prototype.monthsName = function() {
+    return this._MONTHSNAME[this._CONF.lang];
+  };
+
+  Main.prototype.getMonth = function() {
+    return this.monthsName()[this._DATE.getMonth()];
+  };
+
+  Main.prototype.getDay = function() {
+    return this._DATE.getDay();
+  };
+
+  Main.prototype.getFullDate = function() {
+    return this._DATE.getDay() + " " + this.getMonth() + " " + this._DATE.getYear() + " " + this._DATE.getHours() + ":" + this._DATE.getMinutes();
+  };
+
+  Main.prototype.getDate = function() {
+    return this._DATE;
+  };
+
+  Main.prototype.setTimestamp = function(t) {
+    if (t == null) {
+      return this._TIMESTAMP;
+    }
+    this._DATE = new Date(parseInt(t) * 1000);
+    return this._TIMESTAMP = parseInt(t);
+  };
+
+  return Main;
+
+})();
+});
+
+;require.register("agchart/utils/tools", function(exports, require, module) {
 var exp, prepareSeries, updateObject;
 
 module.exports = exp = {};
@@ -1672,229 +1894,6 @@ exp.prepareSeries = prepareSeries = function(args) {
   }
   return args.series;
 };
-});
-
-;require.register("utils/design", function(exports, require, module) {
-var computePadding, exp;
-
-module.exports = exp = {};
-
-exp.computePadding = computePadding = function(confPoint) {
-  var pad;
-  pad = confPoint.r + confPoint.stroke.width / 2.0;
-  return [pad, pad];
-};
-});
-
-;require.register("utils/domain", function(exports, require, module) {
-var exp, fixDomain, getDomain;
-
-module.exports = exp = {};
-
-exp.computeDomain = getDomain = function(series) {
-  var maxX, maxY, minX, minY, point, serie, _i, _j, _len, _len1, _ref;
-  maxX = maxY = Number.MIN_VALUE;
-  minX = minY = Number.MAX_VALUE;
-  for (_i = 0, _len = series.length; _i < _len; _i++) {
-    serie = series[_i];
-    _ref = serie.data;
-    for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
-      point = _ref[_j];
-      if (point.x > maxX) {
-        maxX = point.x;
-      }
-      if (point.x < minX) {
-        minX = point.x;
-      }
-      if (point.y > maxY) {
-        maxY = point.y;
-      }
-      if (point.y < minY) {
-        minY = point.y;
-      }
-    }
-  }
-  return {
-    minX: minX,
-    maxX: maxX,
-    minY: minY,
-    maxY: maxY
-  };
-};
-
-exp.fixDomain = fixDomain = function(args) {
-  var confAxis, domain;
-  domain = args.domain;
-  confAxis = args.confAxis;
-  if (domain.maxX === domain.minX) {
-    domain.maxX += confAxis.x.domainMargin;
-    domain.minX -= confAxis.x.domainMargin;
-  }
-  if (domain.maxY === domain.minY) {
-    domain.maxY += confAxis.y.domainMargin;
-    return domain.minY -= confAxis.y.domainMargin;
-  }
-};
-});
-
-;require.register("utils/palette", function(exports, require, module) {
-var Main, exp;
-
-module.exports = exp = {};
-
-exp.Main = Main = (function() {
-  function Main(palette) {
-    var _palettes;
-    _palettes = this.palettes();
-    this._PALETTE = _palettes[palette];
-    this._INDEX = 0;
-  }
-
-  Main.prototype.isDefined = function() {
-    if (this._PALETTE != null) {
-      return true;
-    }
-    return false;
-  };
-
-  Main.prototype.color = function(i) {
-    return this._PALETTE[i % this._PALETTE.length];
-  };
-
-  Main.prototype.palettes = function() {
-    var schemes;
-    schemes = {};
-    schemes.spectrum14 = ['#ecb796', '#dc8f70', '#b2a470', '#92875a', '#716c49', '#d2ed82', '#bbe468', '#a1d05d', '#e7cbe6', '#d8aad6', '#a888c2', '#9dc2d3', '#649eb9', '#387aa3'].reverse();
-    schemes.spectrum2000 = ['#57306f', '#514c76', '#646583', '#738394', '#6b9c7d', '#84b665', '#a7ca50', '#bfe746', '#e2f528', '#fff726', '#ecdd00', '#d4b11d', '#de8800', '#de4800', '#c91515', '#9a0000', '#7b0429', '#580839', '#31082b'];
-    schemes.spectrum2001 = ['#2f243f', '#3c2c55', '#4a3768', '#565270', '#6b6b7c', '#72957f', '#86ad6e', '#a1bc5e', '#b8d954', '#d3e04e', '#ccad2a', '#cc8412', '#c1521d', '#ad3821', '#8a1010', '#681717', '#531e1e', '#3d1818', '#320a1b'];
-    schemes.classic9 = ['#423d4f', '#4a6860', '#848f39', '#a2b73c', '#ddcb53', '#c5a32f', '#7d5836', '#963b20', '#7c2626', '#491d37', '#2f254a'].reverse();
-    schemes.httpStatus = {
-      503: '#ea5029',
-      502: '#d23f14',
-      500: '#bf3613',
-      410: '#efacea',
-      409: '#e291dc',
-      403: '#f457e8',
-      408: '#e121d2',
-      401: '#b92dae',
-      405: '#f47ceb',
-      404: '#a82a9f',
-      400: '#b263c6',
-      301: '#6fa024',
-      302: '#87c32b',
-      307: '#a0d84c',
-      304: '#28b55c',
-      200: '#1a4f74',
-      206: '#27839f',
-      201: '#52adc9',
-      202: '#7c979f',
-      203: '#a5b8bd',
-      204: '#c1cdd1'
-    };
-    schemes.colorwheel = ['#b5b6a9', '#858772', '#785f43', '#96557e', '#4682b4', '#65b9ac', '#73c03a', '#cb513a'].reverse();
-    schemes.cool = ['#5e9d2f', '#73c03a', '#4682b4', '#7bc3b8', '#a9884e', '#c1b266', '#a47493', '#c09fb5'];
-    schemes.munin = ['#00cc00', '#0066b3', '#ff8000', '#ffcc00', '#330099', '#990099', '#ccff00', '#ff0000', '#808080', '#008f00', '#00487d', '#b35a00', '#b38f00', '#6b006b', '#8fb300', '#b30000', '#bebebe', '#80ff80', '#80c9ff', '#ffc080', '#ffe680', '#aa80ff', '#ee00cc', '#ff8080', '#666600', '#ffbfff', '#00ffcc', '#cc6699', '#999900'];
-    schemes.paired = ["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928"];
-    schemes.agflow = ["#0099ef", "#ff009d", "#56b501", "#ffee52", "#a34100", "#0018ef", "#ff89d2", "#6ee801", "#ef0018", "#ffa468", "#00efd7", "#b3006e", "#aefe66", "#ed7446", "#572200", "#0010a3", "#326901"];
-    return schemes;
-  };
-
-  return Main;
-
-})();
-});
-
-;require.register("utils/scale", function(exports, require, module) {
-var M, computeScales, exp;
-
-module.exports = exp = {};
-
-M = {
-  domain: require('utils/domain')
-};
-
-exp.computeScales = computeScales = function(args) {
-  var scales, _axis, _canvas, _domain, _pad;
-  _axis = args.confAxis;
-  _domain = args.domain;
-  _canvas = args.confCanvas;
-  _pad = _canvas.padding;
-  scales = {
-    x: d3.scale.linear(),
-    y: d3.scale.linear()
-  };
-  if (_axis.x.format != null) {
-    scales.x = d3.time.scale.utc();
-  }
-  scales.x.domain([_domain.minX, _domain.maxX]).range([_pad[0], _canvas.width - _pad[0]]);
-  if (_canvas.scale.x.nice) {
-    scales.x.nice();
-  }
-  if (_axis.y.format != null) {
-    scales.y = d3.time.scale();
-  }
-  scales.y.domain([_domain.minY, _domain.maxY]).range([_canvas.height - _pad[1], _pad[1]]);
-  if (_canvas.scale.y.nice) {
-    scales.y.nice();
-  }
-  return scales;
-};
-});
-
-;require.register("utils/time", function(exports, require, module) {
-var Main, exp;
-
-module.exports = exp = {};
-
-exp.Main = Main = (function() {
-  function Main(params) {
-    var _ref;
-    if (params == null) {
-      params = {};
-    }
-    this._CONF = {
-      lang: (_ref = params.lang) != null ? _ref : 'enl'
-    };
-    this._DATE = new Date();
-    this._TIMESTAMP = this._DATE.getTime();
-    this._MONTHSNAME = {};
-    this._MONTHSNAME.en = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    this._MONTHSNAME.enl = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    this._MONTHSNAME.fr = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
-    this._MONTHSNAME.frl = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juil', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
-  }
-
-  Main.prototype.monthsName = function() {
-    return this._MONTHSNAME[this._CONF.lang];
-  };
-
-  Main.prototype.getMonth = function() {
-    return this.monthsName()[this._DATE.getMonth()];
-  };
-
-  Main.prototype.getDay = function() {
-    return this._DATE.getDay();
-  };
-
-  Main.prototype.getFullDate = function() {
-    return this._DATE.getDay() + " " + this.getMonth() + " " + this._DATE.getYear() + " " + this._DATE.getHours() + ":" + this._DATE.getMinutes();
-  };
-
-  Main.prototype.getDate = function() {
-    return this._DATE;
-  };
-
-  Main.prototype.setTimestamp = function(t) {
-    if (t == null) {
-      return this._TIMESTAMP;
-    }
-    this._DATE = new Date(parseInt(t) * 1000);
-    return this._TIMESTAMP = parseInt(t);
-  };
-
-  return Main;
-
-})();
 });
 
 ;

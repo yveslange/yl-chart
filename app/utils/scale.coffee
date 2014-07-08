@@ -1,6 +1,6 @@
 module.exports = exp = {}
 M = {
-  domain: require 'utils/domain'
+  domain: require 'agchart/utils/domain'
 }
 
 # Computes D3JS Scales for X and Y

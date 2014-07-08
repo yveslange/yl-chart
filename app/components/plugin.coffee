@@ -30,7 +30,7 @@ exp.Main = class Main
           width: "30px"
         }).appendTo(pluginsMenu)
         icon.css({cursor: "pointer"})
-        pluginModule = require 'plugins/'+plugin
+        pluginModule = require 'agchart/plugins/'+plugin
         callback = pluginModule.onClick
         context = PARAMS.context
         icon.click(-> callback(context, PARAMS.canvas.selector,

@@ -1,7 +1,7 @@
 module.exports = exp = {}
 
-agchart = require 'agchart'
-time = require 'utils/time'
+agchart = require 'agchart/app'
+time = require 'agchart/utils/time'
 
 # Just for the purpose of the example
 genData = (len, inter=1) ->

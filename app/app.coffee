@@ -1,24 +1,24 @@
 module.exports = exp = {}
 M = {
   # Init
-  config  : require 'config'
-  tools   : require 'utils/agchart_tools'
-  scale   : require 'utils/scale'
-  domain  : require 'utils/domain'
-  palette : require 'utils/palette'
-  design  : require 'utils/design'
-  effectsPoint : require 'effects/point'
+  config  : require 'agchart/config'
+  tools   : require 'agchart/utils/tools'
+  scale   : require 'agchart/utils/scale'
+  domain  : require 'agchart/utils/domain'
+  palette : require 'agchart/utils/palette'
+  design  : require 'agchart/utils/design'
+  effectsPoint : require 'agchart/effects/point'
 
   # Components
-  title:    require 'components/title'
-  label:    require 'components/label'
-  tooltip:  require 'components/tooltip'
-  logo:     require 'components/logo'
-  legend:   require 'components/legend'
-  cross:    require 'components/cross'
+  title:    require 'agchart/components/title'
+  label:    require 'agchart/components/label'
+  tooltip:  require 'agchart/components/tooltip'
+  logo:     require 'agchart/components/logo'
+  legend:   require 'agchart/components/legend'
+  cross:    require 'agchart/components/cross'
 
   # Plugins
-  plugin:   require 'components/plugin'
+  plugin:   require 'agchart/components/plugin'
 }
 
 exp.Main = class Main

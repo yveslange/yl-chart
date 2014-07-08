@@ -1,7 +1,7 @@
 module.exports = exp = {}
 
 M = {
-  logo: require 'components/logo'
+  logo: require 'agchart/components/logo'
 }
 
 exp.onClick = (context, selector, conf) ->

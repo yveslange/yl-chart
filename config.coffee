@@ -1,5 +1,11 @@
 # Brunch.io configuration file
+{name} = require './package'
+
 exports.config =
+  modules:
+    nameCleaner: (path) ->
+      "#{name}/#{path.replace(/^app\//, '')}"
+
   path:
     public: 'public'
   files:

@@ -1,6 +1,6 @@
 module.exports = exp = {}
 M = {
-  tools: require 'utils/agchart_tools'
+  tools: require 'agchart/utils/tools'
 }
 
 exp.Main = class Main
