@@ -3,6 +3,7 @@ module.exports = exp = {}
 exp.Main = class Main
   constructor: (svg) ->
     @_LEGENDS = svg.append("g")
+    @_HIDEALL = false
 
   getDOM: ->
     return {root: @_LEGENDS}
@@ -59,10 +60,10 @@ exp.Main = class Main
 
       # Careful, a closure is needed here !
       legend.on("click",
-        ((cb, index) ->
+        ((scope, cb, index) ->
           return ->
-            cb.call(this, SELECTOR, index)
-        )(callback, i)
+            cb.call(this, scope, SELECTOR, index)
+        )(@, callback, i)
       )
 
   drawLegend: (LEGENDS, i, currentX, currentY, rectWidth,
@@ -89,7 +90,7 @@ exp.Main = class Main
       .text(text)
     return legend
 
-  toggleSerie: (selector, index) ->
+  toggleSerie: (scope, selector, index) ->
     opacity = $(@).find("rect").css("opacity")
     hide = @getAttribute("data-hide")
     if hide == "false"
@@ -102,5 +103,15 @@ exp.Main = class Main
       @setAttribute("data-hide", "false")
     $(selector).find(".series#"+index).toggle("normal")
 
-  toggleSeries: (selector) ->
-    $(selector).find(".series").toggle("normal")
+  toggleSeries: (scope, selector) ->
+    hide = !scope._HIDEALL
+    scope._HIDEALL = hide
+    if hide
+      $(@).parent().find("rect").fadeTo(100, 0.1)
+      $(selector).find(".series").hide("normal")
+    else
+      $(@).parent().find("rect").fadeTo(100, 1)
+      $(selector).find(".series").show("normal")
+    $(@).parent().find(".legend").attr("data-hide", hide)
+    $(selector).find(".series").attr("data-hide", hide)
+

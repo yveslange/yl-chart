@@ -135,7 +135,7 @@ exp.Main = class Main
       toggleAll:
         show: true
         color: "#5f5f5f"
-        text: "Toggle all"
+        text: "Hide all"
       text:
         width: 50
       rect:

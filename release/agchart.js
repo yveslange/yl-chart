@@ -730,6 +730,7 @@ module.exports = exp = {};
 exp.Main = Main = (function() {
   function Main(svg) {
     this._LEGENDS = svg.append("g");
+    this._HIDEALL = false;
   }
 
   Main.prototype.getDOM = function() {
@@ -778,11 +779,11 @@ exp.Main = Main = (function() {
       } else {
         currentX += rectWidth + textWidth + rectMargin;
       }
-      _results.push(legend.on("click", (function(cb, index) {
+      _results.push(legend.on("click", (function(scope, cb, index) {
         return function() {
-          return cb.call(this, SELECTOR, index);
+          return cb.call(this, scope, SELECTOR, index);
         };
-      })(callback, i)));
+      })(this, callback, i)));
     }
     return _results;
   };
@@ -795,7 +796,7 @@ exp.Main = Main = (function() {
     return legend;
   };
 
-  Main.prototype.toggleSerie = function(selector, index) {
+  Main.prototype.toggleSerie = function(scope, selector, index) {
     var hide, opacity;
     opacity = $(this).find("rect").css("opacity");
     hide = this.getAttribute("data-hide");
@@ -811,8 +812,19 @@ exp.Main = Main = (function() {
     return $(selector).find(".series#" + index).toggle("normal");
   };
 
-  Main.prototype.toggleSeries = function(selector) {
-    return $(selector).find(".series").toggle("normal");
+  Main.prototype.toggleSeries = function(scope, selector) {
+    var hide;
+    hide = !scope._HIDEALL;
+    scope._HIDEALL = hide;
+    if (hide) {
+      $(this).parent().find("rect").fadeTo(100, 0.1);
+      $(selector).find(".series").hide("normal");
+    } else {
+      $(this).parent().find("rect").fadeTo(100, 1);
+      $(selector).find(".series").show("normal");
+    }
+    $(this).parent().find(".legend").attr("data-hide", hide);
+    return $(selector).find(".series").attr("data-hide", hide);
   };
 
   return Main;
@@ -1233,7 +1245,7 @@ exp.Main = Main = (function() {
       toggleAll: {
         show: true,
         color: "#5f5f5f",
-        text: "Toggle all"
+        text: "Hide all"
       },
       text: {
         width: 50
