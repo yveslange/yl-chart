@@ -69,12 +69,6 @@ exp.run = ->
         render: 'dotline' # dot, line, dotline
         width: 900.0
         height: 400.0
-        title:
-          color: "#4f4f4f"
-          size: 16
-          text: "Helo"
-          border:
-            padding: [8,1]
         label:
           x:
             text: "Some label X"

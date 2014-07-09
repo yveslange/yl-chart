@@ -3,14 +3,14 @@ module.exports = exp = {}
 exp.Main = class Main
   constructor: (svg) ->
     @boxTitle   = svg.append("g")
-    @boxText    = @boxTitle.append("text")
     @boxBorder  = @boxTitle.append("rect")
+    @boxTexts   = @boxTitle.append("g")
 
   getDOM: ->
     return {
-      root:   @boxTitle
-      border: @boxBorder
-      text:   @boxText
+      root:     @boxTitle
+      border:   @boxBorder
+      texts:    @boxTexts
     }
 
   render: (params) ->
@@ -18,24 +18,21 @@ exp.Main = class Main
     confTitle = params.confTitle
     posX = confTitle.position.x
     posY = confTitle.position.y
-    @boxTitle
-    @boxText = @boxTitle
-      .attr("transform", "translate(#{posX},#{posY})")
-      .append("text")
-        .attr("class", "chart-title")
-        .attr("fill", confTitle.color)
-        .attr("font-size", confTitle.size)
-        .attr("font-weight", "bold")
-        .attr("font-family", confTitle.fontFamily)
-        .text(confTitle.text)
-    textDim = @boxText.node().getBBox()
-    @boxText
-      .attr("x", confTitle.border.padding[0])
-      .attr("y", textDim.height-confTitle.border.padding[1]-2)
-    if confTitle.text
-      @boxBorder
-        .attr("width", textDim.width+confTitle.border.padding[0]*2)
-        .attr("height", textDim.height+confTitle.border.padding[1]*2)
-        .attr("ry", confTitle.border.radius)
-        .attr("rx", confTitle.border.radius)
-        .attr("stroke", confTitle.border.color)
+    nextPos = [posX, posY]
+    texts = []
+    for k, v of confTitle.texts
+      boxText = @boxTexts
+        .append("text")
+          .attr("y", nextPos[1])
+          .attr("class", "chart-title")
+          .attr("fill", v.color)
+          .attr("font-size", v.size)
+          .attr("font-weight", v.weight)
+          .attr("font-family", confTitle.fontFamily)
+          .text(v.text)
+      dimText = boxText.node().getBBox()
+      nextPos[1] = nextPos[1]+dimText.height+(v.interline || 0)
+      texts.push {node: boxText, dim: dimText}
+
+    @boxTexts.attr("transform", "translate(#{posX},
+      #{posY+texts[0].dim.height/2})")

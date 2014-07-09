@@ -862,31 +862,38 @@ module.exports = exp = {};
 exp.Main = Main = (function() {
   function Main(svg) {
     this.boxTitle = svg.append("g");
-    this.boxText = this.boxTitle.append("text");
     this.boxBorder = this.boxTitle.append("rect");
+    this.boxTexts = this.boxTitle.append("g");
   }
 
   Main.prototype.getDOM = function() {
     return {
       root: this.boxTitle,
       border: this.boxBorder,
-      text: this.boxText
+      texts: this.boxTexts
     };
   };
 
   Main.prototype.render = function(params) {
-    var confCanvas, confTitle, posX, posY, textDim;
+    var boxText, confCanvas, confTitle, dimText, k, nextPos, posX, posY, texts, v, _ref;
     confCanvas = params.confCanvas;
     confTitle = params.confTitle;
     posX = confTitle.position.x;
     posY = confTitle.position.y;
-    this.boxTitle;
-    this.boxText = this.boxTitle.attr("transform", "translate(" + posX + "," + posY + ")").append("text").attr("class", "chart-title").attr("fill", confTitle.color).attr("font-size", confTitle.size).attr("font-weight", "bold").attr("font-family", confTitle.fontFamily).text(confTitle.text);
-    textDim = this.boxText.node().getBBox();
-    this.boxText.attr("x", confTitle.border.padding[0]).attr("y", textDim.height - confTitle.border.padding[1] - 2);
-    if (confTitle.text) {
-      return this.boxBorder.attr("width", textDim.width + confTitle.border.padding[0] * 2).attr("height", textDim.height + confTitle.border.padding[1] * 2).attr("ry", confTitle.border.radius).attr("rx", confTitle.border.radius).attr("stroke", confTitle.border.color);
+    nextPos = [posX, posY];
+    texts = [];
+    _ref = confTitle.texts;
+    for (k in _ref) {
+      v = _ref[k];
+      boxText = this.boxTexts.append("text").attr("y", nextPos[1]).attr("class", "chart-title").attr("fill", v.color).attr("font-size", v.size).attr("font-weight", v.weight).attr("font-family", confTitle.fontFamily).text(v.text);
+      dimText = boxText.node().getBBox();
+      nextPos[1] = nextPos[1] + dimText.height + (v.interline || 0);
+      texts.push({
+        node: boxText,
+        dim: dimText
+      });
     }
+    return this.boxTexts.attr("transform", "translate(" + posX + ",      " + (posY + texts[0].dim.height / 2) + ")");
   };
 
   return Main;
@@ -1098,19 +1105,31 @@ exp.Main = Main = (function() {
       bgcolor: "#FFFFFF",
       render: "dot",
       title: {
-        text: "",
-        color: "#2f2f2f",
-        size: 24,
         fontFamily: "arial",
-        border: {
-          radius: 2,
-          color: "#3f3f3f",
-          padding: [8, 1]
-        },
         position: {
           x: 35,
-          y: 20
-        }
+          y: 5
+        },
+        texts: [
+          {
+            text: "TEST OF MAIN TITLE",
+            color: "#2f2f2f",
+            size: 15,
+            weight: "bold",
+            interline: -5
+          }, {
+            text: "TEST OF MAIN TITLE",
+            color: "#2f2f2f",
+            size: 15,
+            weight: "bold",
+            interline: -6
+          }, {
+            text: "TEST OF SUBTITLE",
+            color: "#5f5f5f",
+            size: 15,
+            weight: "normal"
+          }
+        ]
       },
       label: {
         x: {
@@ -1446,14 +1465,6 @@ exp.run = function() {
         render: 'dotline',
         width: 900.0,
         height: 400.0,
-        title: {
-          color: "#4f4f4f",
-          size: 16,
-          text: "Helo",
-          border: {
-            padding: [8, 1]
-          }
-        },
         label: {
           x: {
             text: "Some label X",

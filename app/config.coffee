@@ -31,17 +31,31 @@ exp.Main = class Main
       bgcolor: "#FFFFFF"
       render: "dot" # dot, line
       title:
-        text: ""
-        color: "#2f2f2f"
-        size: 24
         fontFamily: "arial"
-        border:
-          radius: 2
-          color: "#3f3f3f"
-          padding: [8,1]
         position:
           x: 35
-          y: 20
+          y: 5
+        texts: [
+          {
+            text: "TEST OF MAIN TITLE"
+            color: "#2f2f2f"
+            size: 15
+            weight: "bold"
+            interline: -5
+          }
+          {
+            text: "TEST OF MAIN TITLE"
+            color: "#2f2f2f"
+            size: 15
+            weight: "bold"
+            interline: -6
+          }
+          {
+            text: "TEST OF SUBTITLE"
+            color: "#5f5f5f"
+            size: 15
+            weight: "normal"
+          }]
       label:
         x:
           text: null
