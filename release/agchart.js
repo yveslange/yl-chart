@@ -261,7 +261,7 @@ exp.Main = Main = (function() {
           data: d
         });
         _tooltipNode.html(_tooltipTemplate(data));
-        return _tooltipShow(this, {
+        _tooltipShow(this, {
           canvas: {
             width: _conf.canvas.width,
             height: _conf.canvas.height
@@ -270,6 +270,10 @@ exp.Main = Main = (function() {
             alwaysInside: _conf.tooltip.alwaysInside
           }
         }, _tooltipNode, d);
+        if (_conf.point.fadeOnMouseover) {
+          $(_canvas.node()).find(".series").not("[data-hide='true']").not("[id=" + d.serie + "]").fadeTo(5, 0.15);
+          return $(this).show();
+        }
       }).on('mouseout', function(d) {
         var effect;
         effect = _conf.point.onMouseout;
@@ -281,7 +285,10 @@ exp.Main = Main = (function() {
           circleNode: this,
           data: d
         });
-        return _tooltipHide(_tooltipNode);
+        _tooltipHide(_tooltipNode);
+        if (_conf.point.fadeOnMouseover) {
+          return $(_canvas.node()).find(".series").not("[id=" + d.serie + "]").not("[data-hide='true']").fadeTo(1, 1);
+        }
       });
     } else {
       throw new Error("Unknown render value '" + _canvas.render + "'");
@@ -661,7 +668,7 @@ exp.Main = Main = (function() {
     for (i = _i = 0; _i <= nbrLegends; i = _i += 1) {
       params.svg.attr("height", confCanvas.height + currentY);
       if (i === nbrLegends && confLegends.toggleAll.show) {
-        legend = this.drawLegend(this._LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, confLegends.toggleAll.color, "legend option", confLegends.toggleAll.text);
+        legend = this.drawLegend(this._LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, confLegends.toggleAll.color, "legend option", confLegends.toggleAll.text[0]);
         callback = this.toggleSeries;
       } else {
         serie = SERIES[i];
@@ -681,7 +688,7 @@ exp.Main = Main = (function() {
       }
       _results.push(legend.on("click", (function(scope, cb, index) {
         return function() {
-          return cb.call(this, scope, SELECTOR, index);
+          return cb.call(this, scope, SELECTOR, index, [legend, confLegends.toggleAll.text]);
         };
       })(this, callback, i)));
     }
@@ -712,14 +719,16 @@ exp.Main = Main = (function() {
     return $(selector).find(".series#" + index).toggle("normal");
   };
 
-  Main.prototype.toggleSeries = function(scope, selector) {
+  Main.prototype.toggleSeries = function(scope, selector, index, options) {
     var hide;
     hide = !scope._HIDEALL;
     scope._HIDEALL = hide;
     if (hide) {
+      options[0].select("text").text(options[1][1]);
       $(this).parent().find("rect").fadeTo(500, 0.1);
       $(selector).find(".series").hide("normal");
     } else {
+      options[0].select("text").text(options[1][0]);
       $(this).parent().find("rect").fadeTo(100, 1);
       $(selector).find(".series").show("normal");
     }
@@ -1179,6 +1188,7 @@ exp.Main = Main = (function() {
     point: {
       onMouseover: "singlePoint",
       onMouseout: "singlePoint",
+      fadeOnMouseover: true,
       r: 4,
       mode: 'empty',
       color: "munin",
@@ -1228,7 +1238,7 @@ exp.Main = Main = (function() {
       toggleAll: {
         show: true,
         color: "#5f5f5f",
-        text: "Hide all"
+        text: ["Hide all", "Show all"]
       },
       text: {
         width: 50

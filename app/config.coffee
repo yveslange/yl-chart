@@ -103,6 +103,7 @@ exp.Main = class Main
     point:
       onMouseover: "singlePoint"
       onMouseout: "singlePoint"
+      fadeOnMouseover: true
       r: 4
       mode: 'empty' # empty, fill
       color: "munin"
@@ -145,7 +146,7 @@ exp.Main = class Main
       toggleAll:
         show: true
         color: "#5f5f5f"
-        text: "Hide all"
+        text: ["Hide all", "Show all"]
       text:
         width: 50
       rect:

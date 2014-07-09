@@ -41,7 +41,7 @@ exp.Main = class Main
           rectWidth, rectHeight, rectMargin,
           confLegends.toggleAll.color,
           "legend option",
-          confLegends.toggleAll.text)
+          confLegends.toggleAll.text[0])
         callback = @toggleSeries
       else
         serie = SERIES[i]
@@ -65,7 +65,7 @@ exp.Main = class Main
       legend.on("click",
         ((scope, cb, index) ->
           return ->
-            cb.call(this, scope, SELECTOR, index)
+            cb.call(this, scope, SELECTOR, index, [legend, confLegends.toggleAll.text])
         )(@, callback, i)
       )
 
@@ -106,13 +106,15 @@ exp.Main = class Main
       @setAttribute("data-hide", "false")
     $(selector).find(".series#"+index).toggle("normal")
 
-  toggleSeries: (scope, selector) ->
+  toggleSeries: (scope, selector, index, options) ->
     hide = !scope._HIDEALL
     scope._HIDEALL = hide
     if hide
+      options[0].select("text").text(options[1][1])
       $(@).parent().find("rect").fadeTo(500, 0.1)
       $(selector).find(".series").hide("normal")
     else
+      options[0].select("text").text(options[1][0])
       $(@).parent().find("rect").fadeTo(100, 1)
       $(selector).find(".series").show("normal")
     $(@).parent().find(".legend").attr("data-hide", hide)

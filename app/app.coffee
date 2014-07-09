@@ -189,6 +189,13 @@ exp.Main = class Main
                 tooltip:
                   alwaysInside: _conf.tooltip.alwaysInside
               }, _tooltipNode, d)
+
+            # Hide all other series
+            if _conf.point.fadeOnMouseover
+              $(_canvas.node()).find(".series")
+                .not("[data-hide='true']")
+                .not("[id=#{d.serie}]").fadeTo(5, 0.15)
+              $(@).show()
           )
           .on('mouseout', (d) ->
             effect = _conf.point.onMouseout
@@ -200,6 +207,12 @@ exp.Main = class Main
               data: d
             )
             _tooltipHide(_tooltipNode)
+
+            # Show all series
+            if _conf.point.fadeOnMouseover
+              $(_canvas.node()).find(".series")
+                .not("[id=#{d.serie}]")
+                .not("[data-hide='true']").fadeTo(1, 1)
           )
     else
       throw new Error("Unknown render value '#{_canvas.render}'")
