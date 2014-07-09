@@ -161,7 +161,6 @@ exp.Main = Main = (function() {
     this._CANVAS = d3.select(confCanvas.selector).append('svg').attr("fill", confCanvas.bgcolor).attr('width', confCanvas.width).attr('height', confCanvas.height);
     this._CLASS.tooltip = new M.tooltip.Main(this._CONF.canvas.selector);
     this._CLASS.plugin = new M.plugin.Main(this._CONF.canvas.selector);
-    this._CLASS.title = new M.title.Main(this._CANVAS);
     this._CLASS.logo = new M.logo.Main(this._CANVAS);
     this._CLASS.gridX = new M.grid.Main(this._CANVAS);
     this._CLASS.gridY = new M.grid.Main(this._CANVAS);
@@ -170,7 +169,8 @@ exp.Main = Main = (function() {
     this._CLASS.axisX = new M.axis.Main(this._CANVAS, this._CONF.canvas);
     this._CLASS.axisY = new M.axis.Main(this._CANVAS, this._CONF.canvas);
     this._CLASS.cross = new M.cross.Main(this._CANVAS);
-    return this._CLASS.legend = new M.legend.Main(this._CANVAS);
+    this._CLASS.legend = new M.legend.Main(this._CANVAS);
+    return this._CLASS.title = new M.title.Main(this._CANVAS);
   };
 
   Main.prototype.renderPoints = function() {

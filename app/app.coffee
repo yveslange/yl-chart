@@ -81,7 +81,6 @@ exp.Main = class Main
       .attr('height', confCanvas.height)
     @_CLASS.tooltip = new M.tooltip.Main(@_CONF.canvas.selector)
     @_CLASS.plugin  = new M.plugin.Main(@_CONF.canvas.selector)
-    @_CLASS.title   = new M.title.Main(@_CANVAS)
     @_CLASS.logo    = new M.logo.Main(@_CANVAS)
     @_CLASS.gridX   = new M.grid.Main(@_CANVAS)
     @_CLASS.gridY   = new M.grid.Main(@_CANVAS)
@@ -91,6 +90,7 @@ exp.Main = class Main
     @_CLASS.axisY   = new M.axis.Main(@_CANVAS, @_CONF.canvas)
     @_CLASS.cross   = new M.cross.Main(@_CANVAS)
     @_CLASS.legend  = new M.legend.Main(@_CANVAS)
+    @_CLASS.title   = new M.title.Main(@_CANVAS)
 
 
   renderPoints: ->
