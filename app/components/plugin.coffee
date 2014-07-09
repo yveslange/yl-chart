@@ -10,10 +10,11 @@ exp.Main = class Main
     return {root: @_MENU, plugins: @_PLUGINSDOM}
 
   render: (PARAMS) ->
+    confCanvas = PARAMS.confCanvas
     pluginsMenu = @_MENU
     pluginsMenu.css({
       "position": "absolute"
-      "left": PARAMS.canvas.width+1
+      "left": confCanvas.width+1
       "top": "0px"
       "opacity": 0.1
     })
@@ -33,7 +34,7 @@ exp.Main = class Main
         pluginModule = require 'agchart/plugins/'+plugin
         callback = pluginModule.onClick
         context = PARAMS.context
-        icon.click(-> callback(context, PARAMS.canvas.selector,
+        icon.click(-> callback(context, confCanvas.selector,
           PARAMS.confPlugins[plugin]))
         @_PLUGINSDOM[plugin] = icon
 

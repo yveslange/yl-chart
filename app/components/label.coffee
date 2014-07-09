@@ -8,30 +8,34 @@ exp.Main = class Main
     return {root: @_LABEL}
 
   render: (params) ->
-    return if not params?
-    width   = params.width
-    height  = params.height
-    padding = params.padding
-    offset  = params.label.offset || 0
+    confCanvas = params.confCanvas
+    confLabel = params.confLabel
+
+    offset  = confLabel.offset || 0
 
     @_LABEL
-      .attr("fill", params.label.color)
-      .attr("class", "label #{params.class}")
-      .attr("font-size", params.label.size+"px")
-      .attr("text-anchor", params.label.textAnchor)
-      .text(params.label.text)
+      .attr("fill", confLabel.color)
+      .attr("class", "label #{confLabel.className}")
+      .attr("font-size", confLabel.size+"px")
+      .attr("text-anchor", confLabel.textAnchor)
+      .text(confLabel.text)
 
     textDim = @_LABEL.node().getBBox()
 
-    switch params.orient
+    switch confLabel.orient
       when 'bottom'
-        trans = "translate(#{width/2},
-          #{height-padding[1]+textDim.height+offset})"
+        trans = "translate(#{confCanvas.width/2},
+          #{confCanvas.height-confCanvas.padding[1]+textDim.height+offset})"
       when 'top'
-        trans = "translate(#{width/2}, #{height-2})"
+        trans = "translate(#{confCanvas.width/2}, #{confCanvas.padding[1]-offset})"
       when 'left'
-        trans = "translate(#{padding[0]}, 0)"
+        trans =
+          "rotate(-90) translate(#{-confCanvas.height/2}, #{confCanvas.padding[0]+10})"
       when 'right'
-        trans = "translate(#{width-padding[0]}, #{padding[1]/2})"
+        trans =
+          "translate(#{confCanvas.width-confCanvas.padding[0]}, #{confCanvas.padding[1]/2})"
+      else
+        trans = ''
+        throw new Error("Unknown orientation: ", confLabel.orient)
 
     @_LABEL.attr("transform", trans)

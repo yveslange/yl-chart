@@ -79,7 +79,7 @@ exp.Main = class Main
     if params.confCrossV.x.show
       timeoutUnmoved = null
       VALUE = @_VALUE
-      params.canvas.on("mousemove.crossValue", ->
+      params.svg.on("mousemove.crossValue", ->
         VALUE.transition().duration(300).style('opacity', 1)
         clearTimeout(timeoutUnmoved)
         eventX = d3.mouse(@)[0]

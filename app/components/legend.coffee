@@ -9,43 +9,46 @@ exp.Main = class Main
     return {root: @_LEGENDS}
 
   render:(params) ->
+    confCanvas = params.confCanvas
+    confLegends = params.confLegends
+
     SERIES = params.series
-    SELECTOR = params.canvas.selector
-    rectWidth = params.legends.rect.width
-    rectHeight = params.legends.rect.height
-    textWidth = params.legends.text.width
-    rectMargin = params.legends.margin
+    SELECTOR = confCanvas.selector
+    rectWidth = confLegends.rect.width
+    rectHeight = confLegends.rect.height
+    textWidth = confLegends.text.width
+    rectMargin = confLegends.margin
 
     # Width space available
-    widthSpace = params.canvas.width-params.canvas.padding[0]*2
+    widthSpace = confCanvas.width-confCanvas.padding[0]*2
 
-    posX = params.canvas.padding[0]-params.legends.padding[0]
-    posY = params.canvas.height-params.legends.padding[1]
+    posX = confCanvas.padding[0]-confLegends.padding[0]
+    posY = confCanvas.height-confLegends.padding[1]
     @_LEGENDS.attr("transform", "translate(#{posX}, #{posY})")
 
     currentX = 0
-    currentY = params.legends.padding[1]
+    currentY = confLegends.padding[1]
     nbrLegends = SERIES.length-1
-    nbrLegends++ if params.legends.toggleAll.show # Special options to toggle
+    nbrLegends++ if confLegends.toggleAll.show # Special options to toggle
 
     for i in [0..nbrLegends] by 1
-      params.svg.attr("height", params.canvas.height+currentY)
+      params.svg.attr("height", confCanvas.height+currentY)
 
       # Toggle for all hide
       # TODO: better to create a function add legend than doing this tricky hard loop
-      if i == nbrLegends && params.legends.toggleAll.show
+      if i == nbrLegends && confLegends.toggleAll.show
         legend = @drawLegend(@_LEGENDS, i, currentX, currentY,
           rectWidth, rectHeight, rectMargin,
-          params.legends.toggleAll.color,
+          confLegends.toggleAll.color,
           "legend option",
-          params.legends.toggleAll.text)
+          confLegends.toggleAll.text)
         callback = @toggleSeries
       else
         serie = SERIES[i]
         color = serie.data[0].config.color
         text = serie.name
-        if params.legends.format?
-          text = params.legends.format(text)
+        if confLegends.format?
+          text = confLegends.format(text)
         legend = @drawLegend(@_LEGENDS, i, currentX, currentY,
           rectWidth, rectHeight, rectMargin, color, "legend", text)
         callback = @toggleSerie

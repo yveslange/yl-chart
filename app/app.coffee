@@ -17,6 +17,7 @@ M = {
   cross:    require 'agchart/components/cross'
   axis:     require 'agchart/components/axis'
   grid:     require 'agchart/components/grid'
+  label:    require 'agchart/components/label'
 
   # Plugins
   plugin:   require 'agchart/components/plugin'
@@ -82,91 +83,15 @@ exp.Main = class Main
     @_CLASS.plugin  = new M.plugin.Main(@_CONF.canvas.selector)
     @_CLASS.title   = new M.title.Main(@_CANVAS)
     @_CLASS.logo    = new M.logo.Main(@_CANVAS)
+    @_CLASS.gridX   = new M.grid.Main(@_CANVAS)
+    @_CLASS.gridY   = new M.grid.Main(@_CANVAS)
+    @_CLASS.labelX  = new M.label.Main(@_CANVAS)
+    @_CLASS.labelY  = new M.label.Main(@_CANVAS)
     @_CLASS.axisX   = new M.axis.Main(@_CANVAS, @_CONF.canvas)
     @_CLASS.axisY   = new M.axis.Main(@_CANVAS, @_CONF.canvas)
     @_CLASS.cross   = new M.cross.Main(@_CANVAS)
     @_CLASS.legend  = new M.legend.Main(@_CANVAS)
-    @_CLASS.gridX   = new M.grid.Main(@_CANVAS)
-    @_CLASS.gridY   = new M.grid.Main(@_CANVAS)
 
-  renderXGrid: ->
-    padding = @_CONF.canvas.padding
-    height = @_CONF.canvas.height
-    width = @_CONF.canvas.width
-    label = @_CONF.canvas.label.x
-    label.textAnchor = "middle"
-    label.orient = @_CONF.axis.x.orient
-    label.offset = @_CONF.canvas.label.x.offset
-    switch @_CONF.axis.x.orient
-      when 'bottom'
-        trans = "translate(0, #{padding[1]})"
-      when 'top'
-        trans = "translate(0, #{height-padding[1]})"
-      else
-        throw new Error("Unknown orientation: ", @_CONF.axis.x.orient)
-    tickSize = @_CONF.axis.x.tickSize
-    tickSize =  height-padding[1]*2 if tickSize == 'full'
-    params = {
-      class: "x"
-      height: @_CONF.canvas.height
-      width: @_CONF.canvas.width
-      scale: @_SCALE.x
-      ticks: @_CONF.axis.x.ticks
-      tickSize: tickSize
-      padding: padding
-      label: label
-      orient: @_CONF.axis.x.orient
-      trans: trans
-      tickColor: @_CONF.axis.x.tickColor
-      tickWidth: @_CONF.axis.x.tickWidth
-      color: @_CONF.axis.x.color
-      strokeWidth: @_CONF.axis.x.strokeWidth
-      format: @_CONF.axis.x.format
-      fontSize: @_CONF.axis.x.font.size
-      fontColor: @_CONF.axis.x.font.color
-      fontWeight: @_CONF.axis.x.font.weight
-    }
-    @_CLASS.gridX.render(params)
-
-  renderYGrid: ->
-    padding = @_CONF.canvas.padding
-    height = @_CONF.canvas.height
-    width = @_CONF.canvas.width
-    label = @_CONF.canvas.label.y
-    switch @_CONF.axis.y.orient
-      when 'left'
-        label.trans =
-          "rotate(-90) translate(#{-height/2}, #{padding[0]+10})"
-      when 'right'
-        trans = "translate(#{width-padding[0]}, 0)"
-        label.textAnchor = "middle"
-      else
-        throw new Error("Unknown orientation: ", @_CONF.axis.y.orient)
-
-    tickSize = @_CONF.axis.y.tickSize
-    tickSize = -width+padding[0]*2 if tickSize == 'full'
-
-    params = {
-      class: "y"
-      height: @_CONF.canvas.height
-      width: @_CONF.canvas.width
-      scale: @_SCALE.y
-      ticks: @_CONF.axis.y.ticks
-      tickSize: tickSize
-      padding: padding
-      label: label
-      orient: @_CONF.axis.y.orient
-      trans: trans
-      tickColor: @_CONF.axis.y.tickColor
-      tickWidth: @_CONF.axis.y.tickWidth
-      color: @_CONF.axis.y.color
-      strokeWidth: @_CONF.axis.y.strokeWidth
-      format: @_CONF.axis.y.format
-      fontSize: @_CONF.axis.y.font.size
-      fontColor: @_CONF.axis.y.font.color
-      fontWeight: @_CONF.axis.y.font.weight
-    }
-    @_CLASS.gridY.render(params)
 
   renderPoints: ->
     _scope  = @
@@ -284,13 +209,23 @@ exp.Main = class Main
     @_CANVAS = @createSVG() if not @_CANVAS?
 
     @_CLASS.logo.render(
-      canvas: @_CONF.canvas # TODO: confCanvas
-      logo:   @_CONF.logo
+      confCanvas: @_CONF.canvas
+      logo:       @_CONF.logo
     )
 
-    @renderXGrid()
-    @renderYGrid()
+    @_CLASS.gridX.render(
+      confCanvas: @_CONF.canvas
+      scale:      @_SCALE.x
+      confAxis:   @_CONF.axis.x
+    )
 
+    @_CLASS.gridY.render(
+      confCanvas: @_CONF.canvas
+      scale:      @_SCALE.y
+      confAxis:   @_CONF.axis.y
+    )
+
+    # WARNING: Should be after the grid to avoid overlapping
     @_CLASS.axisX.render(
       confAxis:   @_CONF.axis.x
       confCanvas: @_CONF.canvas
@@ -301,38 +236,47 @@ exp.Main = class Main
       confCanvas: @_CONF.canvas
     )
 
+    @_CLASS.labelX.render(
+      confCanvas: @_CONF.canvas
+      confLabel:  @_CONF.canvas.label.x
+    )
+
+    @_CLASS.labelY.render(
+      confCanvas: @_CONF.canvas
+      confLabel:  @_CONF.canvas.label.y
+    )
+
     @renderPoints() # Depends on axis and tooltip
 
-    # TODO: only pass confCanvas: @_CONF.canvas
     @_CLASS.title.render(
-      title:    @_CONF.canvas.title
-      padding:  @_CONF.canvas.padding
+      confCanvas: @_CONF.canvas
+      confTitle:  @_CONF.canvas.title
     )
 
     @_CLASS.legend.render(
-      svg:      @_CANVAS        # TODO: constructor ?
-      canvas:   @_CONF.canvas   # TODO: confCanvas
-      series:   @_SERIES        # TODO: constructor ?
-      legends:  @_CONF.legends  # TODO: confLegends
+      svg:        @_CANVAS  # Needed to update the canvas
+      confCanvas: @_CONF.canvas
+      series:     @_SERIES
+      confLegends:@_CONF.legends
     ) if @_CONF.legends.show
 
     @_CLASS.cross.render(
-      svg:        @_CANVAS  # TODO: constructor
+      svg:        @_CANVAS
       confCanvas: @_CONF.canvas
       confCross:  @_CONF.canvas.cross
     )
 
     @_CLASS.cross.renderValue(
-      scale:      @_SCALE   # TODO: in constructor ?
-      canvas:     @_CANVAS  # TODO: in constructor ?
+      svg:        @_CANVAS
+      scale:      @_SCALE
       confCanvas: @_CONF.canvas
       confCrossV: @_CONF.canvas.crossValue
     )
 
     @_CLASS.plugin.render(
-      context: @
-      canvas: @_CONF.canvas # TODO: confCanvas
-      iconsFolder: @_CONF.pluginsIconsFolder
-      confPlugins: @_CONF.plugins
+      context:      @
+      confCanvas:   @_CONF.canvas
+      iconsFolder:  @_CONF.pluginsIconsFolder
+      confPlugins:  @_CONF.plugins
     )
 

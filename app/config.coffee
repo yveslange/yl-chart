@@ -45,14 +45,20 @@ exp.Main = class Main
       label:
         x:
           text: null
+          textAnchor: "middle"
           size: 10
           color: "#7f7f7f"
           offset: 15
+          orient: "bottom"
+          className: "x"
         y:
           text: null
+          textAnchor: "middle"
           size: 10
           color: "#7f7f7f"
           offset: 0
+          orient: "right"
+          className: "y"
       selector: null
       width: 600.0
       height: 400.0
@@ -113,6 +119,7 @@ exp.Main = class Main
         tickWidth: 2
         strokeWidth: 1
         color: "#2b2e33" # THe color of the y axis
+        className: "x"
         font:
           color: "#2b2e33"
           size: 10
@@ -127,6 +134,7 @@ exp.Main = class Main
         tickWidth: 2
         strokeWidth: 1
         color: "#2b2e33" # The color of the x axis
+        className: "y"
         font:
           color: "#2b2e33"
           size: 10

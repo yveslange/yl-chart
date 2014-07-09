@@ -13,6 +13,7 @@ exp.onClick = (context, selector, conf) ->
     .text(conf.copyright.text)
   # Remove the options
   $(context._CLASS.legend.getDOM().root.node()).find(".legend.option").hide()
+  $(context._CLASS.legend.getDOM().root.node()).find(".legend[data-hide='true']").hide()
   width = context._CONF.canvas.width
   height = context._CONF.canvas.height
   textDim = text.node().getBBox()
@@ -52,10 +53,11 @@ exp.onClick = (context, selector, conf) ->
   # Trick: we need to re-render the logo
   context._CLASS.logo = new M.logo.Main(context._CANVAS)
   context._CLASS.logo.render(
-    canvas: context._CONF.canvas
+    confCanvas: context._CONF.canvas
     logo: context._CONF.logo
   )
   text.remove()
 
   # Show the options of the legend
   $(context._CLASS.legend.getDOM().root.node()).find(".legend.option").show()
+  $(context._CLASS.legend.getDOM().root.node()).find(".legend[data-hide='true']").show()

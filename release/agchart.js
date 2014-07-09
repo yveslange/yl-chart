@@ -110,6 +110,7 @@ M = {
   cross: require('agchart/components/cross'),
   axis: require('agchart/components/axis'),
   grid: require('agchart/components/grid'),
+  label: require('agchart/components/label'),
   plugin: require('agchart/components/plugin')
 };
 
@@ -162,102 +163,14 @@ exp.Main = Main = (function() {
     this._CLASS.plugin = new M.plugin.Main(this._CONF.canvas.selector);
     this._CLASS.title = new M.title.Main(this._CANVAS);
     this._CLASS.logo = new M.logo.Main(this._CANVAS);
+    this._CLASS.gridX = new M.grid.Main(this._CANVAS);
+    this._CLASS.gridY = new M.grid.Main(this._CANVAS);
+    this._CLASS.labelX = new M.label.Main(this._CANVAS);
+    this._CLASS.labelY = new M.label.Main(this._CANVAS);
     this._CLASS.axisX = new M.axis.Main(this._CANVAS, this._CONF.canvas);
     this._CLASS.axisY = new M.axis.Main(this._CANVAS, this._CONF.canvas);
     this._CLASS.cross = new M.cross.Main(this._CANVAS);
-    this._CLASS.legend = new M.legend.Main(this._CANVAS);
-    this._CLASS.gridX = new M.grid.Main(this._CANVAS);
-    return this._CLASS.gridY = new M.grid.Main(this._CANVAS);
-  };
-
-  Main.prototype.renderXGrid = function() {
-    var height, label, padding, params, tickSize, trans, width;
-    padding = this._CONF.canvas.padding;
-    height = this._CONF.canvas.height;
-    width = this._CONF.canvas.width;
-    label = this._CONF.canvas.label.x;
-    label.textAnchor = "middle";
-    label.orient = this._CONF.axis.x.orient;
-    label.offset = this._CONF.canvas.label.x.offset;
-    switch (this._CONF.axis.x.orient) {
-      case 'bottom':
-        trans = "translate(0, " + padding[1] + ")";
-        break;
-      case 'top':
-        trans = "translate(0, " + (height - padding[1]) + ")";
-        break;
-      default:
-        throw new Error("Unknown orientation: ", this._CONF.axis.x.orient);
-    }
-    tickSize = this._CONF.axis.x.tickSize;
-    if (tickSize === 'full') {
-      tickSize = height - padding[1] * 2;
-    }
-    params = {
-      "class": "x",
-      height: this._CONF.canvas.height,
-      width: this._CONF.canvas.width,
-      scale: this._SCALE.x,
-      ticks: this._CONF.axis.x.ticks,
-      tickSize: tickSize,
-      padding: padding,
-      label: label,
-      orient: this._CONF.axis.x.orient,
-      trans: trans,
-      tickColor: this._CONF.axis.x.tickColor,
-      tickWidth: this._CONF.axis.x.tickWidth,
-      color: this._CONF.axis.x.color,
-      strokeWidth: this._CONF.axis.x.strokeWidth,
-      format: this._CONF.axis.x.format,
-      fontSize: this._CONF.axis.x.font.size,
-      fontColor: this._CONF.axis.x.font.color,
-      fontWeight: this._CONF.axis.x.font.weight
-    };
-    return this._CLASS.gridX.render(params);
-  };
-
-  Main.prototype.renderYGrid = function() {
-    var height, label, padding, params, tickSize, trans, width;
-    padding = this._CONF.canvas.padding;
-    height = this._CONF.canvas.height;
-    width = this._CONF.canvas.width;
-    label = this._CONF.canvas.label.y;
-    switch (this._CONF.axis.y.orient) {
-      case 'left':
-        label.trans = "rotate(-90) translate(" + (-height / 2) + ", " + (padding[0] + 10) + ")";
-        break;
-      case 'right':
-        trans = "translate(" + (width - padding[0]) + ", 0)";
-        label.textAnchor = "middle";
-        break;
-      default:
-        throw new Error("Unknown orientation: ", this._CONF.axis.y.orient);
-    }
-    tickSize = this._CONF.axis.y.tickSize;
-    if (tickSize === 'full') {
-      tickSize = -width + padding[0] * 2;
-    }
-    params = {
-      "class": "y",
-      height: this._CONF.canvas.height,
-      width: this._CONF.canvas.width,
-      scale: this._SCALE.y,
-      ticks: this._CONF.axis.y.ticks,
-      tickSize: tickSize,
-      padding: padding,
-      label: label,
-      orient: this._CONF.axis.y.orient,
-      trans: trans,
-      tickColor: this._CONF.axis.y.tickColor,
-      tickWidth: this._CONF.axis.y.tickWidth,
-      color: this._CONF.axis.y.color,
-      strokeWidth: this._CONF.axis.y.strokeWidth,
-      format: this._CONF.axis.y.format,
-      fontSize: this._CONF.axis.y.font.size,
-      fontColor: this._CONF.axis.y.font.color,
-      fontWeight: this._CONF.axis.y.font.weight
-    };
-    return this._CLASS.gridY.render(params);
+    return this._CLASS.legend = new M.legend.Main(this._CANVAS);
   };
 
   Main.prototype.renderPoints = function() {
@@ -380,11 +293,19 @@ exp.Main = Main = (function() {
       this._CANVAS = this.createSVG();
     }
     this._CLASS.logo.render({
-      canvas: this._CONF.canvas,
+      confCanvas: this._CONF.canvas,
       logo: this._CONF.logo
     });
-    this.renderXGrid();
-    this.renderYGrid();
+    this._CLASS.gridX.render({
+      confCanvas: this._CONF.canvas,
+      scale: this._SCALE.x,
+      confAxis: this._CONF.axis.x
+    });
+    this._CLASS.gridY.render({
+      confCanvas: this._CONF.canvas,
+      scale: this._SCALE.y,
+      confAxis: this._CONF.axis.y
+    });
     this._CLASS.axisX.render({
       confAxis: this._CONF.axis.x,
       confCanvas: this._CONF.canvas
@@ -393,17 +314,25 @@ exp.Main = Main = (function() {
       confAxis: this._CONF.axis.y,
       confCanvas: this._CONF.canvas
     });
+    this._CLASS.labelX.render({
+      confCanvas: this._CONF.canvas,
+      confLabel: this._CONF.canvas.label.x
+    });
+    this._CLASS.labelY.render({
+      confCanvas: this._CONF.canvas,
+      confLabel: this._CONF.canvas.label.y
+    });
     this.renderPoints();
     this._CLASS.title.render({
-      title: this._CONF.canvas.title,
-      padding: this._CONF.canvas.padding
+      confCanvas: this._CONF.canvas,
+      confTitle: this._CONF.canvas.title
     });
     if (this._CONF.legends.show) {
       this._CLASS.legend.render({
         svg: this._CANVAS,
-        canvas: this._CONF.canvas,
+        confCanvas: this._CONF.canvas,
         series: this._SERIES,
-        legends: this._CONF.legends
+        confLegends: this._CONF.legends
       });
     }
     this._CLASS.cross.render({
@@ -412,14 +341,14 @@ exp.Main = Main = (function() {
       confCross: this._CONF.canvas.cross
     });
     this._CLASS.cross.renderValue({
+      svg: this._CANVAS,
       scale: this._SCALE,
-      canvas: this._CANVAS,
       confCanvas: this._CONF.canvas,
       confCrossV: this._CONF.canvas.crossValue
     });
     return this._CLASS.plugin.render({
       context: this,
-      canvas: this._CONF.canvas,
+      confCanvas: this._CONF.canvas,
       iconsFolder: this._CONF.pluginsIconsFolder,
       confPlugins: this._CONF.plugins
     });
@@ -534,7 +463,7 @@ exp.Main = Main = (function() {
     if (params.confCrossV.x.show) {
       timeoutUnmoved = null;
       VALUE = this._VALUE;
-      return params.canvas.on("mousemove.crossValue", function() {
+      return params.svg.on("mousemove.crossValue", function() {
         var eventX, eventY, positionX, valueX;
         VALUE.transition().duration(300).style('opacity', 1);
         clearTimeout(timeoutUnmoved);
@@ -576,41 +505,66 @@ exp.Main = Main = (function() {
 });
 
 ;require.register("agchart/components/grid", function(exports, require, module) {
-var M, Main, exp;
+var Main, exp;
 
 module.exports = exp = {};
 
-M = {
-  label: require('agchart/components/label')
-};
-
 exp.Main = Main = (function() {
   function Main(svg) {
-    console.log("Hello");
     this._GRID = svg.append("g");
-    this._LABEL = new M.label.Main(svg);
   }
 
+  Main.prototype.getDOM = function() {
+    return {
+      root: this._GRID
+    };
+  };
+
   Main.prototype.render = function(params) {
-    var grid;
-    grid = d3.svg.axis().scale(params.scale).orient(params.orient).tickSize(params.tickSize);
-    if (params.ticks !== "auto") {
-      grid.ticks(params.ticks);
+    var confAxis, confCanvas, grid, tickSize, trans;
+    confCanvas = params.confCanvas;
+    confAxis = params.confAxis;
+    tickSize = confAxis.tickSize;
+    if (tickSize === 'full') {
+      if (confAxis.orient === 'bottom' || confAxis.orient === 'top') {
+        tickSize = confCanvas.height - confCanvas.padding[1] * 2;
+      } else {
+        tickSize = -confCanvas.width + confCanvas.padding[0] * 2;
+      }
     }
-    if (params.format != null) {
-      if (params.ticks === "auto") {
+    switch (confAxis.orient) {
+      case 'bottom':
+        trans = "translate(0, " + confCanvas.padding[1] + ")";
+        break;
+      case 'top':
+        trans = "translate(0, " + (confCanvas.height - confCanvas.padding[1]) + ")";
+        break;
+      case 'right':
+        trans = "translate(" + (confCanvas.width - confCanvas.padding[0]) + ", 0)";
+        break;
+      case 'left':
+        trans = "translate(" + confCanvas.padding[0] + ", 0)";
+        break;
+      default:
+        trans = '';
+        throw new Error("Unknown orientation: ", confAxis.orient);
+    }
+    grid = d3.svg.axis().scale(params.scale).orient(confAxis.orient).tickSize(tickSize);
+    if (confAxis.ticks !== "auto") {
+      grid.ticks(confAxis.ticks);
+    }
+    if (confAxis.format != null) {
+      grid.tickFormat(d3.time.format(confAxis.format));
+      if (confAxis.ticks === "auto") {
         grid.ticks(d3.time.months.utc, 1);
       } else {
         grid.ticks(d3.time.months.utc, params.ticks);
       }
-      grid.tickFormat(d3.time.format(params.format));
     }
-    this._GRID.attr("transform", params.trans).attr("class", "axis " + params["class"]).call(grid);
-    this._GRID.selectAll("line").attr("stroke", params.color).attr("stroke-width", params.strokeWidth);
-    this._GRID.selectAll("line").attr("stroke", params.tickColor).attr("width-stroke", params.tickWidth);
-    this._GRID.selectAll("path").style("display", "none");
-    this._GRID.selectAll("text").attr("fill", params.fontColor).attr("font-size", params.fontSize).attr("font-weight", params.fontWeight);
-    return this._LABEL.render(params);
+    this._GRID.attr("transform", trans).attr("class", "axis " + confAxis.className).call(grid);
+    this._GRID.selectAll("line").attr("stroke", confAxis.tickColor).attr("width-stroke", confAxis.tickWidth);
+    this._GRID.selectAll("text").attr("fill", confAxis.font.color).attr("font-size", confAxis.font.size).attr("font-weight", confAxis.font.weight);
+    return this._GRID.selectAll("path").style("display", "none");
   };
 
   return Main;
@@ -635,28 +589,28 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.render = function(params) {
-    var height, offset, padding, textDim, trans, width;
-    if (params == null) {
-      return;
-    }
-    width = params.width;
-    height = params.height;
-    padding = params.padding;
-    offset = params.label.offset || 0;
-    this._LABEL.attr("fill", params.label.color).attr("class", "label " + params["class"]).attr("font-size", params.label.size + "px").attr("text-anchor", params.label.textAnchor).text(params.label.text);
+    var confCanvas, confLabel, offset, textDim, trans;
+    confCanvas = params.confCanvas;
+    confLabel = params.confLabel;
+    offset = confLabel.offset || 0;
+    this._LABEL.attr("fill", confLabel.color).attr("class", "label " + confLabel.className).attr("font-size", confLabel.size + "px").attr("text-anchor", confLabel.textAnchor).text(confLabel.text);
     textDim = this._LABEL.node().getBBox();
-    switch (params.orient) {
+    switch (confLabel.orient) {
       case 'bottom':
-        trans = "translate(" + (width / 2) + ",          " + (height - padding[1] + textDim.height + offset) + ")";
+        trans = "translate(" + (confCanvas.width / 2) + ",          " + (confCanvas.height - confCanvas.padding[1] + textDim.height + offset) + ")";
         break;
       case 'top':
-        trans = "translate(" + (width / 2) + ", " + (height - 2) + ")";
+        trans = "translate(" + (confCanvas.width / 2) + ", " + (confCanvas.padding[1] - offset) + ")";
         break;
       case 'left':
-        trans = "translate(" + padding[0] + ", 0)";
+        trans = "rotate(-90) translate(" + (-confCanvas.height / 2) + ", " + (confCanvas.padding[0] + 10) + ")";
         break;
       case 'right':
-        trans = "translate(" + (width - padding[0]) + ", " + (padding[1] / 2) + ")";
+        trans = "translate(" + (confCanvas.width - confCanvas.padding[0]) + ", " + (confCanvas.padding[1] / 2) + ")";
+        break;
+      default:
+        trans = '';
+        throw new Error("Unknown orientation: ", confLabel.orient);
     }
     return this._LABEL.attr("transform", trans);
   };
@@ -684,35 +638,37 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.render = function(params) {
-    var SELECTOR, SERIES, callback, color, currentX, currentY, i, legend, nbrLegends, posX, posY, rectHeight, rectMargin, rectWidth, serie, text, textWidth, widthSpace, _i, _results;
+    var SELECTOR, SERIES, callback, color, confCanvas, confLegends, currentX, currentY, i, legend, nbrLegends, posX, posY, rectHeight, rectMargin, rectWidth, serie, text, textWidth, widthSpace, _i, _results;
+    confCanvas = params.confCanvas;
+    confLegends = params.confLegends;
     SERIES = params.series;
-    SELECTOR = params.canvas.selector;
-    rectWidth = params.legends.rect.width;
-    rectHeight = params.legends.rect.height;
-    textWidth = params.legends.text.width;
-    rectMargin = params.legends.margin;
-    widthSpace = params.canvas.width - params.canvas.padding[0] * 2;
-    posX = params.canvas.padding[0] - params.legends.padding[0];
-    posY = params.canvas.height - params.legends.padding[1];
+    SELECTOR = confCanvas.selector;
+    rectWidth = confLegends.rect.width;
+    rectHeight = confLegends.rect.height;
+    textWidth = confLegends.text.width;
+    rectMargin = confLegends.margin;
+    widthSpace = confCanvas.width - confCanvas.padding[0] * 2;
+    posX = confCanvas.padding[0] - confLegends.padding[0];
+    posY = confCanvas.height - confLegends.padding[1];
     this._LEGENDS.attr("transform", "translate(" + posX + ", " + posY + ")");
     currentX = 0;
-    currentY = params.legends.padding[1];
+    currentY = confLegends.padding[1];
     nbrLegends = SERIES.length - 1;
-    if (params.legends.toggleAll.show) {
+    if (confLegends.toggleAll.show) {
       nbrLegends++;
     }
     _results = [];
     for (i = _i = 0; _i <= nbrLegends; i = _i += 1) {
-      params.svg.attr("height", params.canvas.height + currentY);
-      if (i === nbrLegends && params.legends.toggleAll.show) {
-        legend = this.drawLegend(this._LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, params.legends.toggleAll.color, "legend option", params.legends.toggleAll.text);
+      params.svg.attr("height", confCanvas.height + currentY);
+      if (i === nbrLegends && confLegends.toggleAll.show) {
+        legend = this.drawLegend(this._LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, confLegends.toggleAll.color, "legend option", confLegends.toggleAll.text);
         callback = this.toggleSeries;
       } else {
         serie = SERIES[i];
         color = serie.data[0].config.color;
         text = serie.name;
-        if (params.legends.format != null) {
-          text = params.legends.format(text);
+        if (confLegends.format != null) {
+          text = confLegends.format(text);
         }
         legend = this.drawLegend(this._LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, color, "legend", text);
         callback = this.toggleSerie;
@@ -793,10 +749,11 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.render = function(params) {
-    var HEIGHT, PADDING, WIDTH, posX, posY;
-    HEIGHT = params.canvas.height;
-    WIDTH = params.canvas.width;
-    PADDING = params.canvas.padding;
+    var HEIGHT, PADDING, WIDTH, confCanvas, posX, posY;
+    confCanvas = params.confCanvas;
+    HEIGHT = confCanvas.height;
+    WIDTH = confCanvas.width;
+    PADDING = confCanvas.padding;
     posX = posY = 100;
     if (params.logo.y === 'bottom') {
       posY = HEIGHT - PADDING[1] - params.logo.height;
@@ -839,11 +796,12 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.render = function(PARAMS) {
-    var callback, context, icon, plugin, pluginModule, pluginsMenu, _results;
+    var callback, confCanvas, context, icon, plugin, pluginModule, pluginsMenu, _results;
+    confCanvas = PARAMS.confCanvas;
     pluginsMenu = this._MENU;
     pluginsMenu.css({
       "position": "absolute",
-      "left": PARAMS.canvas.width + 1,
+      "left": confCanvas.width + 1,
       "top": "0px",
       "opacity": 0.1
     });
@@ -872,7 +830,7 @@ exp.Main = Main = (function() {
         callback = pluginModule.onClick;
         context = PARAMS.context;
         icon.click(function() {
-          return callback(context, PARAMS.canvas.selector, PARAMS.confPlugins[plugin]);
+          return callback(context, confCanvas.selector, PARAMS.confPlugins[plugin]);
         });
         _results.push(this._PLUGINSDOM[plugin] = icon);
       } else {
@@ -908,15 +866,17 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.render = function(params) {
-    var posX, posY, textDim;
-    posX = params.title.position.x;
-    posY = params.title.position.y;
+    var confCanvas, confTitle, posX, posY, textDim;
+    confCanvas = params.confCanvas;
+    confTitle = params.confTitle;
+    posX = confTitle.position.x;
+    posY = confTitle.position.y;
     this.boxTitle;
-    this.boxText = this.boxTitle.attr("transform", "translate(" + posX + "," + posY + ")").append("text").attr("class", "chart-title").attr("fill", params.title.color).attr("font-size", params.title.size).attr("font-weight", "bold").attr("font-family", params.title.fontFamily).text(params.title.text);
+    this.boxText = this.boxTitle.attr("transform", "translate(" + posX + "," + posY + ")").append("text").attr("class", "chart-title").attr("fill", confTitle.color).attr("font-size", confTitle.size).attr("font-weight", "bold").attr("font-family", confTitle.fontFamily).text(confTitle.text);
     textDim = this.boxText.node().getBBox();
-    this.boxText.attr("x", params.title.border.padding[0]).attr("y", textDim.height - params.title.border.padding[1] - 2);
-    if (params.title.text) {
-      return this.boxBorder.attr("width", textDim.width + params.title.border.padding[0] * 2).attr("height", textDim.height + params.title.border.padding[1] * 2).attr("ry", params.title.border.radius).attr("rx", params.title.border.radius).attr("stroke", params.title.border.color);
+    this.boxText.attr("x", confTitle.border.padding[0]).attr("y", textDim.height - confTitle.border.padding[1] - 2);
+    if (confTitle.text) {
+      return this.boxBorder.attr("width", textDim.width + confTitle.border.padding[0] * 2).attr("height", textDim.height + confTitle.border.padding[1] * 2).attr("ry", confTitle.border.radius).attr("rx", confTitle.border.radius).attr("stroke", confTitle.border.color);
     }
   };
 
@@ -1146,15 +1106,21 @@ exp.Main = Main = (function() {
       label: {
         x: {
           text: null,
+          textAnchor: "middle",
           size: 10,
           color: "#7f7f7f",
-          offset: 15
+          offset: 15,
+          orient: "bottom",
+          className: "x"
         },
         y: {
           text: null,
+          textAnchor: "middle",
           size: 10,
           color: "#7f7f7f",
-          offset: 0
+          offset: 0,
+          orient: "right",
+          className: "y"
         }
       },
       selector: null,
@@ -1231,6 +1197,7 @@ exp.Main = Main = (function() {
         tickWidth: 2,
         strokeWidth: 1,
         color: "#2b2e33",
+        className: "x",
         font: {
           color: "#2b2e33",
           size: 10,
@@ -1247,6 +1214,7 @@ exp.Main = Main = (function() {
         tickWidth: 2,
         strokeWidth: 1,
         color: "#2b2e33",
+        className: "y",
         font: {
           color: "#2b2e33",
           size: 10,
@@ -1582,6 +1550,7 @@ exp.onClick = function(context, selector, conf) {
   image = context._CLASS.logo.getDOM().root.remove();
   text = context._CANVAS.append("text").attr("fill", conf.copyright.color).attr("font-size", conf.copyright.fontSize + "px").text(conf.copyright.text);
   $(context._CLASS.legend.getDOM().root.node()).find(".legend.option").hide();
+  $(context._CLASS.legend.getDOM().root.node()).find(".legend[data-hide='true']").hide();
   width = context._CONF.canvas.width;
   height = context._CONF.canvas.height;
   textDim = text.node().getBBox();
@@ -1612,11 +1581,12 @@ exp.onClick = function(context, selector, conf) {
   }
   context._CLASS.logo = new M.logo.Main(context._CANVAS);
   context._CLASS.logo.render({
-    canvas: context._CONF.canvas,
+    confCanvas: context._CONF.canvas,
     logo: context._CONF.logo
   });
   text.remove();
-  return $(context._CLASS.legend.getDOM().root.node()).find(".legend.option").show();
+  $(context._CLASS.legend.getDOM().root.node()).find(".legend.option").show();
+  return $(context._CLASS.legend.getDOM().root.node()).find(".legend[data-hide='true']").show();
 };
 });
 

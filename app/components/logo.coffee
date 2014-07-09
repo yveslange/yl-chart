@@ -8,9 +8,10 @@ exp.Main = class Main
     return {root: @_IMAGE}
 
   render: (params) ->
-    HEIGHT = params.canvas.height
-    WIDTH = params.canvas.width
-    PADDING = params.canvas.padding
+    confCanvas = params.confCanvas
+    HEIGHT = confCanvas.height
+    WIDTH = confCanvas.width
+    PADDING = confCanvas.padding
     posX = posY = 100
 
     if params.logo.y == 'bottom'

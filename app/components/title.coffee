@@ -14,26 +14,28 @@ exp.Main = class Main
     }
 
   render: (params) ->
-    posX = params.title.position.x
-    posY = params.title.position.y
+    confCanvas = params.confCanvas
+    confTitle = params.confTitle
+    posX = confTitle.position.x
+    posY = confTitle.position.y
     @boxTitle
     @boxText = @boxTitle
       .attr("transform", "translate(#{posX},#{posY})")
       .append("text")
         .attr("class", "chart-title")
-        .attr("fill", params.title.color)
-        .attr("font-size", params.title.size)
+        .attr("fill", confTitle.color)
+        .attr("font-size", confTitle.size)
         .attr("font-weight", "bold")
-        .attr("font-family", params.title.fontFamily)
-        .text(params.title.text)
+        .attr("font-family", confTitle.fontFamily)
+        .text(confTitle.text)
     textDim = @boxText.node().getBBox()
     @boxText
-      .attr("x", params.title.border.padding[0])
-      .attr("y", textDim.height-params.title.border.padding[1]-2)
-    if params.title.text
+      .attr("x", confTitle.border.padding[0])
+      .attr("y", textDim.height-confTitle.border.padding[1]-2)
+    if confTitle.text
       @boxBorder
-        .attr("width", textDim.width+params.title.border.padding[0]*2)
-        .attr("height", textDim.height+params.title.border.padding[1]*2)
-        .attr("ry", params.title.border.radius)
-        .attr("rx", params.title.border.radius)
-        .attr("stroke", params.title.border.color)
+        .attr("width", textDim.width+confTitle.border.padding[0]*2)
+        .attr("height", textDim.height+confTitle.border.padding[1]*2)
+        .attr("ry", confTitle.border.radius)
+        .attr("rx", confTitle.border.radius)
+        .attr("stroke", confTitle.border.color)
