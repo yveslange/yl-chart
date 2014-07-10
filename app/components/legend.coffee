@@ -18,6 +18,7 @@ exp.Main = class Main
     rectHeight = confLegends.rect.height
     textWidth = confLegends.text.width
     rectMargin = confLegends.margin
+    fontSize = confLegends.text.size
 
     # Width space available
     widthSpace = confCanvas.width-confCanvas.padding[0]*2
@@ -41,6 +42,7 @@ exp.Main = class Main
           rectWidth, rectHeight, rectMargin,
           confLegends.toggleAll.color,
           "legend option",
+          fontSize,
           confLegends.toggleAll.text[0])
         callback = @toggleSeries
       else
@@ -50,7 +52,7 @@ exp.Main = class Main
         if confLegends.format?
           text = confLegends.format(text)
         legend = @drawLegend(@_LEGENDS, i, currentX, currentY,
-          rectWidth, rectHeight, rectMargin, color, "legend", text)
+          rectWidth, rectHeight, rectMargin, color, "legend", fontSize, text)
         callback = @toggleSerie
 
       # Update canvas height
@@ -70,7 +72,7 @@ exp.Main = class Main
       )
 
   drawLegend: (LEGENDS, i, currentX, currentY, rectWidth,
-    rectHeight, rectMargin, color, className, text) ->
+    rectHeight, rectMargin, color, className, fontSize, text) ->
     legend = LEGENDS.append("g")
       .style("cursor", "pointer")
       .attr("transform", "translate(#{currentX}, #{currentY})")
@@ -89,7 +91,7 @@ exp.Main = class Main
       .attr("x", rectMargin+rectWidth)
       .attr("y", rectHeight-1)
       .attr("fill", color)
-      .attr("font-size", 10)
+      .attr("font-size", fontSize)
       .text(text)
     return legend
 

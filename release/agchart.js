@@ -645,7 +645,7 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.render = function(params) {
-    var SELECTOR, SERIES, callback, color, confCanvas, confLegends, currentX, currentY, i, legend, nbrLegends, posX, posY, rectHeight, rectMargin, rectWidth, serie, text, textWidth, widthSpace, _i, _results;
+    var SELECTOR, SERIES, callback, color, confCanvas, confLegends, currentX, currentY, fontSize, i, legend, nbrLegends, posX, posY, rectHeight, rectMargin, rectWidth, serie, text, textWidth, widthSpace, _i, _results;
     confCanvas = params.confCanvas;
     confLegends = params.confLegends;
     SERIES = params.series;
@@ -654,6 +654,7 @@ exp.Main = Main = (function() {
     rectHeight = confLegends.rect.height;
     textWidth = confLegends.text.width;
     rectMargin = confLegends.margin;
+    fontSize = confLegends.text.size;
     widthSpace = confCanvas.width - confCanvas.padding[0] * 2;
     posX = confCanvas.padding[0] - confLegends.padding[0];
     posY = confCanvas.height - confLegends.padding[1];
@@ -668,7 +669,7 @@ exp.Main = Main = (function() {
     for (i = _i = 0; _i <= nbrLegends; i = _i += 1) {
       params.svg.attr("height", confCanvas.height + currentY);
       if (i === nbrLegends && confLegends.toggleAll.show) {
-        legend = this.drawLegend(this._LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, confLegends.toggleAll.color, "legend option", confLegends.toggleAll.text[0]);
+        legend = this.drawLegend(this._LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, confLegends.toggleAll.color, "legend option", fontSize, confLegends.toggleAll.text[0]);
         callback = this.toggleSeries;
       } else {
         serie = SERIES[i];
@@ -677,7 +678,7 @@ exp.Main = Main = (function() {
         if (confLegends.format != null) {
           text = confLegends.format(text);
         }
-        legend = this.drawLegend(this._LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, color, "legend", text);
+        legend = this.drawLegend(this._LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, color, "legend", fontSize, text);
         callback = this.toggleSerie;
       }
       if (currentX + rectWidth + textWidth + rectMargin > widthSpace - rectWidth - textWidth - rectMargin) {
@@ -695,11 +696,11 @@ exp.Main = Main = (function() {
     return _results;
   };
 
-  Main.prototype.drawLegend = function(LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, color, className, text) {
+  Main.prototype.drawLegend = function(LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, color, className, fontSize, text) {
     var legend, rect;
     legend = LEGENDS.append("g").style("cursor", "pointer").attr("transform", "translate(" + currentX + ", " + currentY + ")").attr("data-index", i).attr("data-hide", "false").attr("class", className);
     rect = legend.append("rect").attr("width", rectWidth).attr("height", rectHeight).attr("fill", color).attr("stroke", "#afafaf").attr("stroke-width", "1").attr("rx", 5).attr("ry", 5);
-    legend.append("text").attr("x", rectMargin + rectWidth).attr("y", rectHeight - 1).attr("fill", color).attr("font-size", 10).text(text);
+    legend.append("text").attr("x", rectMargin + rectWidth).attr("y", rectHeight - 1).attr("fill", color).attr("font-size", fontSize).text(text);
     return legend;
   };
 
@@ -1260,7 +1261,8 @@ exp.Main = Main = (function() {
         text: ["Hide all", "Show all"]
       },
       text: {
-        width: 50
+        size: 14,
+        width: 60
       },
       rect: {
         width: 10,

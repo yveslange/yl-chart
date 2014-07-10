@@ -162,7 +162,8 @@ exp.Main = class Main
         color: "#5f5f5f"
         text: ["Hide all", "Show all"]
       text:
-        width: 50
+        size: 14
+        width: 60
       rect:
         width: 10
         height: 10
