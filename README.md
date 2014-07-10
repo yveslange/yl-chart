@@ -140,5 +140,8 @@ For more informations, please check the full configuration explanation located h
 
 And voila !
 
+# More information
+For more information you can check the [WIKI](https://bitbucket.org/agflow/agchart/wiki) page of that project.
+
 #TODO
 * Remove window.brunch.server for watcher in production
