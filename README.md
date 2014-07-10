@@ -37,15 +37,16 @@ Chart librairie for Web application with interactive options.
 
 
 ## Watch
-`make watch`: watch changes with auto-reload script
+Assuming you already installed brunch, go to the `app` folder and run:
+`make watch`: watch changes with auto-reload script.
 
 
-# Initialization and usage
+# Usage in production
 * Everything your need is located into the `release` folder.
-* Import `vendor.js` file that contains the dependencies (*don't do this is you already imported d3js or jquery for example*)
-* Import the CSS file `agchart.css` and the agchart library called `agchart.js`. This should be done in the headers of you HTML file (normally between `<head>` and `</head>`)
+* Import `vendor.js` file that contains the dependencies (*don't do this if you already imported d3js or jquery manually*)
+* Import the CSS file `agchart.css` and the agchart library called `agchart.js`. This should be done in the headers of you HTML file (normally between `<head>` and `</head>`).
 
-Here is a example of what you should find in the header section:
+Here is an example of what you should write in the header section of your HTML file (eg: `index.html`):
 ```HTML
 <link rel="stylesheet" type="text/css" href="css/agchart.min.css" media="screen">
 <script src="vendor.js" charset="utf-8"></script>
@@ -66,38 +67,54 @@ agChart.render()
 or with a specific configuration
 
 ```Javascript
-config = {...} // Described in the next section
-agChart = new agChart.Main(config)
+// Default minimalistic configuration
+SERIES = [
+  {
+    name: "Serie 1"
+    data: [{x: 1, y: 20}, {x: 2, y: 25}, {x: 3, y: 2}]
+  }
+]
+CONFIG ={
+  canvas: {selector: "#agchart"}
+}
+
+agChart = new agChart.Main({
+  config: CONFIG
+  series: SERIES
+})
 agChart.render()
 ```
 
-The final step is to have a container that will contain the generated chart. You can add this between `<body>` and `</body>` in your HTML file for the purpose of this example:
+The final step is to add a container that will contains the generated chart. You can add this between `<body>` and `</body>` in your HTML file for the purpose of this example:
 
 ```HTML
 <div id='agchart'></div>
 ```
 
 ## Configuration
-To configure the chart, it should be done when calling the agChart librairy. It's a simple javascript object that contains options.
+To configure the chart, it should be done when calling the agChart library. It's a simple JavaScript object that contains options.
 
 ### Basic configuration
 Here is a example of a simple configuration:
 ```Javascript
-config = {config:
+CONFIG = {
   canvas:
     render: 'dotline'
     selector: '#agchart'
 }
-agChart = new agChart.Main(config)
-agChart.render()
 ```
 
 This simple and basic configuration should be passed to agChart and will render a simple chart without any data.
 
 ### Some datas
-In this example we are going to create two series of datas.
+In this example we are going to create a chart with two series of datas.
 
 ```Javascript
+CONFIG = {
+  canvas:
+    render: 'dotline'
+    selector: '#agchart'
+}
 serie1 = {
   name: "Serie 1"
   data: [{x: 1, y: 20.1}, {x:2, y: 19.8}, {x:3, y:24.05}]
@@ -110,20 +127,18 @@ serie2 = {
   color: "#ff0000"
   config: {width: 1}
 }
-config = {
-  ...
-  series: [serie1, serie2]
-  ...
-}
-agChart = new agChart.Main(config)
+SERIES = [serie1, serie2]
+agChart = new agChart.Main({
+  config: CONFIG
+  series: SERIES
+})
 agChart.render()
 ```
 
 For more informations, please check the full configuration explanation located here:
-[docs/configuration.md](/docs/configuration.md)
+[WIKI: Configuration](https://bitbucket.org/agflow/agchart/wiki/Configuration)
 
 And voila !
 
 #TODO
 * Remove window.brunch.server for watcher in production
-* Add `make clean` in *Makefile* to clean the project
