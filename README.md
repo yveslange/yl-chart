@@ -2,6 +2,23 @@ agChart
 =======
 Chart librairie for Web application with interactive options.
 
+![Screenshot of AgChart](https://bitbucket.org/agflow/agchart/raw/master/docs/screenshot.png)
+
+## Features
+* Cross lines to help comparing values
+* Cross values to have more precise overview on the axis values
+* Legends with toggles for comparing series
+* Tooltips when hovering dots
+* Fadeout on series to avoid confusion while comparing series
+* Easy multiple title configuration
+* All style in non CSS (for the exported)
+* Grid background to compare values
+* Configurable axis (style, text, position, ...)
+* Customizable labels for the axis
+* Benchmark logo integration
+* Interactive menu with custom options (plugins)
+* Plugin: Exportation to PNG
+* Easy to create a plugin !
 
 ## Installation (for developpers only)
 * `pacman -S nodejs` to install NodeJS if you don't already have it.
@@ -14,7 +31,7 @@ Chart librairie for Web application with interactive options.
 *The dependencies are included in the projet*
 
 ## Compiling
-`make build`: normal compilation with `*.map` and unminified javascript files. A unminified version will be copied to the relase folder.
+`make build`: normal compilation with `*.map` and unminified javascript files. A unminified version will be copied to the release folder.
 
 `make build-prod`: minified javascript version without `*.map`. A minified version will be copied to the release folder.
 
