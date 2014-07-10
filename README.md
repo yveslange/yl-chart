@@ -2,7 +2,7 @@ agChart
 =======
 Chart librairie for Web application with interactive options.
 
-![Screenshot of AgChart](https://bytebucket.org/agflow/agchart/wiki/docs/screenshot.png)
+![Screenshot of AgChart](https://bytebucket.org/agflow/agchart/wiki/images/screenshot.png)
 
 ## Features
 * Cross lines to help comparing values
