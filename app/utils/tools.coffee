@@ -12,7 +12,7 @@ exp.updateObject = updateObject = (obj1, obj2, replace=true) ->
       for k of obj2
         if isNode(obj2[k]) # We copy the node as it is
           obj1[k] = obj2[k][0] ? obj1[k][0]
-        else if typeof obj2[k] == 'object'
+        else if typeof obj2[k] == 'object' and obj2[k] != null
           obj1[k] = {} if not obj1[k]?
           update obj1[k], obj2[k], replace
         else

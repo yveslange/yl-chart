@@ -1,4 +1,7 @@
 module.exports = exp = {}
+M = {
+  style: require "agchart/utils/style"
+}
 
 exp.Main = class Main
   constructor: (svg, canvas) ->
@@ -23,10 +26,6 @@ exp.Main = class Main
     if params.logo.x == 'left'
       posX = PADDING[0]
 
-    @_IMAGE.attr("width", params.logo.width)
-      .attr("height", params.logo.height)
+    new M.style.Main(@_IMAGE).apply(params.style)
       .attr("x", posX)
       .attr("y", posY)
-      .attr("opacity", params.logo.opacity)
-      .attr("id", "logo")
-      .attr("xlink:href", params.logo.url)

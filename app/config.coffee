@@ -11,6 +11,41 @@ exp.Main = class Main
 
   # Default configuration for agchart
   defaultConfig:
+    style:
+      axis:
+        x:
+          stroke: "#2b2e33"
+          "stroke-width": 1
+          class: "x"
+        y:
+          stroke: "#2b2e33"
+          "stroke-width": 1
+          class: "y"
+      logo:
+        id: "logo"
+        "xlink:href": "agflow-logo.svg"
+        width: 100
+        height: 50
+        opacity: 0.5
+      grid:
+        x:
+          class: "x"
+          tick:
+            stroke: "#f5f5f5"
+            "width-stroke": 2
+          font:
+            fill: "#2b2e33"
+            "font-size": 10
+            "font-weight": "normal"
+        y:
+          class: "y"
+          tick:
+            color: "#5f5f5f"
+          font:
+            fill: "#2b2e33"
+            "font-size": 10
+            "font-weight": "normal"
+
     tooltip:
       template: "singlePoint"
       format:
@@ -105,12 +140,8 @@ exp.Main = class Main
           show: true
           color: 'white'
     logo:
-      url: "agflow-logo.svg"
-      width: 100
-      height: 50
       x: 'right'
       y: 'bottom'
-      opacity: 0.5
     line:
       stroke:
         width: 2
@@ -124,36 +155,21 @@ exp.Main = class Main
       stroke:
         width: 1
     axis:
+      x: orient: "bottom"
+      y: orient: "left"
+    grid:
       x:
         format: null
-        domainMargin: 5
-        ticks: "auto"
-        tickSize: null
-        orient: "bottom" # bottom, top
-        tickColor: "#f5f5f5"
-        tickWidth: 2
-        strokeWidth: 1
-        color: "#2b2e33" # THe color of the y axis
-        className: "x"
-        font:
-          color: "#2b2e33"
-          size: 10
-          weight: "normal"
+        tick:
+          mode: "auto"
+          size: "auto"
+          freq: "auto"
       y:
         format: null
-        domainMargin: 5
-        ticks: "auto"
-        tickSize: null
-        orient: "left" # left, right
-        tickColor: "#f5f5f5"
-        tickWidth: 2
-        strokeWidth: 1
-        color: "#2b2e33" # The color of the x axis
-        className: "y"
-        font:
-          color: "#2b2e33"
-          size: 10
-          weight: "normal"
+        tick:
+          mode: "auto"
+          size: "auto"
+          freq: "auto"
     legends:
       show: true
       format: null

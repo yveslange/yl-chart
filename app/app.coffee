@@ -86,8 +86,8 @@ exp.Main = class Main
     @_CLASS.gridY   = new M.grid.Main(@_CANVAS)
     @_CLASS.labelX  = new M.label.Main(@_CANVAS)
     @_CLASS.labelY  = new M.label.Main(@_CANVAS)
-    @_CLASS.axisX   = new M.axis.Main(@_CANVAS, @_CONF.canvas)
-    @_CLASS.axisY   = new M.axis.Main(@_CANVAS, @_CONF.canvas)
+    @_CLASS.axisX   = new M.axis.Main(@_CANVAS)
+    @_CLASS.axisY   = new M.axis.Main(@_CANVAS)
     @_CLASS.cross   = new M.cross.Main(@_CANVAS)
     @_CLASS.legend  = new M.legend.Main(@_CANVAS)
     @_CLASS.title   = new M.title.Main(@_CANVAS)
@@ -224,29 +224,36 @@ exp.Main = class Main
     @_CLASS.logo.render(
       confCanvas: @_CONF.canvas
       logo:       @_CONF.logo
+      style:      @_CONF.style.logo
     )
 
     @_CLASS.gridX.render(
-      confCanvas: @_CONF.canvas
       scale:      @_SCALE.x
+      confCanvas: @_CONF.canvas
+      confGrid:   @_CONF.grid.x
       confAxis:   @_CONF.axis.x
+      style:      @_CONF.style.grid.x
     )
 
     @_CLASS.gridY.render(
-      confCanvas: @_CONF.canvas
       scale:      @_SCALE.y
+      confCanvas: @_CONF.canvas
+      confGrid:   @_CONF.grid.y
       confAxis:   @_CONF.axis.y
+      style:      @_CONF.style.grid.y
     )
 
     # WARNING: Should be after the grid to avoid overlapping
     @_CLASS.axisX.render(
       confAxis:   @_CONF.axis.x
       confCanvas: @_CONF.canvas
+      style:      @_CONF.style.axis.x
     )
 
     @_CLASS.axisY.render(
       confAxis:   @_CONF.axis.y
       confCanvas: @_CONF.canvas
+      style:      @_CONF.style.axis.y
     )
 
     @_CLASS.labelX.render(

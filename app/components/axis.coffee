@@ -3,6 +3,10 @@
 # after the grid !
 module.exports = exp = {}
 
+M = {
+  style : require 'agchart/utils/style'
+}
+
 exp.Main = class Main
   constructor: (svg)->
     @_AXIS = svg.append("line")
@@ -13,9 +17,7 @@ exp.Main = class Main
   render: (params) ->
     confAxis = params.confAxis
     confCanvas = params.confCanvas
-    @_AXIS
-      .attr("stroke", confAxis.color)
-      .attr("stroke-width", confAxis.strokeWidth)
+    new M.style.Main(@_AXIS).apply(params.style)
     switch confAxis.orient
       when 'bottom'
         @_AXIS

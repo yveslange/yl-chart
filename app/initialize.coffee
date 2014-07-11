@@ -112,14 +112,6 @@ exp.run = ->
         color: 'agflow' # Color or palette name
         stroke: {width: 1, color: null}
       axis:
-        y:
-          ticks: 5
-          tickSize: "full"
-          tickColor: "#ebebeb"
-          tickWidth: 2
-          orient: "right"
-          font:
-            weight: "bold"
         x:
           ticks: 1
           orient: "bottom"
@@ -127,6 +119,20 @@ exp.run = ->
           tickColor: "#ebebeb"
           format: "%b"
           tickSize: "full"
+          font:
+            color: "#ff0000"
+            size: 10
+            weight: "bold"
+        y:
+          ticks: 5
+          tickSize: "full"
+          tickColor: "#ebebeb"
+          tickWidth: 2
+          orient: "right"
+          font:
+            color: "#ff0000"
+            size: 10
+            weight: "bold"
       legends:
         show: true
       pluginsIconsFolder: "icons"
