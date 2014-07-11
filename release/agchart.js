@@ -166,8 +166,8 @@ exp.Main = Main = (function() {
     this._CLASS.gridY = new M.grid.Main(this._CANVAS);
     this._CLASS.labelX = new M.label.Main(this._CANVAS);
     this._CLASS.labelY = new M.label.Main(this._CANVAS);
-    this._CLASS.axisX = new M.axis.Main(this._CANVAS, this._CONF.canvas);
-    this._CLASS.axisY = new M.axis.Main(this._CANVAS, this._CONF.canvas);
+    this._CLASS.axisX = new M.axis.Main(this._CANVAS);
+    this._CLASS.axisY = new M.axis.Main(this._CANVAS);
     this._CLASS.cross = new M.cross.Main(this._CANVAS);
     this._CLASS.legend = new M.legend.Main(this._CANVAS);
     return this._CLASS.title = new M.title.Main(this._CANVAS);
@@ -301,25 +301,32 @@ exp.Main = Main = (function() {
     }
     this._CLASS.logo.render({
       confCanvas: this._CONF.canvas,
-      logo: this._CONF.logo
+      logo: this._CONF.logo,
+      style: this._CONF.style.logo
     });
     this._CLASS.gridX.render({
-      confCanvas: this._CONF.canvas,
       scale: this._SCALE.x,
-      confAxis: this._CONF.axis.x
+      confCanvas: this._CONF.canvas,
+      confGrid: this._CONF.grid.x,
+      confAxis: this._CONF.axis.x,
+      style: this._CONF.style.grid.x
     });
     this._CLASS.gridY.render({
-      confCanvas: this._CONF.canvas,
       scale: this._SCALE.y,
-      confAxis: this._CONF.axis.y
+      confCanvas: this._CONF.canvas,
+      confGrid: this._CONF.grid.y,
+      confAxis: this._CONF.axis.y,
+      style: this._CONF.style.grid.y
     });
     this._CLASS.axisX.render({
       confAxis: this._CONF.axis.x,
-      confCanvas: this._CONF.canvas
+      confCanvas: this._CONF.canvas,
+      style: this._CONF.style.axis.x
     });
     this._CLASS.axisY.render({
       confAxis: this._CONF.axis.y,
-      confCanvas: this._CONF.canvas
+      confCanvas: this._CONF.canvas,
+      style: this._CONF.style.axis.y
     });
     this._CLASS.labelX.render({
       confCanvas: this._CONF.canvas,
@@ -367,9 +374,13 @@ exp.Main = Main = (function() {
 });
 
 ;require.register("agchart/components/axis", function(exports, require, module) {
-var Main, exp;
+var M, Main, exp;
 
 module.exports = exp = {};
+
+M = {
+  style: require('agchart/utils/style')
+};
 
 exp.Main = Main = (function() {
   function Main(svg) {
@@ -386,7 +397,7 @@ exp.Main = Main = (function() {
     var confAxis, confCanvas;
     confAxis = params.confAxis;
     confCanvas = params.confCanvas;
-    this._AXIS.attr("stroke", confAxis.color).attr("stroke-width", confAxis.strokeWidth);
+    new M.style.Main(this._AXIS).apply(params.style);
     switch (confAxis.orient) {
       case 'bottom':
         return this._AXIS.attr("x1", confCanvas.padding[0]).attr("y1", confCanvas.height - confCanvas.padding[1]).attr("x2", confCanvas.width - confCanvas.padding[0]).attr("y2", confCanvas.height - confCanvas.padding[1]);
@@ -743,9 +754,13 @@ exp.Main = Main = (function() {
 });
 
 ;require.register("agchart/components/logo", function(exports, require, module) {
-var Main, exp;
+var M, Main, exp;
 
 module.exports = exp = {};
+
+M = {
+  style: require("agchart/utils/style")
+};
 
 exp.Main = Main = (function() {
   function Main(svg, canvas) {
@@ -777,7 +792,7 @@ exp.Main = Main = (function() {
     if (params.logo.x === 'left') {
       posX = PADDING[0];
     }
-    return this._IMAGE.attr("width", params.logo.width).attr("height", params.logo.height).attr("x", posX).attr("y", posY).attr("opacity", params.logo.opacity).attr("id", "logo").attr("xlink:href", params.logo.url);
+    return new M.style.Main(this._IMAGE).apply(params.style).attr("x", posX).attr("y", posY);
   };
 
   return Main;
@@ -1081,6 +1096,52 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.defaultConfig = {
+    style: {
+      axis: {
+        x: {
+          stroke: "#2b2e33",
+          "stroke-width": 1,
+          "class": "x"
+        },
+        y: {
+          stroke: "#2b2e33",
+          "stroke-width": 1,
+          "class": "y"
+        }
+      },
+      logo: {
+        id: "logo",
+        "xlink:href": "agflow-logo.svg",
+        width: 100,
+        height: 50,
+        opacity: 0.5
+      },
+      grid: {
+        x: {
+          "class": "x",
+          tick: {
+            stroke: "#f5f5f5",
+            "width-stroke": 2
+          },
+          font: {
+            fill: "#2b2e33",
+            "font-size": 10,
+            "font-weight": "normal"
+          }
+        },
+        y: {
+          "class": "y",
+          tick: {
+            color: "#5f5f5f"
+          },
+          font: {
+            fill: "#2b2e33",
+            "font-size": 10,
+            "font-weight": "normal"
+          }
+        }
+      }
+    },
     tooltip: {
       template: "singlePoint",
       format: {
@@ -1193,12 +1254,8 @@ exp.Main = Main = (function() {
       }
     },
     logo: {
-      url: "agflow-logo.svg",
-      width: 100,
-      height: 50,
       x: 'right',
-      y: 'bottom',
-      opacity: 0.5
+      y: 'bottom'
     },
     line: {
       stroke: {
@@ -1218,37 +1275,27 @@ exp.Main = Main = (function() {
     },
     axis: {
       x: {
+        orient: "bottom"
+      },
+      y: {
+        orient: "left"
+      }
+    },
+    grid: {
+      x: {
         format: null,
-        domainMargin: 5,
-        ticks: "auto",
-        tickSize: null,
-        orient: "bottom",
-        tickColor: "#f5f5f5",
-        tickWidth: 2,
-        strokeWidth: 1,
-        color: "#2b2e33",
-        className: "x",
-        font: {
-          color: "#2b2e33",
-          size: 10,
-          weight: "normal"
+        tick: {
+          mode: "auto",
+          size: "auto",
+          freq: "auto"
         }
       },
       y: {
         format: null,
-        domainMargin: 5,
-        ticks: "auto",
-        tickSize: null,
-        orient: "left",
-        tickColor: "#f5f5f5",
-        tickWidth: 2,
-        strokeWidth: 1,
-        color: "#2b2e33",
-        className: "y",
-        font: {
-          color: "#2b2e33",
-          size: 10,
-          weight: "normal"
+        tick: {
+          mode: "auto",
+          size: "auto",
+          freq: "auto"
         }
       }
     },
@@ -1529,6 +1576,19 @@ exp.run = function() {
         }
       },
       axis: {
+        x: {
+          ticks: 1,
+          orient: "bottom",
+          tickWidth: 2,
+          tickColor: "#ebebeb",
+          format: "%b",
+          tickSize: "full",
+          font: {
+            color: "#ff0000",
+            size: 10,
+            weight: "bold"
+          }
+        },
         y: {
           ticks: 5,
           tickSize: "full",
@@ -1536,16 +1596,10 @@ exp.run = function() {
           tickWidth: 2,
           orient: "right",
           font: {
+            color: "#ff0000",
+            size: 10,
             weight: "bold"
           }
-        },
-        x: {
-          ticks: 1,
-          orient: "bottom",
-          tickWidth: 2,
-          tickColor: "#ebebeb",
-          format: "%b",
-          tickSize: "full"
         }
       },
       legends: {
@@ -1780,6 +1834,30 @@ exp.computeScales = computeScales = function(args) {
 };
 });
 
+;require.register("agchart/utils/style", function(exports, require, module) {
+var Main, exp;
+
+module.exports = exp = {};
+
+exp.Main = Main = (function() {
+  function Main(DOM) {
+    this.DOM = DOM;
+  }
+
+  Main.prototype.apply = function(styles) {
+    var sK, sV;
+    for (sK in styles) {
+      sV = styles[sK];
+      this.DOM.attr(sK, sV);
+    }
+    return this.DOM;
+  };
+
+  return Main;
+
+})();
+});
+
 ;require.register("agchart/utils/time", function(exports, require, module) {
 var Main, exp;
 
@@ -1863,7 +1941,7 @@ exp.updateObject = updateObject = function(obj1, obj2, replace) {
       for (k in obj2) {
         if (isNode(obj2[k])) {
           obj1[k] = (_ref = obj2[k][0]) != null ? _ref : obj1[k][0];
-        } else if (typeof obj2[k] === 'object') {
+        } else if (typeof obj2[k] === 'object' && obj2[k] !== null) {
           if (obj1[k] == null) {
             obj1[k] = {};
           }
