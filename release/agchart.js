@@ -308,14 +308,12 @@ exp.Main = Main = (function() {
       scale: this._SCALE.x,
       confCanvas: this._CONF.canvas,
       confGrid: this._CONF.grid.x,
-      confAxis: this._CONF.axis.x,
       style: this._CONF.style.grid.x
     });
     this._CLASS.gridY.render({
       scale: this._SCALE.y,
       confCanvas: this._CONF.canvas,
       confGrid: this._CONF.grid.y,
-      confAxis: this._CONF.axis.y,
       style: this._CONF.style.grid.y
     });
     this._CLASS.axisX.render({
@@ -523,9 +521,13 @@ exp.Main = Main = (function() {
 });
 
 ;require.register("agchart/components/grid", function(exports, require, module) {
-var Main, exp;
+var M, Main, exp;
 
 module.exports = exp = {};
+
+M = {
+  style: require('agchart/utils/style')
+};
 
 exp.Main = Main = (function() {
   function Main(svg) {
@@ -539,18 +541,19 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.render = function(params) {
-    var confAxis, confCanvas, grid, tickSize, trans;
+    var confCanvas, confGrid, grid, gridTicks, style, text, tickSize, trans;
     confCanvas = params.confCanvas;
-    confAxis = params.confAxis;
-    tickSize = confAxis.tickSize;
-    if (tickSize === 'full') {
-      if (confAxis.orient === 'bottom' || confAxis.orient === 'top') {
+    confGrid = params.confGrid;
+    style = params.style;
+    tickSize = confGrid.tick.size;
+    if (tickSize === 'auto') {
+      if (confGrid.orient === 'bottom' || confGrid.orient === 'top') {
         tickSize = confCanvas.height - confCanvas.padding[1] * 2;
       } else {
         tickSize = -confCanvas.width + confCanvas.padding[0] * 2;
       }
     }
-    switch (confAxis.orient) {
+    switch (confGrid.orient) {
       case 'bottom':
         trans = "translate(0, " + confCanvas.padding[1] + ")";
         break;
@@ -565,23 +568,21 @@ exp.Main = Main = (function() {
         break;
       default:
         trans = '';
-        throw new Error("Unknown orientation: ", confAxis.orient);
+        throw new Error("Unknown orientation: ", confGrid.orient);
     }
-    grid = d3.svg.axis().scale(params.scale).orient(confAxis.orient).tickSize(tickSize);
-    if (confAxis.ticks !== "auto") {
-      grid.ticks(confAxis.ticks);
+    grid = d3.svg.axis().scale(params.scale).orient(confGrid.orient).tickSize(tickSize);
+    if (confGrid.tick.freq !== "auto") {
+      grid.ticks(confGrid.tick.freq);
     }
-    if (confAxis.format != null) {
-      grid.tickFormat(d3.time.format(confAxis.format));
-      if (confAxis.ticks === "auto") {
-        grid.ticks(d3.time.months.utc, 1);
-      } else {
-        grid.ticks(d3.time.months.utc, params.ticks);
-      }
+    if (confGrid.format != null) {
+      grid.tickFormat(d3.time.format(confGrid.format));
+      grid.ticks(d3.time.months.utc, confGrid.tick.freq === "auto" ? 1 : confGrid.tick.freq);
     }
-    this._GRID.attr("transform", trans).attr("class", "axis " + confAxis.className).call(grid);
-    this._GRID.selectAll("line").attr("stroke", confAxis.tickColor).attr("width-stroke", confAxis.tickWidth);
-    this._GRID.selectAll("text").attr("fill", confAxis.font.color).attr("font-size", confAxis.font.size).attr("font-weight", confAxis.font.weight);
+    this._GRID.attr("transform", trans).attr("class", "axis " + style["class"]).call(grid);
+    gridTicks = this._GRID.selectAll("line");
+    new M.style.Main(gridTicks).apply(style.tick);
+    text = this._GRID.selectAll("text");
+    new M.style.Main(text).apply(style.text);
     return this._GRID.selectAll("path").style("display", "none");
   };
 
@@ -1099,13 +1100,13 @@ exp.Main = Main = (function() {
       axis: {
         x: {
           stroke: "#2b2e33",
-          "stroke-width": 1,
-          "class": "x"
+          "class": "x",
+          "stroke-width": 1
         },
         y: {
           stroke: "#2b2e33",
-          "stroke-width": 1,
-          "class": "y"
+          "class": "y",
+          "stroke-width": 1
         }
       },
       logo: {
@@ -1122,7 +1123,7 @@ exp.Main = Main = (function() {
             stroke: "#f5f5f5",
             "width-stroke": 2
           },
-          font: {
+          text: {
             fill: "#2b2e33",
             "font-size": 10,
             "font-weight": "normal"
@@ -1131,9 +1132,9 @@ exp.Main = Main = (function() {
         y: {
           "class": "y",
           tick: {
-            color: "#5f5f5f"
+            stroke: "#f5f5f5"
           },
-          font: {
+          text: {
             fill: "#2b2e33",
             "font-size": 10,
             "font-weight": "normal"
@@ -1282,7 +1283,8 @@ exp.Main = Main = (function() {
     },
     grid: {
       x: {
-        format: null,
+        format: "%b",
+        orient: "bottom",
         tick: {
           mode: "auto",
           size: "auto",
@@ -1291,6 +1293,7 @@ exp.Main = Main = (function() {
       },
       y: {
         format: null,
+        orient: "right",
         tick: {
           mode: "auto",
           size: "auto",
@@ -1584,7 +1587,7 @@ exp.run = function() {
           format: "%b",
           tickSize: "full",
           font: {
-            color: "#ff0000",
+            color: "#3e3e3e",
             size: 10,
             weight: "bold"
           }
@@ -1596,7 +1599,7 @@ exp.run = function() {
           tickWidth: 2,
           orient: "right",
           font: {
-            color: "#ff0000",
+            color: "#3e3e3e",
             size: 10,
             weight: "bold"
           }

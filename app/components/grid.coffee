@@ -1,4 +1,7 @@
 module.exports = exp = {}
+M = {
+  style : require 'agchart/utils/style'
+}
 
 exp.Main = class Main
   constructor: (svg) ->
@@ -8,17 +11,18 @@ exp.Main = class Main
     return {root:@_GRID}
 
   render: (params) ->
-    confCanvas = params.confCanvas
-    confAxis = params.confAxis
+    confCanvas  = params.confCanvas
+    confGrid    = params.confGrid
+    style       = params.style
 
-    tickSize = confAxis.tickSize
-    if tickSize == 'full'
-      if confAxis.orient == 'bottom' or confAxis.orient == 'top'
+    tickSize = confGrid.tick.size
+    if tickSize == 'auto'
+      if confGrid.orient == 'bottom' or confGrid.orient == 'top'
         tickSize =  confCanvas.height-confCanvas.padding[1]*2
       else
         tickSize = -confCanvas.width+confCanvas.padding[0]*2
 
-    switch confAxis.orient
+    switch confGrid.orient
       when 'bottom'
         trans = "translate(0, #{confCanvas.padding[1]})"
       when 'top'
@@ -29,40 +33,36 @@ exp.Main = class Main
         trans = "translate(#{confCanvas.padding[0]}, 0)"
       else
         trans = ''
-        throw new Error("Unknown orientation: ", confAxis.orient)
+        throw new Error("Unknown orientation: ", confGrid.orient)
 
     grid = d3.svg.axis()
       .scale(params.scale)
-      .orient(confAxis.orient)
+      .orient(confGrid.orient)
       .tickSize(tickSize)
 
-    grid.ticks(confAxis.ticks) if confAxis.ticks != "auto"
+    if confGrid.tick.freq != "auto"
+      grid.ticks(confGrid.tick.freq)
 
-    if confAxis.format?
-      grid.tickFormat(
-        d3.time.format(confAxis.format)
+    if confGrid.format?
+      grid.tickFormat(d3.time.format(confGrid.format))
+
+      grid.ticks(d3.time.months.utc,
+        if confGrid.tick.freq == "auto" then 1
+        else confGrid.tick.freq
       )
-      if confAxis.ticks == "auto"
-        grid.ticks(d3.time.months.utc, 1)
-      else
-        grid.ticks(d3.time.months.utc, params.ticks)
 
     @_GRID
       .attr("transform", trans)
-      .attr("class", "axis #{confAxis.className}")
+      .attr("class", "axis #{style.class}")
       .call(grid)
 
-    # Selecting the ticks only without the first one
-    @_GRID.selectAll("line")
-      .attr("stroke", confAxis.tickColor)
-      .attr("width-stroke", confAxis.tickWidth)
+    # Selecting the ticks and apply style
+    gridTicks = @_GRID.selectAll("line")
+    new M.style.Main(gridTicks).apply(style.tick)
 
     # Color of the text on axis
-    @_GRID.selectAll("text")
-      .attr("fill", confAxis.font.color)
-      .attr("font-size", confAxis.font.size)
-      .attr("font-weight", confAxis.font.weight)
+    text = @_GRID.selectAll("text")
+    new M.style.Main(text).apply(style.text)
 
     # Trick to hide the path around the graph
-    @_GRID.selectAll("path")
-      .style("display", "none")
+    @_GRID.selectAll("path").style("display", "none")

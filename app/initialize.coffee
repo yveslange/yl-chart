@@ -120,7 +120,7 @@ exp.run = ->
           format: "%b"
           tickSize: "full"
           font:
-            color: "#ff0000"
+            color: "#3e3e3e"
             size: 10
             weight: "bold"
         y:
@@ -130,7 +130,7 @@ exp.run = ->
           tickWidth: 2
           orient: "right"
           font:
-            color: "#ff0000"
+            color: "#3e3e3e"
             size: 10
             weight: "bold"
       legends:

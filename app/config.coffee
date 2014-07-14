@@ -15,12 +15,12 @@ exp.Main = class Main
       axis:
         x:
           stroke: "#2b2e33"
-          "stroke-width": 1
           class: "x"
+          "stroke-width": 1
         y:
           stroke: "#2b2e33"
-          "stroke-width": 1
           class: "y"
+          "stroke-width": 1
       logo:
         id: "logo"
         "xlink:href": "agflow-logo.svg"
@@ -33,15 +33,15 @@ exp.Main = class Main
           tick:
             stroke: "#f5f5f5"
             "width-stroke": 2
-          font:
+          text:
             fill: "#2b2e33"
             "font-size": 10
             "font-weight": "normal"
         y:
           class: "y"
           tick:
-            color: "#5f5f5f"
-          font:
+            stroke: "#f5f5f5"
+          text:
             fill: "#2b2e33"
             "font-size": 10
             "font-weight": "normal"
@@ -159,13 +159,15 @@ exp.Main = class Main
       y: orient: "left"
     grid:
       x:
-        format: null
+        format: "%b"
+        orient: "bottom"
         tick:
-          mode: "auto"
+          mode: "auto" # TODO: wtf is this ?
           size: "auto"
-          freq: "auto"
+          freq: "auto" # Every x tick
       y:
         format: null
+        orient: "right"
         tick:
           mode: "auto"
           size: "auto"

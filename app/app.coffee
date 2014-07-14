@@ -231,7 +231,6 @@ exp.Main = class Main
       scale:      @_SCALE.x
       confCanvas: @_CONF.canvas
       confGrid:   @_CONF.grid.x
-      confAxis:   @_CONF.axis.x
       style:      @_CONF.style.grid.x
     )
 
@@ -239,7 +238,6 @@ exp.Main = class Main
       scale:      @_SCALE.y
       confCanvas: @_CONF.canvas
       confGrid:   @_CONF.grid.y
-      confAxis:   @_CONF.axis.y
       style:      @_CONF.style.grid.y
     )
 
