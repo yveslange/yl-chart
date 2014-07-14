@@ -843,10 +843,9 @@ exp.Main = Main = (function() {
     _results = [];
     for (plugin in PARAMS.confPlugins) {
       if (PARAMS.confPlugins[plugin].enable) {
-        icon = $("<img/>", {
-          src: "" + PARAMS.iconsFolder + "/" + plugin + ".png",
-          title: PARAMS.confPlugins[plugin].displayName,
-          width: "30px"
+        icon = $("<i/>", {
+          "class": "fa fa-" + PARAMS.confPlugins[plugin].fa + " fa-2x",
+          title: PARAMS.confPlugins[plugin].displayName
         }).appendTo(pluginsMenu);
         icon.css({
           cursor: "pointer"
@@ -1321,6 +1320,7 @@ exp.Main = Main = (function() {
     pluginsIconsFolder: "icons",
     plugins: {
       exportation: {
+        fa: "download",
         displayName: "Exports the chart to a PNG file",
         enable: true,
         copyright: {

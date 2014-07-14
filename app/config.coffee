@@ -189,6 +189,7 @@ exp.Main = class Main
     pluginsIconsFolder: "icons"
     plugins:
       exportation:
+        fa: "download"
         displayName: "Exports the chart to a PNG file"
         enable: true
         copyright:

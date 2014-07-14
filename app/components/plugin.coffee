@@ -25,10 +25,9 @@ exp.Main = class Main
 
     for plugin of PARAMS.confPlugins
       if PARAMS.confPlugins[plugin].enable
-        icon = $("<img/>",{
-          src: "#{PARAMS.iconsFolder}/#{plugin}.png"
+        icon = $("<i/>",{
+          class: "fa fa-#{PARAMS.confPlugins[plugin].fa} fa-2x"
           title: PARAMS.confPlugins[plugin].displayName
-          width: "30px"
         }).appendTo(pluginsMenu)
         icon.css({cursor: "pointer"})
         pluginModule = require 'agchart/plugins/'+plugin
