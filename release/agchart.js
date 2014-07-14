@@ -680,7 +680,7 @@ exp.Main = Main = (function() {
     for (i = _i = 0; _i <= nbrLegends; i = _i += 1) {
       params.svg.attr("height", confCanvas.height + currentY);
       if (i === nbrLegends && confLegends.toggleAll.show) {
-        legend = this.drawLegend(this._LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, confLegends.toggleAll.color, "legend option", fontSize, confLegends.toggleAll.text[0]);
+        legend = this.drawLegend(this._LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, confLegends.toggleAll.color, "legend option", fontSize, 2, confLegends.toggleAll.text[0]);
         callback = this.toggleSeries;
       } else {
         serie = SERIES[i];
@@ -689,7 +689,7 @@ exp.Main = Main = (function() {
         if (confLegends.format != null) {
           text = confLegends.format(text);
         }
-        legend = this.drawLegend(this._LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, color, "legend", fontSize, text);
+        legend = this.drawLegend(this._LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, color, "legend", fontSize, 5, text);
         callback = this.toggleSerie;
       }
       if (currentX + rectWidth + textWidth + rectMargin > widthSpace - rectWidth - textWidth - rectMargin) {
@@ -707,11 +707,11 @@ exp.Main = Main = (function() {
     return _results;
   };
 
-  Main.prototype.drawLegend = function(LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, color, className, fontSize, text) {
+  Main.prototype.drawLegend = function(LEGENDS, i, currentX, currentY, rectWidth, rectHeight, rectMargin, color, className, fontSize, radius, text) {
     var legend, rect;
     legend = LEGENDS.append("g").style("cursor", "pointer").attr("transform", "translate(" + currentX + ", " + currentY + ")").attr("data-index", i).attr("data-hide", "false").attr("class", className);
-    rect = legend.append("rect").attr("width", rectWidth).attr("height", rectHeight).attr("fill", color).attr("stroke", "#afafaf").attr("stroke-width", "1").attr("rx", 5).attr("ry", 5);
-    legend.append("text").attr("x", rectMargin + rectWidth).attr("y", rectHeight - 1).attr("fill", color).attr("font-size", fontSize).text(text);
+    rect = legend.append("rect").attr("width", rectWidth).attr("height", rectHeight).attr("fill", color).attr("rx", radius).attr("ry", radius);
+    legend.append("text").attr("x", rectMargin + rectWidth).attr("y", rectHeight - 1).attr("fill", color).attr("font-size", fontSize).attr("background", "#ff0000").text(text);
     return legend;
   };
 
