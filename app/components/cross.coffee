@@ -1,4 +1,7 @@
 module.exports = exp = {}
+M = {
+  style : require 'agchart/utils/style'
+}
 
 exp.Main = class Main
   constructor: (svg) ->
@@ -16,27 +19,24 @@ exp.Main = class Main
     }
 
   render: (params)->
-    padX    = params.confCanvas.padding[0]
-    padY    = params.confCanvas.padding[1]
+    confCanvas  = params.confCanvas
+    style       = params.style
+    padX    = confCanvas.padding[0]
+    padY    = confCanvas.padding[1]
+    width   = confCanvas.width
+    height  = confCanvas.height
     offsetX = params.confCross.x.offset
     offsetY = params.confCross.y.offset
-    width   = params.confCanvas.width
-    height  = params.confCanvas.height
     _crossX = @_CROSSX
     _crossY = @_CROSSY
 
-    _crossX
-      .attr("class", "crossX")
+    new M.style.Main(@_CROSSX).apply(style.x)
       .attr("x1", -width).attr("y1", padY)
       .attr("x2", -width).attr("y2", height-padY)
-      .attr("stroke", params.confCross.x.color)
-      .attr("stroke-width", params.confCross.x.stroke)
-    _crossY
-      .attr("class", "crossY")
+    new M.style.Main(@_CROSSY).apply(style.y)
       .attr("x1", padX).attr("y1", -height)
       .attr("x2", width-padX).attr("y2", -height)
-      .attr("stroke", params.confCross.y.color)
-      .attr("stroke-width", params.confCross.y.stroke)
+
     timeoutUnmoved = null
     params.svg.on("mousemove.cross", (d)->
       clearTimeout(timeoutUnmoved)
@@ -64,17 +64,15 @@ exp.Main = class Main
     )
 
   renderValue: (params)->
+    style = params.style
+
     box = @_VALUE.append("rect")
+    new M.style.Main(box).apply(style.background)
+
     text = @_VALUE.append("text")
+    new M.style.Main(text).apply(style.text)
       .text("AgChartPile")
-      .attr("font-size", params.confCrossV.x.fontSize)
-      .attr("text-anchor", "middle")
-      .attr("fill", params.confCrossV.x.fontColor)
     textDim = text.node().getBBox()
-    box
-      .attr("fill", params.confCrossV.x.color)
-      .attr("rx", params.confCrossV.x.radius)
-      .attr("ry", params.confCrossV.x.radius)
 
     if params.confCrossV.x.show
       timeoutUnmoved = null

@@ -1,4 +1,7 @@
 module.exports = exp = {}
+M = {
+  style : require 'agchart/utils/style'
+}
 
 exp.Main = class Main
   constructor: (svg) ->
@@ -10,14 +13,10 @@ exp.Main = class Main
   render: (params) ->
     confCanvas = params.confCanvas
     confLabel = params.confLabel
-
+    style = params.style
     offset  = confLabel.offset || 0
 
-    @_LABEL
-      .attr("fill", confLabel.color)
-      .attr("class", "label #{confLabel.className}")
-      .attr("font-size", confLabel.size+"px")
-      .attr("text-anchor", confLabel.textAnchor)
+    new M.style.Main(@_LABEL).apply(style)
       .text(confLabel.text)
 
     textDim = @_LABEL.node().getBBox()

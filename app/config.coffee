@@ -45,6 +45,43 @@ exp.Main = class Main
             fill: "#2b2e33"
             "font-size": 10
             "font-weight": "normal"
+      label:
+        x:
+          "text-anchor": "middle"
+          class: "label x"
+          fill: "#5f5f5f"
+          "font-size": 14
+          "font-weight": "bold"
+        y:
+          "text-anchor": "middle"
+          "font-size": 14
+          fill: "#5f5f5f"
+          class: "label y"
+          "font-weight": "bold"
+      title: [
+        {fill: "#2f2f2f", "font-size": 15, "font-weight": "bold"}
+        {fill: "#2f2f2f", "font-size": 15, "font-weight": "bold"}
+        {fill: "#2f2f2f", "font-size": 12}
+      ]
+      cross:
+        x:
+          class: "crossX"
+          stroke: "#44A0FF"
+          "stroke-width": 1
+        y:
+          class: "crossY"
+          stroke: "#FFA044"
+          "stroke-width": 1
+      crossValue:
+        x:
+          text:
+            "font-size": 12
+            "text-anchor": "middle"
+            fill: "#FFFFFF"
+          background:
+            fill: "#0971b7"
+            rx: 5
+            ry: 5
 
     tooltip:
       template: "singlePoint"
@@ -67,47 +104,22 @@ exp.Main = class Main
       render: "dot" # dot, line
       title:
         fontFamily: "arial"
-        position:
-          x: 35
-          y: 5
+        position: {x: 20, y: 3}
+        class: "title"
         texts: [
-          {
-            text: "TEST OF MAIN TITLE"
-            color: "#2f2f2f"
-            size: 15
-            weight: "bold"
-            interline: -5
-          }
-          {
-            text: "TEST OF MAIN TITLE"
-            color: "#2f2f2f"
-            size: 15
-            weight: "bold"
-            interline: -6
-          }
-          {
-            text: "TEST OF SUBTITLE"
-            color: "#5f5f5f"
-            size: 15
-            weight: "normal"
-          }]
+          {text: "AgChart Example", interline: -4.9}
+          {text: "The agflow interactive library", interline: -4.9}
+          {text: "Play with datas !"}
+        ]
       label:
         x:
-          text: null
-          textAnchor: "middle"
-          size: 10
-          color: "#7f7f7f"
-          offset: 15
+          text: "X Axis"
+          offset: 10
           orient: "bottom"
-          className: "x"
         y:
-          text: null
-          textAnchor: "middle"
-          size: 10
-          color: "#7f7f7f"
-          offset: 0
+          text: "Y Axis"
           orient: "right"
-          className: "y"
+          offset: 0
       selector: null
       width: 600.0
       height: 400.0
@@ -115,33 +127,21 @@ exp.Main = class Main
       cross:
         x:
           show: false
-          color: 'black'
-          stroke: 1
           offset: 0
         y:
           show: false
-          color: 'black'
-          stroke: 1
           offset: 0
       crossValue:
         x:
           orient: 'bottom' # Top not implemented
           show: true
-          color: '#0971b7'
-          fontColor: '#ffffff'
-          fontSize: 12
           format: (d) ->
             da = d.toString().split(" ")[2]
             m = d.toString().split(" ")[1]
             y = d.toString().split(" ")[3].substring(2)
             "#{da} #{m} #{y}"
-          radius: 5
-        y:
-          show: true
-          color: 'white'
     logo:
-      x: 'right'
-      y: 'bottom'
+      position: {x: 'right', y: 'bottom'}
     line:
       stroke:
         width: 2

@@ -1,38 +1,40 @@
 # Render the title of the chart with specific parameters
 module.exports = exp = {}
+M = {
+  style : require 'agchart/utils/style'
+}
+
 exp.Main = class Main
   constructor: (svg) ->
     @boxTitle   = svg.append("g")
-    @boxBorder  = @boxTitle.append("rect")
-    @boxTexts   = @boxTitle.append("g")
+    @texts = []
 
   getDOM: ->
     return {
       root:     @boxTitle
-      border:   @boxBorder
-      texts:    @boxTexts
+      texts: @texts
     }
 
   render: (params) ->
-    confCanvas = params.confCanvas
-    confTitle = params.confTitle
+    confCanvas  = params.confCanvas
+    confTitle   = params.confTitle
+    style       = params.style
     posX = confTitle.position.x
     posY = confTitle.position.y
     nextPos = [posX, posY]
-    texts = []
-    for k, v of confTitle.texts
-      boxText = @boxTexts
-        .append("text")
+    @texts = []
+    # TODO: add generic style params to the children
+    # so we would have the choice to have defaults params or not
+    for obj, i in confTitle.texts
+      boxText = @boxTitle.append("text")
+      new M.style.Main(boxText).apply(style[i])
           .attr("y", nextPos[1])
-          .attr("class", "chart-title")
-          .attr("fill", v.color)
-          .attr("font-size", v.size)
-          .attr("font-weight", v.weight)
+          .attr("class", confTitle.class)
           .attr("font-family", confTitle.fontFamily)
-          .text(v.text)
+          .text(obj.text)
       dimText = boxText.node().getBBox()
-      nextPos[1] = nextPos[1]+dimText.height+(v.interline || 0)
-      texts.push {node: boxText, dim: dimText}
+      nextPos[1] = nextPos[1]+dimText.height+(obj.interline || 0)
+      @texts.push {node: boxText, dim: dimText}
 
-    @boxTexts.attr("transform", "translate(#{posX},
-      #{posY+texts[0].dim.height/2})")
+    @boxTitle.attr("transform", "translate(#{posX},
+      #{posY+@texts[0].dim.height/2})")

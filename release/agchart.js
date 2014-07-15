@@ -118,7 +118,7 @@ exp.Main = Main = (function() {
   function Main(args) {
     this._CONF = new M.config.Main(args.config).get();
     this._PALETTE = new M.palette.Main(this._CONF.point.color);
-    this._CANVAS = void 0;
+    this._SVG = void 0;
     this._CLASS = {
       tooltip: void 0,
       title: void 0
@@ -158,26 +158,26 @@ exp.Main = Main = (function() {
     $(confCanvas.selector).css({
       "position": "relative"
     });
-    this._CANVAS = d3.select(confCanvas.selector).append('svg').attr("fill", confCanvas.bgcolor).attr('width', confCanvas.width).attr('height', confCanvas.height);
+    this._SVG = d3.select(confCanvas.selector).append('svg').attr("fill", confCanvas.bgcolor).attr('width', confCanvas.width).attr('height', confCanvas.height);
     this._CLASS.tooltip = new M.tooltip.Main(this._CONF.canvas.selector);
     this._CLASS.plugin = new M.plugin.Main(this._CONF.canvas.selector);
-    this._CLASS.logo = new M.logo.Main(this._CANVAS);
-    this._CLASS.gridX = new M.grid.Main(this._CANVAS);
-    this._CLASS.gridY = new M.grid.Main(this._CANVAS);
-    this._CLASS.labelX = new M.label.Main(this._CANVAS);
-    this._CLASS.labelY = new M.label.Main(this._CANVAS);
-    this._CLASS.axisX = new M.axis.Main(this._CANVAS);
-    this._CLASS.axisY = new M.axis.Main(this._CANVAS);
-    this._CLASS.cross = new M.cross.Main(this._CANVAS);
-    this._CLASS.legend = new M.legend.Main(this._CANVAS);
-    return this._CLASS.title = new M.title.Main(this._CANVAS);
+    this._CLASS.logo = new M.logo.Main(this._SVG);
+    this._CLASS.gridX = new M.grid.Main(this._SVG);
+    this._CLASS.gridY = new M.grid.Main(this._SVG);
+    this._CLASS.labelX = new M.label.Main(this._SVG);
+    this._CLASS.labelY = new M.label.Main(this._SVG);
+    this._CLASS.axisX = new M.axis.Main(this._SVG);
+    this._CLASS.axisY = new M.axis.Main(this._SVG);
+    this._CLASS.cross = new M.cross.Main(this._SVG);
+    this._CLASS.legend = new M.legend.Main(this._SVG);
+    return this._CLASS.title = new M.title.Main(this._SVG);
   };
 
   Main.prototype.renderPoints = function() {
     var scaleH, scaleW, series, valueline, _canvas, _conf, _scope, _tooltipCallback, _tooltipHide, _tooltipNode, _tooltipShow, _tooltipTemplate;
     _scope = this;
     _conf = this._CONF;
-    _canvas = this._CANVAS;
+    _canvas = this._SVG;
     _tooltipNode = this._CLASS.tooltip.getDOM().root;
     _tooltipShow = this._CLASS.tooltip.show;
     _tooltipHide = this._CLASS.tooltip.hide;
@@ -191,7 +191,7 @@ exp.Main = Main = (function() {
     }
     scaleW = this._SCALE.x;
     scaleH = this._SCALE.y;
-    series = this._CANVAS.selectAll(".series").data(this._SERIES).enter().append("g").attr("class", "series").attr("id", function(s, i) {
+    series = this._SVG.selectAll(".series").data(this._SERIES).enter().append("g").attr("class", "series").attr("id", function(s, i) {
       return "" + i;
     }).attr("title", function(s) {
       return s.name;
@@ -296,12 +296,12 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.render = function() {
-    if (this._CANVAS == null) {
-      this._CANVAS = this.createSVG();
+    if (this._SVG == null) {
+      this._SVG = this.createSVG();
     }
     this._CLASS.logo.render({
       confCanvas: this._CONF.canvas,
-      logo: this._CONF.logo,
+      confLogo: this._CONF.logo,
       style: this._CONF.style.logo
     });
     this._CLASS.gridX.render({
@@ -328,35 +328,40 @@ exp.Main = Main = (function() {
     });
     this._CLASS.labelX.render({
       confCanvas: this._CONF.canvas,
-      confLabel: this._CONF.canvas.label.x
+      confLabel: this._CONF.canvas.label.x,
+      style: this._CONF.style.label.x
     });
     this._CLASS.labelY.render({
       confCanvas: this._CONF.canvas,
-      confLabel: this._CONF.canvas.label.y
+      confLabel: this._CONF.canvas.label.y,
+      style: this._CONF.style.label.y
     });
     this.renderPoints();
     this._CLASS.title.render({
       confCanvas: this._CONF.canvas,
-      confTitle: this._CONF.canvas.title
+      confTitle: this._CONF.canvas.title,
+      style: this._CONF.style.title
     });
     if (this._CONF.legends.show) {
       this._CLASS.legend.render({
-        svg: this._CANVAS,
+        svg: this._SVG,
         confCanvas: this._CONF.canvas,
         series: this._SERIES,
         confLegends: this._CONF.legends
       });
     }
     this._CLASS.cross.render({
-      svg: this._CANVAS,
+      svg: this._SVG,
       confCanvas: this._CONF.canvas,
-      confCross: this._CONF.canvas.cross
+      confCross: this._CONF.canvas.cross,
+      style: this._CONF.style.cross
     });
     this._CLASS.cross.renderValue({
-      svg: this._CANVAS,
+      svg: this._SVG,
       scale: this._SCALE,
       confCanvas: this._CONF.canvas,
-      confCrossV: this._CONF.canvas.crossValue
+      confCrossV: this._CONF.canvas.crossValue,
+      style: this._CONF.style.crossValue.x
     });
     return this._CLASS.plugin.render({
       context: this,
@@ -416,9 +421,13 @@ exp.Main = Main = (function() {
 });
 
 ;require.register("agchart/components/cross", function(exports, require, module) {
-var Main, exp;
+var M, Main, exp;
 
 module.exports = exp = {};
+
+M = {
+  style: require('agchart/utils/style')
+};
 
 exp.Main = Main = (function() {
   function Main(svg) {
@@ -438,17 +447,19 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.render = function(params) {
-    var height, offsetX, offsetY, padX, padY, timeoutUnmoved, width, _crossX, _crossY;
-    padX = params.confCanvas.padding[0];
-    padY = params.confCanvas.padding[1];
+    var confCanvas, height, offsetX, offsetY, padX, padY, style, timeoutUnmoved, width, _crossX, _crossY;
+    confCanvas = params.confCanvas;
+    style = params.style;
+    padX = confCanvas.padding[0];
+    padY = confCanvas.padding[1];
+    width = confCanvas.width;
+    height = confCanvas.height;
     offsetX = params.confCross.x.offset;
     offsetY = params.confCross.y.offset;
-    width = params.confCanvas.width;
-    height = params.confCanvas.height;
     _crossX = this._CROSSX;
     _crossY = this._CROSSY;
-    _crossX.attr("class", "crossX").attr("x1", -width).attr("y1", padY).attr("x2", -width).attr("y2", height - padY).attr("stroke", params.confCross.x.color).attr("stroke-width", params.confCross.x.stroke);
-    _crossY.attr("class", "crossY").attr("x1", padX).attr("y1", -height).attr("x2", width - padX).attr("y2", -height).attr("stroke", params.confCross.y.color).attr("stroke-width", params.confCross.y.stroke);
+    new M.style.Main(this._CROSSX).apply(style.x).attr("x1", -width).attr("y1", padY).attr("x2", -width).attr("y2", height - padY);
+    new M.style.Main(this._CROSSY).apply(style.y).attr("x1", padX).attr("y1", -height).attr("x2", width - padX).attr("y2", -height);
     timeoutUnmoved = null;
     return params.svg.on("mousemove.cross", function(d) {
       var eventX, eventY;
@@ -471,11 +482,13 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.renderValue = function(params) {
-    var VALUE, box, text, textDim, timeoutUnmoved;
+    var VALUE, box, style, text, textDim, timeoutUnmoved;
+    style = params.style;
     box = this._VALUE.append("rect");
-    text = this._VALUE.append("text").text("AgChartPile").attr("font-size", params.confCrossV.x.fontSize).attr("text-anchor", "middle").attr("fill", params.confCrossV.x.fontColor);
+    new M.style.Main(box).apply(style.background);
+    text = this._VALUE.append("text");
+    new M.style.Main(text).apply(style.text).text("AgChartPile");
     textDim = text.node().getBBox();
-    box.attr("fill", params.confCrossV.x.color).attr("rx", params.confCrossV.x.radius).attr("ry", params.confCrossV.x.radius);
     if (params.confCrossV.x.show) {
       timeoutUnmoved = null;
       VALUE = this._VALUE;
@@ -592,9 +605,13 @@ exp.Main = Main = (function() {
 });
 
 ;require.register("agchart/components/label", function(exports, require, module) {
-var Main, exp;
+var M, Main, exp;
 
 module.exports = exp = {};
+
+M = {
+  style: require('agchart/utils/style')
+};
 
 exp.Main = Main = (function() {
   function Main(svg) {
@@ -608,11 +625,12 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.render = function(params) {
-    var confCanvas, confLabel, offset, textDim, trans;
+    var confCanvas, confLabel, offset, style, textDim, trans;
     confCanvas = params.confCanvas;
     confLabel = params.confLabel;
+    style = params.style;
     offset = confLabel.offset || 0;
-    this._LABEL.attr("fill", confLabel.color).attr("class", "label " + confLabel.className).attr("font-size", confLabel.size + "px").attr("text-anchor", confLabel.textAnchor).text(confLabel.text);
+    new M.style.Main(this._LABEL).apply(style).text(confLabel.text);
     textDim = this._LABEL.node().getBBox();
     switch (confLabel.orient) {
       case 'bottom':
@@ -775,22 +793,22 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.render = function(params) {
-    var HEIGHT, PADDING, WIDTH, confCanvas, posX, posY;
+    var HEIGHT, PADDING, WIDTH, confCanvas, confLogo, posX, posY, style;
     confCanvas = params.confCanvas;
     HEIGHT = confCanvas.height;
     WIDTH = confCanvas.width;
     PADDING = confCanvas.padding;
+    confLogo = params.confLogo;
+    style = params.style;
     posX = posY = 100;
-    if (params.logo.y === 'bottom') {
-      posY = HEIGHT - PADDING[1] - params.logo.height;
-    }
-    if (params.logo.y === 'top') {
+    if (confLogo.position.y === 'bottom') {
+      posY = HEIGHT - PADDING[1] - style.height;
+    } else if (confLogo.position.y === 'top') {
       posY = PADDING[1];
     }
-    if (params.logo.x === 'right') {
-      posX = WIDTH - PADDING[0] - params.logo.width;
-    }
-    if (params.logo.x === 'left') {
+    if (confLogo.position.x === 'right') {
+      posX = WIDTH - PADDING[0] - style.width;
+    } else if (confLogo.position.x === 'left') {
       posX = PADDING[0];
     }
     return new M.style.Main(this._IMAGE).apply(params.style).attr("x", posX).attr("y", posY);
@@ -871,45 +889,49 @@ exp.Main = Main = (function() {
 });
 
 ;require.register("agchart/components/title", function(exports, require, module) {
-var Main, exp;
+var M, Main, exp;
 
 module.exports = exp = {};
+
+M = {
+  style: require('agchart/utils/style')
+};
 
 exp.Main = Main = (function() {
   function Main(svg) {
     this.boxTitle = svg.append("g");
-    this.boxBorder = this.boxTitle.append("rect");
-    this.boxTexts = this.boxTitle.append("g");
+    this.texts = [];
   }
 
   Main.prototype.getDOM = function() {
     return {
       root: this.boxTitle,
-      border: this.boxBorder,
-      texts: this.boxTexts
+      texts: this.texts
     };
   };
 
   Main.prototype.render = function(params) {
-    var boxText, confCanvas, confTitle, dimText, k, nextPos, posX, posY, texts, v, _ref;
+    var boxText, confCanvas, confTitle, dimText, i, nextPos, obj, posX, posY, style, _i, _len, _ref;
     confCanvas = params.confCanvas;
     confTitle = params.confTitle;
+    style = params.style;
     posX = confTitle.position.x;
     posY = confTitle.position.y;
     nextPos = [posX, posY];
-    texts = [];
+    this.texts = [];
     _ref = confTitle.texts;
-    for (k in _ref) {
-      v = _ref[k];
-      boxText = this.boxTexts.append("text").attr("y", nextPos[1]).attr("class", "chart-title").attr("fill", v.color).attr("font-size", v.size).attr("font-weight", v.weight).attr("font-family", confTitle.fontFamily).text(v.text);
+    for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+      obj = _ref[i];
+      boxText = this.boxTitle.append("text");
+      new M.style.Main(boxText).apply(style[i]).attr("y", nextPos[1]).attr("class", confTitle["class"]).attr("font-family", confTitle.fontFamily).text(obj.text);
       dimText = boxText.node().getBBox();
-      nextPos[1] = nextPos[1] + dimText.height + (v.interline || 0);
-      texts.push({
+      nextPos[1] = nextPos[1] + dimText.height + (obj.interline || 0);
+      this.texts.push({
         node: boxText,
         dim: dimText
       });
     }
-    return this.boxTexts.attr("transform", "translate(" + posX + ",      " + (posY + texts[0].dim.height / 2) + ")");
+    return this.boxTitle.attr("transform", "translate(" + posX + ",      " + (posY + this.texts[0].dim.height / 2) + ")");
   };
 
   return Main;
@@ -1140,6 +1162,62 @@ exp.Main = Main = (function() {
             "font-weight": "normal"
           }
         }
+      },
+      label: {
+        x: {
+          "text-anchor": "middle",
+          "class": "label x",
+          fill: "#5f5f5f",
+          "font-size": 14,
+          "font-weight": "bold"
+        },
+        y: {
+          "text-anchor": "middle",
+          "font-size": 14,
+          fill: "#5f5f5f",
+          "class": "label y",
+          "font-weight": "bold"
+        }
+      },
+      title: [
+        {
+          fill: "#2f2f2f",
+          "font-size": 15,
+          "font-weight": "bold"
+        }, {
+          fill: "#2f2f2f",
+          "font-size": 15,
+          "font-weight": "bold"
+        }, {
+          fill: "#2f2f2f",
+          "font-size": 12
+        }
+      ],
+      cross: {
+        x: {
+          "class": "crossX",
+          stroke: "#44A0FF",
+          "stroke-width": 1
+        },
+        y: {
+          "class": "crossY",
+          stroke: "#FFA044",
+          "stroke-width": 1
+        }
+      },
+      crossValue: {
+        x: {
+          text: {
+            "font-size": 12,
+            "text-anchor": "middle",
+            fill: "#FFFFFF"
+          },
+          background: {
+            fill: "#0971b7",
+            rx: 5,
+            ry: 5
+          }
+        }
       }
     },
     tooltip: {
@@ -1169,48 +1247,32 @@ exp.Main = Main = (function() {
       title: {
         fontFamily: "arial",
         position: {
-          x: 35,
-          y: 5
+          x: 20,
+          y: 3
         },
+        "class": "title",
         texts: [
           {
-            text: "TEST OF MAIN TITLE",
-            color: "#2f2f2f",
-            size: 15,
-            weight: "bold",
-            interline: -5
+            text: "AgChart Example",
+            interline: -4.9
           }, {
-            text: "TEST OF MAIN TITLE",
-            color: "#2f2f2f",
-            size: 15,
-            weight: "bold",
-            interline: -6
+            text: "The agflow interactive library",
+            interline: -4.9
           }, {
-            text: "TEST OF SUBTITLE",
-            color: "#5f5f5f",
-            size: 15,
-            weight: "normal"
+            text: "Play with datas !"
           }
         ]
       },
       label: {
         x: {
-          text: null,
-          textAnchor: "middle",
-          size: 10,
-          color: "#7f7f7f",
-          offset: 15,
-          orient: "bottom",
-          className: "x"
+          text: "X Axis",
+          offset: 10,
+          orient: "bottom"
         },
         y: {
-          text: null,
-          textAnchor: "middle",
-          size: 10,
-          color: "#7f7f7f",
-          offset: 0,
+          text: "Y Axis",
           orient: "right",
-          className: "y"
+          offset: 0
         }
       },
       selector: null,
@@ -1220,14 +1282,10 @@ exp.Main = Main = (function() {
       cross: {
         x: {
           show: false,
-          color: 'black',
-          stroke: 1,
           offset: 0
         },
         y: {
           show: false,
-          color: 'black',
-          stroke: 1,
           offset: 0
         }
       },
@@ -1235,27 +1293,21 @@ exp.Main = Main = (function() {
         x: {
           orient: 'bottom',
           show: true,
-          color: '#0971b7',
-          fontColor: '#ffffff',
-          fontSize: 12,
           format: function(d) {
             var da, m, y;
             da = d.toString().split(" ")[2];
             m = d.toString().split(" ")[1];
             y = d.toString().split(" ")[3].substring(2);
             return "" + da + " " + m + " " + y;
-          },
-          radius: 5
-        },
-        y: {
-          show: true,
-          color: 'white'
+          }
         }
       }
     },
     logo: {
-      x: 'right',
-      y: 'bottom'
+      position: {
+        x: 'right',
+        y: 'bottom'
+      }
     },
     line: {
       stroke: {
@@ -1519,26 +1571,20 @@ exp.run = function() {
         height: 400.0,
         label: {
           x: {
-            text: "Some label X",
-            size: 10,
-            color: "#7f7f7f"
+            text: "Months"
           },
           y: {
-            text: "Some label Y",
-            size: 10,
-            color: "#7f7f7f"
+            text: "Values"
           }
         },
         selector: '#chart1',
         padding: [50, 50],
         cross: {
           x: {
-            show: true,
-            color: "#44A0FF"
+            show: true
           },
           y: {
-            show: true,
-            color: "#FFA044"
+            show: true
           }
         },
         crossValue: {
@@ -1548,11 +1594,10 @@ exp.run = function() {
         }
       },
       logo: {
-        url: "agflow-logo.png",
-        width: 100,
-        height: 50,
-        x: 'right',
-        y: 'bottom',
+        position: {
+          x: 'right',
+          y: 'bottom'
+        },
         opacity: 0.1
       },
       tooltip: {

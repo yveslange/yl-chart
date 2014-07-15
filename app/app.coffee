@@ -29,7 +29,7 @@ exp.Main = class Main
     # configuration
     @_CONF = new M.config.Main(args.config).get()
     @_PALETTE = new M.palette.Main(@_CONF.point.color)
-    @_CANVAS = undefined # TODO: THIS IS A DOM, rename to SVG
+    @_SVG = undefined
 
     # Class components
     @_CLASS = {
@@ -74,29 +74,29 @@ exp.Main = class Main
   initSVG: (confCanvas) ->
     throw new Error("No selector defined") if not confCanvas.selector?
     $(confCanvas.selector).css({"position": "relative"})
-    @_CANVAS = d3.select(confCanvas.selector)
+    @_SVG = d3.select(confCanvas.selector)
       .append('svg')
       .attr("fill", confCanvas.bgcolor)
       .attr('width', confCanvas.width)
       .attr('height', confCanvas.height)
     @_CLASS.tooltip = new M.tooltip.Main(@_CONF.canvas.selector)
     @_CLASS.plugin  = new M.plugin.Main(@_CONF.canvas.selector)
-    @_CLASS.logo    = new M.logo.Main(@_CANVAS)
-    @_CLASS.gridX   = new M.grid.Main(@_CANVAS)
-    @_CLASS.gridY   = new M.grid.Main(@_CANVAS)
-    @_CLASS.labelX  = new M.label.Main(@_CANVAS)
-    @_CLASS.labelY  = new M.label.Main(@_CANVAS)
-    @_CLASS.axisX   = new M.axis.Main(@_CANVAS)
-    @_CLASS.axisY   = new M.axis.Main(@_CANVAS)
-    @_CLASS.cross   = new M.cross.Main(@_CANVAS)
-    @_CLASS.legend  = new M.legend.Main(@_CANVAS)
-    @_CLASS.title   = new M.title.Main(@_CANVAS)
+    @_CLASS.logo    = new M.logo.Main(@_SVG)
+    @_CLASS.gridX   = new M.grid.Main(@_SVG)
+    @_CLASS.gridY   = new M.grid.Main(@_SVG)
+    @_CLASS.labelX  = new M.label.Main(@_SVG)
+    @_CLASS.labelY  = new M.label.Main(@_SVG)
+    @_CLASS.axisX   = new M.axis.Main(@_SVG)
+    @_CLASS.axisY   = new M.axis.Main(@_SVG)
+    @_CLASS.cross   = new M.cross.Main(@_SVG)
+    @_CLASS.legend  = new M.legend.Main(@_SVG)
+    @_CLASS.title   = new M.title.Main(@_SVG)
 
 
   renderPoints: ->
     _scope  = @
     _conf   = @_CONF
-    _canvas = @_CANVAS
+    _canvas = @_SVG
     _tooltipNode = @_CLASS.tooltip.getDOM().root
     _tooltipShow = @_CLASS.tooltip.show
     _tooltipHide = @_CLASS.tooltip.hide
@@ -111,7 +111,7 @@ exp.Main = class Main
     scaleW = @_SCALE.x
     scaleH = @_SCALE.y
 
-    series = @_CANVAS.selectAll(".series")
+    series = @_SVG.selectAll(".series")
       .data(@_SERIES).enter()
         .append("g")
         .attr("class", "series")
@@ -219,11 +219,11 @@ exp.Main = class Main
 
 
   render: ->
-    @_CANVAS = @createSVG() if not @_CANVAS?
+    @_SVG = @createSVG() if not @_SVG?
 
     @_CLASS.logo.render(
       confCanvas: @_CONF.canvas
-      logo:       @_CONF.logo
+      confLogo:   @_CONF.logo
       style:      @_CONF.style.logo
     )
 
@@ -257,11 +257,13 @@ exp.Main = class Main
     @_CLASS.labelX.render(
       confCanvas: @_CONF.canvas
       confLabel:  @_CONF.canvas.label.x
+      style: @_CONF.style.label.x
     )
 
     @_CLASS.labelY.render(
       confCanvas: @_CONF.canvas
       confLabel:  @_CONF.canvas.label.y
+      style: @_CONF.style.label.y
     )
 
     @renderPoints() # Depends on axis and tooltip
@@ -269,26 +271,29 @@ exp.Main = class Main
     @_CLASS.title.render(
       confCanvas: @_CONF.canvas
       confTitle:  @_CONF.canvas.title
+      style: @_CONF.style.title
     )
 
     @_CLASS.legend.render(
-      svg:        @_CANVAS  # Needed to update the canvas
+      svg:        @_SVG  # Needed to update the canvas
       confCanvas: @_CONF.canvas
       series:     @_SERIES
       confLegends:@_CONF.legends
     ) if @_CONF.legends.show
 
     @_CLASS.cross.render(
-      svg:        @_CANVAS
+      svg:        @_SVG
       confCanvas: @_CONF.canvas
       confCross:  @_CONF.canvas.cross
+      style: @_CONF.style.cross
     )
 
     @_CLASS.cross.renderValue(
-      svg:        @_CANVAS
+      svg:        @_SVG
       scale:      @_SCALE
       confCanvas: @_CONF.canvas
       confCrossV: @_CONF.canvas.crossValue
+      style:      @_CONF.style.crossValue.x
     )
 
     @_CLASS.plugin.render(

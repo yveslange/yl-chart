@@ -71,31 +71,21 @@ exp.run = ->
         height: 400.0
         label:
           x:
-            text: "Some label X"
-            size: 10
-            color: "#7f7f7f"
+            text: "Months"
           y:
-            text: "Some label Y"
-            size: 10
-            color: "#7f7f7f"
+            text: "Values"
         selector: '#chart1'
         padding: [50,50]
         cross:
           x:
             show: true
-            color: "#44A0FF"
           y:
             show: true
-            color: "#FFA044"
         crossValue:
           x:
             show: true
       logo:
-        url: "agflow-logo.png"
-        width: 100
-        height: 50
-        x: 'right'
-        y: 'bottom'
+        position: {x: 'right', y: 'bottom'}
         opacity: 0.1
       tooltip:
         template: mode
