@@ -139,6 +139,7 @@ exp.Main = Main = (function() {
     this._SCALE = M.scale.computeScales({
       confCanvas: this._CONF.canvas,
       confAxis: this._CONF.axis,
+      confGrid: this._CONF.grid,
       domain: this._DOMAIN
     });
     this.initSVG(this._CONF.canvas);
@@ -367,7 +368,8 @@ exp.Main = Main = (function() {
       context: this,
       confCanvas: this._CONF.canvas,
       iconsFolder: this._CONF.pluginsIconsFolder,
-      confPlugins: this._CONF.plugins
+      confPlugins: this._CONF.plugins,
+      style: this._CONF.style.plugins
     });
   };
 
@@ -840,15 +842,20 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.render = function(PARAMS) {
-    var callback, confCanvas, context, icon, plugin, pluginModule, pluginsMenu, _results;
+    var callback, confCanvas, context, icon, plugin, pluginModule, pluginsMenu, style, _results;
     confCanvas = PARAMS.confCanvas;
+    style = PARAMS.style;
     pluginsMenu = this._MENU;
-    pluginsMenu.css({
-      "position": "absolute",
-      "left": confCanvas.width + 1,
-      "top": "0px",
-      "opacity": 0.1
-    });
+    switch (style.panel.position) {
+      case "right":
+        style.panel.position = "absolute";
+        style.panel.left = confCanvas.width + 1;
+        break;
+      case "left":
+        style.panel.position = "absolute";
+        style.panel.left = 0;
+    }
+    pluginsMenu.css(style.panel);
     pluginsMenu.on("mouseover.menuPlugin", function() {
       return pluginsMenu.animate({
         opacity: 1
@@ -1119,6 +1126,13 @@ exp.Main = Main = (function() {
 
   Main.prototype.defaultConfig = {
     style: {
+      plugins: {
+        panel: {
+          position: "right",
+          top: 0,
+          opacity: 0.1
+        }
+      },
       axis: {
         x: {
           stroke: "#2b2e33",
@@ -1281,11 +1295,11 @@ exp.Main = Main = (function() {
       padding: [0, 0],
       cross: {
         x: {
-          show: false,
+          show: true,
           offset: 0
         },
         y: {
-          show: false,
+          show: true,
           offset: 0
         }
       },
@@ -1561,35 +1575,22 @@ exp.run = function() {
   agChart = new agchart.Main({
     config: {
       canvas: {
+        render: 'dotline',
+        width: 900.0,
+        height: 400.0,
+        selector: '#chart1',
+        padding: [50, 50],
         scale: {
           x: {
             nice: true
           }
         },
-        render: 'dotline',
-        width: 900.0,
-        height: 400.0,
         label: {
           x: {
             text: "Months"
           },
           y: {
             text: "Values"
-          }
-        },
-        selector: '#chart1',
-        padding: [50, 50],
-        cross: {
-          x: {
-            show: true
-          },
-          y: {
-            show: true
-          }
-        },
-        crossValue: {
-          x: {
-            show: true
           }
         }
       },
@@ -1624,34 +1625,9 @@ exp.run = function() {
         }
       },
       axis: {
-        x: {
-          ticks: 1,
-          orient: "bottom",
-          tickWidth: 2,
-          tickColor: "#ebebeb",
-          format: "%b",
-          tickSize: "full",
-          font: {
-            color: "#3e3e3e",
-            size: 10,
-            weight: "bold"
-          }
-        },
         y: {
-          ticks: 5,
-          tickSize: "full",
-          tickColor: "#ebebeb",
-          tickWidth: 2,
-          orient: "right",
-          font: {
-            color: "#3e3e3e",
-            size: 10,
-            weight: "bold"
-          }
+          orient: "right"
         }
-      },
-      legends: {
-        show: true
       },
       pluginsIconsFolder: "icons"
     },
@@ -1855,8 +1831,9 @@ M = {
 };
 
 exp.computeScales = computeScales = function(args) {
-  var scales, _axis, _canvas, _domain, _pad;
+  var scales, _axis, _canvas, _domain, _grid, _pad;
   _axis = args.confAxis;
+  _grid = args.confGrid;
   _domain = args.domain;
   _canvas = args.confCanvas;
   _pad = _canvas.padding;
@@ -1864,14 +1841,14 @@ exp.computeScales = computeScales = function(args) {
     x: d3.scale.linear(),
     y: d3.scale.linear()
   };
-  if (_axis.x.format != null) {
+  if (_grid.x.format != null) {
     scales.x = d3.time.scale.utc();
   }
   scales.x.domain([_domain.minX, _domain.maxX]).range([_pad[0], _canvas.width - _pad[0]]);
   if (_canvas.scale.x.nice) {
     scales.x.nice();
   }
-  if (_axis.y.format != null) {
+  if (_grid.y.format != null) {
     scales.y = d3.time.scale();
   }
   scales.y.domain([_domain.minY, _domain.maxY]).range([_canvas.height - _pad[1], _pad[1]]);

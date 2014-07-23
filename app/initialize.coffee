@@ -63,37 +63,26 @@ exp.run = ->
   agChart = new agchart.Main(
     config:
       canvas:
-        scale:
-          x:
-            nice: true
         render: 'dotline' # dot, line, dotline
         width: 900.0
         height: 400.0
-        label:
-          x:
-            text: "Months"
-          y:
-            text: "Values"
         selector: '#chart1'
         padding: [50,50]
-        cross:
-          x:
-            show: true
-          y:
-            show: true
-        crossValue:
-          x:
-            show: true
+        scale: x: nice: true
+        label:
+          x: text: "Months"
+          y: text: "Values"
       logo:
-        position: {x: 'right', y: 'bottom'}
+        position:
+          x: 'right'
+          y: 'bottom'
         opacity: 0.1
       tooltip:
         template: mode
         callback: mode
-        format:
-          x: tooltipFormat
+        format: x: tooltipFormat
       line:
-        stroke: {width: 1}
+        stroke: width: 1
       point:
         onMouseover: mode
         onMouseout: mode
@@ -102,29 +91,7 @@ exp.run = ->
         color: 'agflow' # Color or palette name
         stroke: {width: 1, color: null}
       axis:
-        x:
-          ticks: 1
-          orient: "bottom"
-          tickWidth: 2
-          tickColor: "#ebebeb"
-          format: "%b"
-          tickSize: "full"
-          font:
-            color: "#3e3e3e"
-            size: 10
-            weight: "bold"
-        y:
-          ticks: 5
-          tickSize: "full"
-          tickColor: "#ebebeb"
-          tickWidth: 2
-          orient: "right"
-          font:
-            color: "#3e3e3e"
-            size: 10
-            weight: "bold"
-      legends:
-        show: true
+        y: orient: "right"
       pluginsIconsFolder: "icons"
     series: series
   )

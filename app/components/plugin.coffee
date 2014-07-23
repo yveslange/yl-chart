@@ -10,14 +10,19 @@ exp.Main = class Main
     return {root: @_MENU, plugins: @_PLUGINSDOM}
 
   render: (PARAMS) ->
-    confCanvas = PARAMS.confCanvas
+    confCanvas  = PARAMS.confCanvas
+    style       = PARAMS.style
     pluginsMenu = @_MENU
-    pluginsMenu.css({
-      "position": "absolute"
-      "left": confCanvas.width+1
-      "top": "0px"
-      "opacity": 0.1
-    })
+
+    switch style.panel.position
+      when "right"
+        style.panel.position = "absolute"
+        style.panel.left = confCanvas.width+1
+      when "left"
+        style.panel.position = "absolute"
+        style.panel.left = 0
+    pluginsMenu.css(style.panel)
+
     pluginsMenu.on("mouseover.menuPlugin", ()->
       pluginsMenu.animate({opacity: 1}, 10))
     pluginsMenu.on("mouseout.menuPlugin", ()->

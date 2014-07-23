@@ -57,6 +57,7 @@ exp.Main = class Main
     @_SCALE = M.scale.computeScales({
       confCanvas: @_CONF.canvas
       confAxis: @_CONF.axis
+      confGrid: @_CONF.grid
       domain: @_DOMAIN
     })
 
@@ -301,5 +302,6 @@ exp.Main = class Main
       confCanvas:   @_CONF.canvas
       iconsFolder:  @_CONF.pluginsIconsFolder
       confPlugins:  @_CONF.plugins
+      style: @_CONF.style.plugins
     )
 

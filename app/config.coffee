@@ -12,6 +12,11 @@ exp.Main = class Main
   # Default configuration for agchart
   defaultConfig:
     style:
+      plugins:
+        panel:
+          position: "right"
+          top: 0
+          opacity: 0.1
       axis:
         x:
           stroke: "#2b2e33"
@@ -126,10 +131,10 @@ exp.Main = class Main
       padding: [0,0] #left/right, bottom/top
       cross:
         x:
-          show: false
+          show: true
           offset: 0
         y:
-          show: false
+          show: true
           offset: 0
       crossValue:
         x:
