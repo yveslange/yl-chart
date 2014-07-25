@@ -14,10 +14,10 @@ exp.computeDomain = getDomain = (series) ->
 # Fix the domain if minX == maxX and same for Y
 exp.fixDomain = fixDomain = (args) ->
   domain   = args.domain
-  confAxis = args.confAxis
+  confDomain = args.confDomain
   if domain.maxX == domain.minX
-    domain.maxX += confAxis.x.domainMargin
-    domain.minX -= confAxis.x.domainMargin
+    domain.maxX += confDomain.x.margin
+    domain.minX -= confDomain.x.margin
   if domain.maxY == domain.minY
-    domain.maxY += confAxis.y.domainMargin
-    domain.minY -= confAxis.y.domainMargin
+    domain.maxY += confDomain.y.margin
+    domain.minY -= confDomain.y.margin

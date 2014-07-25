@@ -51,7 +51,7 @@ exp.Main = class Main
     @_DOMAIN = M.domain.computeDomain(args.series)
     M.domain.fixDomain({
       domain: @_DOMAIN
-      confAxis: @_CONF.axis
+      confDomain: @_CONF.domain
     })
 
     @_SCALE = M.scale.computeScales({

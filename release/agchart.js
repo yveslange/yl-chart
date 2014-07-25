@@ -134,7 +134,7 @@ exp.Main = Main = (function() {
     this._DOMAIN = M.domain.computeDomain(args.series);
     M.domain.fixDomain({
       domain: this._DOMAIN,
-      confAxis: this._CONF.axis
+      confDomain: this._CONF.domain
     });
     this._SCALE = M.scale.computeScales({
       confCanvas: this._CONF.canvas,
@@ -1317,6 +1317,14 @@ exp.Main = Main = (function() {
         }
       }
     },
+    domain: {
+      x: {
+        margin: 5
+      },
+      y: {
+        margin: 5
+      }
+    },
     logo: {
       position: {
         x: 'right',
@@ -1519,52 +1527,22 @@ genDataFunc = function(len, inter, func) {
 };
 
 exp.run = function() {
-  var agChart, i, mode, series, t, tooltipFormat, _i;
+  var agChart, i, mode, series, t, tooltipFormat, y;
   t = new time.Main({
     lang: 'en'
   });
   series = [];
+  i = 10;
+  y = 10;
   series.push({
-    name: "Serie 1",
-    data: genDataFunc(24 * 3600 * 120, 36 * 3600, function(d) {
-      return Math.cos(d) * 10;
-    }),
-    config: {
-      stroke: {
-        width: 1
+    name: "Serie " + (i + 3),
+    data: [
+      {
+        x: i * 1000,
+        y: i * 10
       }
-    }
+    ]
   });
-  series.push({
-    name: "Serie 2",
-    data: genDataFunc(24 * 3600 * 120, 36 * 3600 * 2, Math.tan),
-    config: {
-      color: "#ff0001",
-      stroke: {
-        width: 1
-      }
-    }
-  });
-  series.push({
-    name: "Serie 3",
-    data: genDataFunc(24 * 3600 * 120, 48 * 3600, Math.sin),
-    config: {
-      stroke: {
-        width: 1
-      }
-    }
-  });
-  for (i = _i = 0; _i <= 20; i = ++_i) {
-    series.push({
-      name: "Serie " + (i + 3),
-      data: [
-        {
-          x: i * 1000,
-          y: i * 10
-        }
-      ]
-    });
-  }
   tooltipFormat = function(d) {
     var date, formatDate;
     date = new Date(d);
@@ -1740,16 +1718,16 @@ exp.computeDomain = getDomain = function(series) {
 };
 
 exp.fixDomain = fixDomain = function(args) {
-  var confAxis, domain;
+  var confDomain, domain;
   domain = args.domain;
-  confAxis = args.confAxis;
+  confDomain = args.confDomain;
   if (domain.maxX === domain.minX) {
-    domain.maxX += confAxis.x.domainMargin;
-    domain.minX -= confAxis.x.domainMargin;
+    domain.maxX += confDomain.x.margin;
+    domain.minX -= confDomain.x.margin;
   }
   if (domain.maxY === domain.minY) {
-    domain.maxY += confAxis.y.domainMargin;
-    return domain.minY -= confAxis.y.domainMargin;
+    domain.maxY += confDomain.y.margin;
+    return domain.minY -= confDomain.y.margin;
   }
 };
 });

@@ -145,6 +145,9 @@ exp.Main = class Main
             m = d.toString().split(" ")[1]
             y = d.toString().split(" ")[3].substring(2)
             "#{da} #{m} #{y}"
+    domain:
+      x: margin: 5
+      y: margin: 5
     logo:
       position: {x: 'right', y: 'bottom'}
     line:
