@@ -1627,7 +1627,7 @@ M = {
 exp.onClick = function(context, selector, conf) {
   var a, canvas, height, image, img, msie, pX, pY, svg, svg_xml, text, textDim, ua, width, win;
   image = context._CLASS.logo.getDOM().root.remove();
-  text = context._CANVAS.append("text").attr("fill", conf.copyright.color).attr("font-size", conf.copyright.fontSize + "px").text(conf.copyright.text);
+  text = context._SVG.append("text").attr("fill", conf.copyright.color).attr("font-size", conf.copyright.fontSize + "px").text(conf.copyright.text);
   $(context._CLASS.legend.getDOM().root.node()).find(".legend.option").hide();
   $(context._CLASS.legend.getDOM().root.node()).find(".legend[data-hide='true']").hide();
   width = context._CONF.canvas.width;
@@ -1658,10 +1658,11 @@ exp.onClick = function(context, selector, conf) {
     $("body").append(a);
     a.click();
   }
-  context._CLASS.logo = new M.logo.Main(context._CANVAS);
+  context._CLASS.logo = new M.logo.Main(context._SVG);
   context._CLASS.logo.render({
     confCanvas: context._CONF.canvas,
-    logo: context._CONF.logo
+    confLogo: context._CONF.logo,
+    style: context._CONF.style.logo
   });
   text.remove();
   $(context._CLASS.legend.getDOM().root.node()).find(".legend.option").show();

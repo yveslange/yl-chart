@@ -7,7 +7,7 @@ M = {
 exp.onClick = (context, selector, conf) ->
   # Replace logo by copyright text
   image = context._CLASS.logo.getDOM().root.remove()
-  text = context._CANVAS.append("text")
+  text = context._SVG.append("text")
     .attr("fill", conf.copyright.color)
     .attr("font-size", conf.copyright.fontSize+"px")
     .text(conf.copyright.text)
@@ -51,10 +51,11 @@ exp.onClick = (context, selector, conf) ->
     a.click()
 
   # Trick: we need to re-render the logo
-  context._CLASS.logo = new M.logo.Main(context._CANVAS)
+  context._CLASS.logo = new M.logo.Main(context._SVG)
   context._CLASS.logo.render(
     confCanvas: context._CONF.canvas
-    logo: context._CONF.logo
+    confLogo: context._CONF.logo
+    style: context._CONF.style.logo
   )
   text.remove()
 
