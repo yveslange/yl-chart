@@ -1161,7 +1161,7 @@ exp.Main = Main = (function() {
           },
           text: {
             fill: "#2b2e33",
-            "font-size": 10,
+            "font-size": 13,
             "font-weight": "normal"
           }
         },
@@ -1172,7 +1172,7 @@ exp.Main = Main = (function() {
           },
           text: {
             fill: "#2b2e33",
-            "font-size": 10,
+            "font-size": 13,
             "font-weight": "normal"
           }
         }
@@ -1552,6 +1552,16 @@ exp.run = function() {
   mode = "multipleVerticalInverted";
   agChart = new agchart.Main({
     config: {
+      style: {
+        label: {
+          x: {
+            "font-size": 25
+          }
+        },
+        logo: {
+          "xlink:href": "agflow-logo.svgaaa"
+        }
+      },
       canvas: {
         render: 'dotline',
         width: 900.0,
