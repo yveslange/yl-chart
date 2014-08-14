@@ -63,6 +63,12 @@ exp.run = ->
 
   agChart = new agchart.Main(
     config:
+      style:
+        label:
+          x:
+            "font-size": 25
+        logo:
+          "xlink:href": "agflow-logo.svgaaa"
       canvas:
         render: 'dotline' # dot, line, dotline
         width: 900.0

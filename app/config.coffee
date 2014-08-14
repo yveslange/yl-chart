@@ -40,7 +40,7 @@ exp.Main = class Main
             "width-stroke": 2
           text:
             fill: "#2b2e33"
-            "font-size": 10
+            "font-size": 13
             "font-weight": "normal"
         y:
           class: "y"
@@ -48,7 +48,7 @@ exp.Main = class Main
             stroke: "#f5f5f5"
           text:
             fill: "#2b2e33"
-            "font-size": 10
+            "font-size": 13
             "font-weight": "normal"
       label:
         x:
