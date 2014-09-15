@@ -90,11 +90,6 @@ exp.Main = class Main
 
     tooltip:
       template: "singlePoint"
-      format:
-        title: null
-        serie: null
-        x: null
-        y: null
       callback: "singlePoint"
       alwaysInside: true
     canvas:
@@ -155,7 +150,7 @@ exp.Main = class Main
         width: 2
     point:
       onMouseover: "singlePoint"
-      onMouseout: "singlePoint"
+      onMouseout: null
       fadeOnMouseover: true
       r: 4
       mode: 'empty' # empty, fill

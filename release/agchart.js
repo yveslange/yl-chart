@@ -175,7 +175,7 @@ exp.Main = Main = (function() {
   };
 
   Main.prototype.renderPoints = function() {
-    var scaleH, scaleW, series, valueline, _canvas, _conf, _scope, _tooltipCallback, _tooltipHide, _tooltipNode, _tooltipShow, _tooltipTemplate;
+    var scaleH, scaleW, series, valueline, _canvas, _conf, _effectOut, _effectOver, _scope, _tooltipCallback, _tooltipHide, _tooltipNode, _tooltipShow, _tooltipTemplate;
     _scope = this;
     _conf = this._CONF;
     _canvas = this._SVG;
@@ -184,6 +184,14 @@ exp.Main = Main = (function() {
     _tooltipHide = this._CLASS.tooltip.hide;
     _tooltipCallback = _conf.tooltip.callback;
     _tooltipTemplate = _conf.tooltip.template;
+    _effectOver = _conf.point.onMouseover;
+    _effectOut = _conf.point.onMouseout || _effectOver;
+    if (typeof _effectOver === 'string') {
+      _effectOver = M.effectsPoint[_effectOver].onMouseover;
+    }
+    if (typeof _effectOut === 'string') {
+      _effectOut = M.effectsPoint[_effectOut].onMouseout;
+    }
     if (typeof _tooltipCallback === "string") {
       _tooltipCallback = this._CLASS.tooltip.getCallback(_tooltipCallback);
     }
@@ -244,12 +252,8 @@ exp.Main = Main = (function() {
         var _ref, _ref1, _ref2;
         return (_ref = (_ref1 = d.config) != null ? (_ref2 = _ref1.stroke) != null ? _ref2.width : void 0 : void 0) != null ? _ref : _conf.point.stroke.width;
       })).on('mouseover', function(d) {
-        var data, effect;
-        effect = _conf.point.onMouseover;
-        if (typeof effect === 'string') {
-          effect = M.effectsPoint[effect].onMouseover;
-        }
-        effect({
+        var data;
+        _effectOver({
           canvas: _canvas,
           circleNode: this,
           data: d
@@ -276,12 +280,7 @@ exp.Main = Main = (function() {
           return $(this).show();
         }
       }).on('mouseout', function(d) {
-        var effect;
-        effect = _conf.point.onMouseout;
-        if (typeof effect === 'string') {
-          effect = M.effectsPoint[effect].onMouseout;
-        }
-        effect({
+        _effectOut({
           canvas: _canvas,
           circleNode: this,
           data: d
@@ -999,8 +998,7 @@ exp.Main = Main = (function() {
   Main.prototype._templates = {
     singlePoint: function(data) {
       var html;
-      html = "<h1>" + data[0].title + "</h1>";
-      return html += ("<div class='serie' id='0'>" + data[0].x + " : " + data[0].y) + "<div class='swatch'" + ("style='background-color: " + data[0].color + "'></div>") + "</div>";
+      return html = "        <h1>" + data.serieName + "</h1>        <div class='serie' id='0'>" + data.x + " : " + data.y + "        <div class='swatch' style='background-color: " + data.color + "'></div>      </div>";
     },
     multipleVertical: function(data) {
       var d, html, i, _i, _len;
@@ -1028,71 +1026,30 @@ exp.Main = Main = (function() {
 
   Main.prototype._callbacks = {
     singlePoint: function(params) {
-      var x, _circleNode, _ref;
+      var x, _circleNode;
       _circleNode = params.circleNode;
-      x = parseFloat(_circleNode.getAttribute('data-x'));
-      if (((_ref = params.format) != null ? _ref.x : void 0) != null) {
-        x = params.format.x(x);
-      }
-      return [
-        {
-          color: params.data.config.color,
-          serieName: params.circleNode.parentNode.getAttribute("title"),
-          x: x,
-          y: params.data.y.toFixed(2),
-          hide: node.parentNode.getAttribute("data-hide") === "true"
-        }
-      ];
+      x = _circleNode.getAttribute('data-x');
+      return {
+        color: params.data.config.color,
+        serieName: params.circleNode.parentNode.getAttribute("title"),
+        x: x,
+        y: params.data.y,
+        hide: _circleNode.parentNode.getAttribute("data-hide") === "true"
+      };
     },
     multipleVertical: function(params) {
-      var cx, res, title, x, _circleNode, _ref, _ref1;
+      var cx, res, title, x, _circleNode;
       _circleNode = params.circleNode;
       cx = _circleNode.getAttribute('cx');
-      x = parseFloat(_circleNode.getAttribute('data-x'));
-      if (((_ref = params.format) != null ? _ref.x : void 0) != null) {
-        x = params.format.x(x);
-      }
-      title = parseInt(_circleNode.parentNode.getAttribute('title'));
-      if (((_ref1 = params.format) != null ? _ref1.title : void 0) != null) {
-        title = params.format.title(title);
-      }
+      x = _circleNode.getAttribute('data-x');
+      title = _circleNode.parentNode.getAttribute('title');
       res = [];
       $(params.canvas[0]).find("circle[cx='" + cx + "']").each(function(e, node) {
         return res.push({
           title: title,
           serieName: node.parentNode.getAttribute("title"),
           color: node.getAttribute("data-color"),
-          y: parseFloat(node.getAttribute("data-y")).toFixed(2),
-          x: x,
-          hide: node.parentNode.getAttribute("data-hide") === "true"
-        });
-      });
-      return res;
-    },
-    multipleVerticalInverted: function(params) {
-      var cx, res, title, x, _circleNode, _ref, _ref1;
-      _circleNode = params.circleNode;
-      cx = _circleNode.getAttribute('cx');
-      x = parseFloat(_circleNode.getAttribute('data-x'));
-      if (((_ref = params.format) != null ? _ref.x : void 0) != null) {
-        x = params.format.x(x);
-      }
-      title = parseInt(_circleNode.parentNode.getAttribute('title'));
-      if (((_ref1 = params.format) != null ? _ref1.title : void 0) != null) {
-        title = params.format.title(title);
-      }
-      res = [];
-      $(params.canvas[0]).find("circle[cx='" + cx + "']").each(function(e, node) {
-        var serieName, _ref2;
-        serieName = parseInt(node.parentNode.getAttribute("title"));
-        if (((_ref2 = params.format) != null ? _ref2.serie : void 0) != null) {
-          serieName = params.format.serie(serieName);
-        }
-        return res.push({
-          title: title,
-          serieName: serieName,
-          color: node.getAttribute("data-color"),
-          y: parseFloat(node.getAttribute("data-y")).toFixed(2),
+          y: node.getAttribute("data-y"),
           x: x,
           hide: node.parentNode.getAttribute("data-hide") === "true"
         });
@@ -1236,12 +1193,6 @@ exp.Main = Main = (function() {
     },
     tooltip: {
       template: "singlePoint",
-      format: {
-        title: null,
-        serie: null,
-        x: null,
-        y: null
-      },
       callback: "singlePoint",
       alwaysInside: true
     },
@@ -1338,7 +1289,7 @@ exp.Main = Main = (function() {
     },
     point: {
       onMouseover: "singlePoint",
-      onMouseout: "singlePoint",
+      onMouseout: null,
       fadeOnMouseover: true,
       r: 4,
       mode: 'empty',
@@ -1488,13 +1439,14 @@ exp.multipleVerticalInverted = {
 });
 
 ;require.register("agchart/initialize", function(exports, require, module) {
-var agchart, exp, genData, genDataFunc, time;
+var M, exp, genData, genDataFunc;
 
 module.exports = exp = {};
 
-agchart = require('agchart/app');
-
-time = require('agchart/utils/time');
+M = {
+  agchart: require('agchart/app'),
+  time: require('agchart/utils/time')
+};
 
 genData = function(len, inter) {
   var els, i, _i, _ref;
@@ -1527,30 +1479,32 @@ genDataFunc = function(len, inter, func) {
 };
 
 exp.run = function() {
-  var agChart, i, mode, series, t, tooltipFormat, y;
-  t = new time.Main({
+  var agChart, series, t, tooltipMode;
+  t = new M.time.Main({
     lang: 'en'
   });
   series = [];
-  i = 10;
-  y = 10;
   series.push({
-    name: "Serie " + (i + 3),
-    data: [
-      {
-        x: i * 1000,
-        y: i * 10
+    name: "Serie 3",
+    data: genDataFunc(24 * 3600 * 120, 48 * 3600, Math.sin),
+    config: {
+      stroke: {
+        width: 1
       }
-    ]
+    }
   });
-  tooltipFormat = function(d) {
-    var date, formatDate;
-    date = new Date(d);
-    formatDate = d3.time.format("%b '%y");
-    return formatDate(date);
-  };
-  mode = "multipleVerticalInverted";
-  agChart = new agchart.Main({
+  series.push({
+    name: "Serie 3b",
+    data: genDataFunc(24 * 3600 * 120, 48 * 3600, Math.sin),
+    config: {
+      color: "#00fa0f",
+      stroke: {
+        width: 1
+      }
+    }
+  });
+  tooltipMode = "multipleVertical";
+  agChart = new M.agchart.Main({
     config: {
       style: {
         label: {
@@ -1559,7 +1513,7 @@ exp.run = function() {
           }
         },
         logo: {
-          "xlink:href": "agflow-logo.svgaaa"
+          "xlink:href": "agflow-logo.svg"
         }
       },
       canvas: {
@@ -1590,11 +1544,8 @@ exp.run = function() {
         opacity: 0.1
       },
       tooltip: {
-        template: mode,
-        callback: mode,
-        format: {
-          x: tooltipFormat
-        }
+        template: tooltipMode,
+        callback: tooltipMode
       },
       line: {
         stroke: {
@@ -1602,10 +1553,9 @@ exp.run = function() {
         }
       },
       point: {
-        onMouseover: mode,
-        onMouseout: mode,
-        mode: 'fill',
         r: 4,
+        mode: 'fill',
+        onMouseover: "multipleVerticalInverted",
         color: 'agflow',
         stroke: {
           width: 1,

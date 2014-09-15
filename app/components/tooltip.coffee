@@ -45,11 +45,11 @@ exp.Main = class Main
 
   _templates:
     singlePoint: (data) ->
-      html = "<h1>#{data[0].title}</h1>"
-      html += "<div class='serie' id='0'>#{data[0].x} : #{data[0].y}"+
-        "<div class='swatch'"+
-          "style='background-color: #{data[0].color}'></div>"+
-      "</div>"
+      html = "
+        <h1>#{data.serieName}</h1>
+        <div class='serie' id='0'>#{data.x} : #{data.y}
+        <div class='swatch' style='background-color: #{data.color}'></div>
+      </div>"
 
     multipleVertical: (data) ->
       html = "<h1>#{data[0].x}</h1>"
@@ -60,6 +60,7 @@ exp.Main = class Main
               "style='background-color: #{d.color}'></div>"+
           "</div>"
       html
+
     multipleVerticalInverted: (data) ->
       html = "<h1>#{data[0].x}</h1>"
       for d, i in data
@@ -71,67 +72,32 @@ exp.Main = class Main
       html
 
   _callbacks:
-    singlePoint:
-      (params) ->
-        _circleNode = params.circleNode
-        x = parseFloat(_circleNode.getAttribute('data-x'))
-        x = params.format.x(x) if params.format?.x?
-        [{
-          color: params.data.config.color
-          serieName: params.circleNode.parentNode.getAttribute("title")
+    singlePoint: (params) ->
+      _circleNode = params.circleNode
+      x           = _circleNode.getAttribute('data-x')
+      {
+        color:     params.data.config.color
+        serieName: params.circleNode.parentNode.getAttribute("title")
+        x:         x
+        y:         params.data.y
+        hide:      _circleNode.parentNode.getAttribute("data-hide") == "true"
+      }
+
+    multipleVertical: (params) ->
+      # Get all same cx value, take the fill color to
+      # draw watch and show some information
+      _circleNode = params.circleNode
+      cx          = _circleNode.getAttribute('cx')
+      x           = _circleNode.getAttribute('data-x')
+      title       = _circleNode.parentNode.getAttribute('title')
+      res         = []
+      $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
+        res.push {
+          title: title
+          serieName: node.parentNode.getAttribute("title")
+          color: node.getAttribute("data-color")
+          y: node.getAttribute("data-y")
           x: x
-          y: params.data.y.toFixed(2)
           hide: node.parentNode.getAttribute("data-hide") == "true"
-        }]
-    multipleVertical:
-      (params) ->
-        # Get all same cx value, take the fill color to
-        # draw watch and show some information
-        _circleNode = params.circleNode
-        cx = _circleNode.getAttribute('cx')
-        x = parseFloat(_circleNode.getAttribute('data-x'))
-        if params.format?.x?
-          x = params.format.x(x)
-
-        title = parseInt(_circleNode.parentNode.getAttribute('title'))
-        if params.format?.title?
-          title = params.format.title(title)
-
-        res = []
-        $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
-          res.push {
-            title: title
-            serieName: node.parentNode.getAttribute("title")
-            color: node.getAttribute("data-color")
-            y: parseFloat(node.getAttribute("data-y")).toFixed(2)
-            x: x
-            hide: node.parentNode.getAttribute("data-hide") == "true"
-          })
-        res
-
-    multipleVerticalInverted:
-      (params) ->
-        # Get all same cx value, take the fill color to
-        # draw watch and show some information
-        _circleNode = params.circleNode
-        cx = _circleNode.getAttribute('cx')
-        x = parseFloat(_circleNode.getAttribute('data-x'))
-        if params.format?.x?
-          x = params.format.x(x)
-        title = parseInt(_circleNode.parentNode.getAttribute('title'))
-        if params.format?.title?
-          title = params.format.title(title)
-        res = []
-        $(params.canvas[0]).find("circle[cx='#{cx}']").each((e, node)->
-          serieName = parseInt(node.parentNode.getAttribute("title"))
-          if params.format?.serie?
-            serieName = params.format.serie(serieName)
-          res.push {
-            title: title
-            serieName: serieName
-            color: node.getAttribute("data-color")
-            y: parseFloat(node.getAttribute("data-y")).toFixed(2)
-            x: x
-            hide: node.parentNode.getAttribute("data-hide") == "true"
-          })
-        res
+        })
+      res

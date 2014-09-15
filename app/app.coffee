@@ -103,7 +103,13 @@ exp.Main = class Main
     _tooltipHide = @_CLASS.tooltip.hide
     _tooltipCallback = _conf.tooltip.callback
     _tooltipTemplate = _conf.tooltip.template
+    _effectOver      = _conf.point.onMouseover
+    _effectOut      = _conf.point.onMouseout || _effectOver
 
+    if typeof _effectOver == 'string'
+      _effectOver = M.effectsPoint[_effectOver].onMouseover
+    if typeof _effectOut == 'string'
+      _effectOut = M.effectsPoint[_effectOut].onMouseout
     if typeof(_tooltipCallback) == "string"
       _tooltipCallback = @_CLASS.tooltip.getCallback(_tooltipCallback)
     if typeof(_tooltipTemplate) == "string"
@@ -164,10 +170,7 @@ exp.Main = class Main
           .attr('stroke-width', ( (d) ->
             d.config?.stroke?.width ? _conf.point.stroke.width))
           .on('mouseover', (d)->
-            effect = _conf.point.onMouseover
-            if typeof effect == 'string'
-              effect = M.effectsPoint[effect].onMouseover
-            effect(
+            _effectOver(
               canvas: _canvas
               circleNode: this
               data: d
@@ -199,10 +202,7 @@ exp.Main = class Main
               $(@).show()
           )
           .on('mouseout', (d) ->
-            effect = _conf.point.onMouseout
-            if typeof effect == 'string'
-              effect = M.effectsPoint[effect].onMouseout
-            effect(
+            _effectOut(
               canvas: _canvas
               circleNode: this
               data: d

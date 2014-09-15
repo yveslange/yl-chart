@@ -1,7 +1,9 @@
 module.exports = exp = {}
 
-agchart = require 'agchart/app'
-time = require 'agchart/utils/time'
+M = {
+  agchart: require 'agchart/app'
+  time:    require 'agchart/utils/time'
+}
 
 # Just for the purpose of the example
 genData = (len, inter=1) ->
@@ -18,7 +20,7 @@ genDataFunc = (len, inter=1, func) ->
 
 exp.run = ->
   # TODO: finish this module if needed (later on)
-  t = new time.Main(
+  t = new M.time.Main(
     lang: 'en'
   )
 
@@ -36,39 +38,33 @@ exp.run = ->
 #      color: "#ff0001"
 #      stroke: {width: 1}
 #  }
-#  series.push {
-#    name: "Serie 3"
-#    data: genDataFunc(24*3600*120, 48*3600, Math.sin)
-#    config:
-#      #color: "#00fffe"
-#      stroke: {width: 1}
-#  }
-#
-  i = 10
-  y = 10
   series.push {
-    name: "Serie "+(i+3)
-    data: [{x: i*1000, y: i*10}]
+    name: "Serie 3"
+    data: genDataFunc(24*3600*120, 48*3600, Math.sin)
+    config:
+      #color: "#00fffe"
+      stroke: {width: 1}
+  }
+  series.push {
+    name: "Serie 3b"
+    data: genDataFunc(24*3600*120, 48*3600, Math.sin)
+    config:
+      color: "#00fa0f"
+      stroke: {width: 1}
   }
 
-  tooltipFormat = (d) ->
-    date = new Date(d)
-    formatDate = d3.time.format("%b '%y")
-    formatDate(date)
-
   # singlePoint, multipleVertical, multipleVerticalInverted
-  mode = "multipleVerticalInverted"
-  #mode = "multipleVertical"
-  #mode = "singlePoint"
+  tooltipMode = "multipleVertical"
+  #tooltipMode = "singlePoint"
 
-  agChart = new agchart.Main(
+  agChart = new M.agchart.Main(
     config:
       style:
         label:
           x:
             "font-size": 25
         logo:
-          "xlink:href": "agflow-logo.svgaaa"
+          "xlink:href": "agflow-logo.svg"
       canvas:
         render: 'dotline' # dot, line, dotline
         width: 900.0
@@ -85,18 +81,16 @@ exp.run = ->
           y: 'bottom'
         opacity: 0.1
       tooltip:
-        template: mode
-        callback: mode
-        format: x: tooltipFormat
+        template: tooltipMode
+        callback: tooltipMode
       line:
         stroke: width: 1
       point:
-        onMouseover: mode
-        onMouseout: mode
-        mode: 'fill'
-        r: 4
-        color: 'agflow' # Color or palette name
-        stroke: {width: 1, color: null}
+        r:           4
+        mode:        'fill'
+        onMouseover: "multipleVerticalInverted"
+        color:       'agflow' # Color or palette name
+        stroke:      {width: 1, color: null}
       axis:
         y: orient: "right"
       pluginsIconsFolder: "icons"
