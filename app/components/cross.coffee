@@ -19,16 +19,16 @@ exp.Main = class Main
     }
 
   render: (params)->
-    confCanvas  = params.confCanvas
-    style       = params.style
-    padX    = confCanvas.padding[0]
-    padY    = confCanvas.padding[1]
-    width   = confCanvas.width
-    height  = confCanvas.height
-    offsetX = params.confCross.x.offset
-    offsetY = params.confCross.y.offset
-    _crossX = @_CROSSX
-    _crossY = @_CROSSY
+    confCanvas = params.confCanvas
+    style      = params.style
+    padX       = confCanvas.padding[0]
+    padY       = confCanvas.padding[1]
+    width      = confCanvas.width
+    height     = confCanvas.height
+    offsetX    = params.confCross.x.offset
+    offsetY    = params.confCross.y.offset
+    _crossX    = @_CROSSX
+    _crossY    = @_CROSSY
 
     new M.style.Main(@_CROSSX).apply(style.x)
       .attr("x1", -width).attr("y1", padY)

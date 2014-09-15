@@ -958,7 +958,7 @@ module.exports = exp = {};
 exp.Main = Main = (function() {
   function Main(selector) {
     if (this._TOOLTIP == null) {
-      this._TOOLTIP = d3.select(selector).append("div").attr('class', 'tooltip').style('opacity', 0).style('left', 0).style('top', 0);
+      this._TOOLTIP = d3.select(selector).append("div").attr('class', 'agchart_tooltip').style('opacity', 0).style('left', 0).style('top', 0).attr('id', 'agchart_tooltip');
     }
   }
 

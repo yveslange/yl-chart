@@ -38,6 +38,7 @@ exp.run = ->
 #      color: "#ff0001"
 #      stroke: {width: 1}
 #  }
+#
   series.push {
     name: "Serie 3"
     data: genDataFunc(24*3600*120, 48*3600, Math.sin)

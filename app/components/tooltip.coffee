@@ -5,10 +5,11 @@ exp.Main = class Main
   constructor: (selector) ->
     if not @_TOOLTIP?
       @_TOOLTIP = d3.select(selector).append("div")
-        .attr('class', 'tooltip')
+        .attr('class', 'agchart_tooltip')
         .style('opacity', 0)
         .style('left', 0)
         .style('top', 0)
+        .attr('id', 'agchart_tooltip')
 
   getDOM: () ->
     return {root: @_TOOLTIP}
