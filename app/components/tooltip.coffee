@@ -61,16 +61,6 @@ exp.Main = class Main
           "</div>"
       html
 
-    multipleVerticalInverted: (data) ->
-      html = "<h1>#{data[0].x}</h1>"
-      for d, i in data
-        if not d.hide
-          html += "<div class='serie' id='#{i}'>#{d.serieName}: #{d.y}"+
-            "<div class='swatch'"+
-              "style='background-color: #{d.color}'></div>"+
-          "</div>"
-      html
-
   _callbacks:
     singlePoint: (params) ->
       _circleNode = params.circleNode

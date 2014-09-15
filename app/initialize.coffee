@@ -65,6 +65,7 @@ exp.run = ->
             "font-size": 25
         logo:
           "xlink:href": "agflow-logo.svg"
+          height: 30
       canvas:
         render: 'dotline' # dot, line, dotline
         width: 900.0

@@ -464,21 +464,23 @@ exp.Main = Main = (function() {
     timeoutUnmoved = null;
     return params.svg.on("mousemove.cross", function(d) {
       var eventX, eventY;
-      clearTimeout(timeoutUnmoved);
-      _crossX.transition().style('opacity', 1);
-      _crossY.transition().style('opacity', 1);
       eventX = d3.mouse(this)[0];
       eventY = d3.mouse(this)[1];
-      if (params.confCross.x.show && eventX >= padX + offsetX && eventX <= width - padX + offsetX) {
-        _crossX.attr("x1", eventX - offsetX).attr("x2", eventX - offsetX);
+      if (eventY >= padY + offsetY && eventY <= height - padY - offsetY && eventX >= padX + offsetX && eventX <= width - padX - offsetX) {
+        if (params.confCross.x.show && eventX >= padX + offsetX && eventX <= width - padX - offsetX) {
+          _crossX.attr("x1", eventX - offsetX).attr("x2", eventX - offsetX);
+        }
+        if (params.confCross.y.show && eventY >= padY + offsetY && eventY <= height - padY - offsetY) {
+          _crossY.attr("y1", eventY - offsetY).attr("y2", eventY - offsetY);
+        }
+        _crossX.transition().style('opacity', 1);
+        _crossY.transition().style('opacity', 1);
+        clearTimeout(timeoutUnmoved);
+        return timeoutUnmoved = setTimeout((function() {
+          _crossY.transition().duration(500).style('opacity', 0);
+          return _crossX.transition().duration(500).style('opacity', 0);
+        }), 2000);
       }
-      if (params.confCross.y.show && eventY >= padY + offsetY && eventY <= height - padY + offsetY) {
-        _crossY.attr("y1", eventY - offsetY).attr("y2", eventY - offsetY);
-      }
-      return timeoutUnmoved = setTimeout((function() {
-        _crossY.transition().duration(500).style('opacity', 0);
-        return _crossX.transition().duration(500).style('opacity', 0);
-      }), 2000);
     });
   };
 
@@ -495,36 +497,39 @@ exp.Main = Main = (function() {
       VALUE = this._VALUE;
       return params.svg.on("mousemove.crossValue", function() {
         var eventX, eventY, positionX, valueX;
-        VALUE.transition().duration(300).style('opacity', 1);
-        clearTimeout(timeoutUnmoved);
         eventX = d3.mouse(this)[0];
-        if (eventX < params.confCanvas.padding[0]) {
-          eventX = params.confCanvas.padding[0];
-        } else if (eventX > params.confCanvas.width - params.confCanvas.padding[0]) {
-          eventX = params.confCanvas.width - params.confCanvas.padding[0];
+        eventY = d3.mouse(this)[1];
+        if (d3.mouse(this)[1] >= params.confCanvas.padding[1] && d3.mouse(this)[1] <= params.confCanvas.height - params.confCanvas.padding[1] && d3.mouse(this)[0] >= params.confCanvas.padding[0] && d3.mouse(this)[0] <= params.confCanvas.width - params.confCanvas.padding[0]) {
+          if (eventX < params.confCanvas.padding[0]) {
+            eventX = params.confCanvas.padding[0];
+          } else if (eventX > params.confCanvas.width - params.confCanvas.padding[0]) {
+            eventX = params.confCanvas.width - params.confCanvas.padding[0];
+          }
+          positionX = eventX;
+          if (eventX < params.confCanvas.padding[0] + textDim.width / 2) {
+            positionX = params.confCanvas.padding[0] + textDim.width / 2;
+          } else if (eventX > params.confCanvas.width - params.confCanvas.padding[0] - textDim.width / 2) {
+            positionX = params.confCanvas.width - params.confCanvas.padding[0] - textDim.width / 2;
+          }
+          text.attr("y", textDim.height - textDim.height * 0.25).attr("x", textDim.width / 2);
+          box.attr("width", textDim.width).attr("height", textDim.height);
+          valueX = params.scale.x.invert(eventX);
+          switch (params.confCrossV.x.orient) {
+            case 'top':
+              eventY = params.confCanvas.padding[1];
+              break;
+            case 'bottom':
+              eventY = params.confCanvas.height - params.confCanvas.padding[1];
+          }
+          text.text(params.confCrossV.x.format(valueX));
+          VALUE.attr("transform", "translate(" + (positionX - textDim.width / 2) + ", " + eventY + ")");
+          VALUE.attr("cy", d3.mouse(this)[1]);
+          VALUE.transition().duration(300).style('opacity', 1);
+          clearTimeout(timeoutUnmoved);
+          return timeoutUnmoved = setTimeout((function() {
+            return VALUE.transition().duration(500).style('opacity', 0);
+          }), 2000);
         }
-        positionX = eventX;
-        if (eventX < params.confCanvas.padding[0] + textDim.width / 2) {
-          positionX = params.confCanvas.padding[0] + textDim.width / 2;
-        } else if (eventX > params.confCanvas.width - params.confCanvas.padding[0] - textDim.width / 2) {
-          positionX = params.confCanvas.width - params.confCanvas.padding[0] - textDim.width / 2;
-        }
-        text.attr("y", textDim.height - textDim.height * 0.25).attr("x", textDim.width / 2);
-        box.attr("width", textDim.width).attr("height", textDim.height);
-        valueX = params.scale.x.invert(eventX);
-        switch (params.confCrossV.x.orient) {
-          case 'top':
-            eventY = params.confCanvas.padding[1];
-            break;
-          case 'bottom':
-            eventY = params.confCanvas.height - params.confCanvas.padding[1];
-        }
-        text.text(params.confCrossV.x.format(valueX));
-        VALUE.attr("transform", "translate(" + (positionX - textDim.width / 2) + ", " + eventY + ")");
-        VALUE.attr("cy", d3.mouse(this)[1]);
-        return timeoutUnmoved = setTimeout((function() {
-          return VALUE.transition().duration(500).style('opacity', 0);
-        }), 2000);
       });
     }
   };
@@ -1007,17 +1012,6 @@ exp.Main = Main = (function() {
         d = data[i];
         if (!d.hide) {
           html += ("<div class='serie' id='" + i + "'>" + d.serieName + " : " + d.y) + "<div class='swatch'" + ("style='background-color: " + d.color + "'></div>") + "</div>";
-        }
-      }
-      return html;
-    },
-    multipleVerticalInverted: function(data) {
-      var d, html, i, _i, _len;
-      html = "<h1>" + data[0].x + "</h1>";
-      for (i = _i = 0, _len = data.length; _i < _len; i = ++_i) {
-        d = data[i];
-        if (!d.hide) {
-          html += ("<div class='serie' id='" + i + "'>" + d.serieName + ": " + d.y) + "<div class='swatch'" + ("style='background-color: " + d.color + "'></div>") + "</div>";
         }
       }
       return html;
@@ -1513,7 +1507,8 @@ exp.run = function() {
           }
         },
         logo: {
-          "xlink:href": "agflow-logo.svg"
+          "xlink:href": "agflow-logo.svg",
+          height: 30
         }
       },
       canvas: {
