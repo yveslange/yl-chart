@@ -1,11 +1,12 @@
 module.exports = exp = {}
 
 exp.Main = class Main
-  constructor: (svg) ->
+  constructor: (selector) ->
     @_MENU = $("<div/>", {
       id: "pluginsMenu"
-    }).appendTo(svg)
+    }).appendTo(selector)
     @_PLUGINSDOM = {}
+
   getDOM: ->
     return {root: @_MENU, plugins: @_PLUGINSDOM}
 
@@ -13,8 +14,6 @@ exp.Main = class Main
     confCanvas  = PARAMS.confCanvas
     style       = PARAMS.style
     pluginsMenu = @_MENU
-    console.log style
-
 
     switch style.panel.position
       when "right"
@@ -38,9 +37,11 @@ exp.Main = class Main
         }).appendTo(pluginsMenu)
         icon.css({cursor: "pointer"})
         pluginModule = require 'agchart/plugins/'+plugin
-        callback = pluginModule.onClick
         context = PARAMS.context
-        icon.click(-> callback(context, confCanvas.selector,
-          PARAMS.confPlugins[plugin]))
+        # Note: i don't get why we need to bind it here but
+        # it's not working without it if you have more than one chart
+        callback = pluginModule.onClick.bind(@, context,
+          confCanvas.selector, PARAMS.confPlugins[plugin])
+        icon.click( -> callback() )
         @_PLUGINSDOM[plugin] = icon
 

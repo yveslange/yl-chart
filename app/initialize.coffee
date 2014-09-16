@@ -31,14 +31,6 @@ exp.run = ->
 #    config:
 #      stroke: {width: 1}
 #  }
-#  series.push {
-#    name: "Serie 2"
-#    data: genDataFunc(24*3600*120, 36*3600*2, Math.tan)
-#    config:
-#      color: "#ff0001"
-#      stroke: {width: 1}
-#  }
-#
   series.push {
     name: "Serie 3"
     data: genDataFunc(24*3600*120, 48*3600, Math.sin)
@@ -72,6 +64,56 @@ exp.run = ->
         width: 900.0
         height: 400.0
         selector: '#chart1'
+        padding: [50,50]
+        scale: x: nice: true
+        label:
+          x: text: "Months"
+          y: text: "Values"
+      logo:
+        position:
+          x: 'right'
+          y: 'bottom'
+        opacity: 0.1
+      tooltip:
+        template: tooltipMode
+        callback: tooltipMode
+      line:
+        stroke: width: 1
+      point:
+        r:           4
+        mode:        'fill'
+        onMouseover: "multipleVerticalInverted"
+        color:       'agflow' # Color or palette name
+        stroke:      {width: 1, color: null}
+      axis:
+        y: orient: "right"
+      pluginsIconsFolder: "icons"
+    series: series
+  )
+  agChart.render()
+
+  series.push {
+    name: "Serie 2"
+    data: genDataFunc(24*3600*120, 36*3600*2, Math.tan)
+    config:
+      color: "#ff0001"
+      stroke: {width: 1}
+  }
+
+  agChart = new M.agchart.Main(
+    config:
+      style:
+        label:
+          x:
+            "font-size": 25
+        logo:
+          "xlink:href": "agflow-logo.svg"
+          height: 30
+      canvas:
+        render: 'dotline' # dot, line, dotline
+        width: 900.0
+        height: 400.0
+        selector: '#chart2'
         padding: [50,50]
         scale: x: nice: true
         label:
