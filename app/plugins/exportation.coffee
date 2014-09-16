@@ -11,9 +11,11 @@ exp.onClick = (context, selector, conf) ->
     .attr("fill", conf.copyright.color)
     .attr("font-size", conf.copyright.fontSize+"px")
     .text(conf.copyright.text)
-  # Remove the options
+
+  # Remove the legends that are hidden.
   $(context._CLASS.legend.getDOM().root.node()).find(".legend.option").hide()
   $(context._CLASS.legend.getDOM().root.node()).find(".legend[data-hide='true']").hide()
+
   width = context._CONF.canvas.width
   height = context._CONF.canvas.height
   textDim = text.node().getBBox()

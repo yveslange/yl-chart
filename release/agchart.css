@@ -6,6 +6,9 @@
 .chart svg circle {
   cursor: pointer;
 }
+.chart #pluginsMenu {
+  color: #990000;
+}
 
 .agchart_tooltip {
   font-size: 16px;

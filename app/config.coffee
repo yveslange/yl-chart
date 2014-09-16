@@ -15,8 +15,9 @@ exp.Main = class Main
       plugins:
         panel:
           position: "right"
+          left: null
           top: 0
-          opacity: 0.1
+          opacity: 0.3
       axis:
         x:
           stroke: "#2b2e33"
@@ -195,7 +196,7 @@ exp.Main = class Main
     plugins:
       exportation:
         fa: "download"
-        displayName: "Exports the chart to a PNG file"
+        displayName: "Download chart"
         enable: true
         copyright:
           text: "(c) AgFlow 2014"

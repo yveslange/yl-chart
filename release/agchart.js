@@ -850,6 +850,7 @@ exp.Main = Main = (function() {
     confCanvas = PARAMS.confCanvas;
     style = PARAMS.style;
     pluginsMenu = this._MENU;
+    console.log(style);
     switch (style.panel.position) {
       case "right":
         style.panel.position = "absolute";
@@ -867,7 +868,7 @@ exp.Main = Main = (function() {
     });
     pluginsMenu.on("mouseout.menuPlugin", function() {
       return pluginsMenu.animate({
-        opacity: 0.1
+        opacity: style.panel.opacity
       }, 10);
     });
     _results = [];
@@ -1080,8 +1081,9 @@ exp.Main = Main = (function() {
       plugins: {
         panel: {
           position: "right",
+          left: null,
           top: 0,
-          opacity: 0.1
+          opacity: 0.3
         }
       },
       axis: {
@@ -1343,7 +1345,7 @@ exp.Main = Main = (function() {
     plugins: {
       exportation: {
         fa: "download",
-        displayName: "Exports the chart to a PNG file",
+        displayName: "Download chart",
         enable: true,
         copyright: {
           text: "(c) AgFlow 2014",

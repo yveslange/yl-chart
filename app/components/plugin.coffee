@@ -13,6 +13,8 @@ exp.Main = class Main
     confCanvas  = PARAMS.confCanvas
     style       = PARAMS.style
     pluginsMenu = @_MENU
+    console.log style
+
 
     switch style.panel.position
       when "right"
@@ -26,7 +28,7 @@ exp.Main = class Main
     pluginsMenu.on("mouseover.menuPlugin", ()->
       pluginsMenu.animate({opacity: 1}, 10))
     pluginsMenu.on("mouseout.menuPlugin", ()->
-      pluginsMenu.animate({opacity: 0.1}, 10))
+      pluginsMenu.animate({opacity: style.panel.opacity}, 10))
 
     for plugin of PARAMS.confPlugins
       if PARAMS.confPlugins[plugin].enable
