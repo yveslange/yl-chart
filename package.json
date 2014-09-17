@@ -8,7 +8,9 @@
     "type": "git",
     "url": ""
   },
-  "dependencies": {},
+  "dependencies": {
+    "brunch": "^1.7.16"
+  },
   "devDependencies": {
     "brunch": "1.7.14",
     "bower": "1.3.3",
