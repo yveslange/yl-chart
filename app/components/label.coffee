@@ -12,9 +12,9 @@ exp.Main = class Main
 
   render: (params) ->
     confCanvas = params.confCanvas
-    confLabel = params.confLabel
-    style = params.style
-    offset  = confLabel.offset || 0
+    confLabel  = params.confLabel
+    style      = params.style
+    offset     = confLabel.offset || 0
 
     new M.style.Main(@_LABEL).apply(style)
       .text(confLabel.text)

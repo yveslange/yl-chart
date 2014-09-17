@@ -62,7 +62,7 @@ exp.Main = class Main
         timeoutUnmoved = setTimeout(( ->
           _crossY.transition().duration(500).style('opacity', 0)
           _crossX.transition().duration(500).style('opacity', 0)
-        ), 2000)
+        ), params.confCross.x.duration)
     )
 
   renderValue: (params)->
@@ -124,5 +124,5 @@ exp.Main = class Main
           clearTimeout(timeoutUnmoved)
           timeoutUnmoved = setTimeout(( ->
             VALUE.transition().duration(500).style('opacity', 0)
-          ), 2000)
+          ), params.confCrossV.x.duration)
       )

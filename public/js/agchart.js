@@ -156,6 +156,9 @@ exp.Main = Main = (function() {
     if (confCanvas.selector == null) {
       throw new Error("No selector defined");
     }
+    if (!document.querySelector(confCanvas.selector)) {
+      throw new Error("Element '" + confCanvas.selector + "' doesn't exists");
+    }
     $(confCanvas.selector).css({
       "position": "relative"
     });
@@ -479,7 +482,7 @@ exp.Main = Main = (function() {
         return timeoutUnmoved = setTimeout((function() {
           _crossY.transition().duration(500).style('opacity', 0);
           return _crossX.transition().duration(500).style('opacity', 0);
-        }), 2000);
+        }), params.confCross.x.duration);
       }
     });
   };
@@ -528,7 +531,7 @@ exp.Main = Main = (function() {
           clearTimeout(timeoutUnmoved);
           return timeoutUnmoved = setTimeout((function() {
             return VALUE.transition().duration(500).style('opacity', 0);
-          }), 2000);
+          }), params.confCrossV.x.duration);
         }
       });
     }
@@ -1242,11 +1245,13 @@ exp.Main = Main = (function() {
       cross: {
         x: {
           show: true,
-          offset: 0
+          offset: 0,
+          duration: 1200
         },
         y: {
           show: true,
-          offset: 0
+          offset: 0,
+          duration: 1200
         }
       },
       crossValue: {
@@ -1259,7 +1264,8 @@ exp.Main = Main = (function() {
             m = d.toString().split(" ")[1];
             y = d.toString().split(" ")[3].substring(2);
             return "" + da + " " + m + " " + y;
-          }
+          },
+          duration: 1200
         }
       }
     },
@@ -1474,7 +1480,7 @@ genDataFunc = function(len, inter, func) {
 };
 
 exp.run = function() {
-  var agChart, series, t, tooltipMode;
+  var agChart, agChart2, series, t, tooltipMode;
   t = new M.time.Main({
     lang: 'en'
   });
@@ -1578,7 +1584,7 @@ exp.run = function() {
       }
     }
   });
-  agChart = new M.agchart.Main({
+  agChart2 = new M.agchart.Main({
     config: {
       style: {
         label: {
@@ -1604,10 +1610,10 @@ exp.run = function() {
         },
         label: {
           x: {
-            text: "Months"
+            text: "Months2"
           },
           y: {
-            text: "Values"
+            text: "Values2"
           }
         }
       },
@@ -1646,7 +1652,7 @@ exp.run = function() {
     },
     series: series
   });
-  return agChart.render();
+  return agChart2.render();
 };
 });
 

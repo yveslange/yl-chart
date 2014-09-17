@@ -11,18 +11,23 @@
 }
 
 .agchart_tooltip {
-  font-size: 16px;
+  font-family: arial;
+  font-size: 14px;
   position: absolute;
   background-color: #ffffff;
   border: #2f2f2f 1px solid;
-  border-radius: 5px;
+  border-radius: 4px;
   padding: 5px;
   color: #1a1a1a;
+  box-shadow: 3px 3px 10px 0 #A6A6A6;
+  -webkit-box-shadow: 3px 3px 10px 0 #A6A6A6;
   pointer-events: none;
   /* Trick when the tooltip was moved above other points */
 
 }
 .agchart_tooltip h1 {
+  margin: 2px;
+  font-size: 16px;
   text-align: center;
   font-weight: bold;
   color: #2f2f2f;

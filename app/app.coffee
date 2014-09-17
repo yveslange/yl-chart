@@ -74,6 +74,8 @@ exp.Main = class Main
   # Creating the SVG container in a predefined selector
   initSVG: (confCanvas) ->
     throw new Error("No selector defined") if not confCanvas.selector?
+    if !document.querySelector(confCanvas.selector)
+      throw new Error("Element '#{confCanvas.selector}' doesn't exists")
     $(confCanvas.selector).css({"position": "relative"})
     @_SVG = d3.select(confCanvas.selector)
       .append('svg')

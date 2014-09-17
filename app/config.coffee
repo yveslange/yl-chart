@@ -129,9 +129,11 @@ exp.Main = class Main
         x:
           show: true
           offset: 0
+          duration: 1200
         y:
           show: true
           offset: 0
+          duration: 1200
       crossValue:
         x:
           orient: 'bottom' # Top not implemented
@@ -141,6 +143,7 @@ exp.Main = class Main
             m = d.toString().split(" ")[1]
             y = d.toString().split(" ")[3].substring(2)
             "#{da} #{m} #{y}"
+          duration: 1200
     domain:
       x: margin: 5
       y: margin: 5

@@ -100,7 +100,7 @@ exp.run = ->
       stroke: {width: 1}
   }
 
-  agChart = new M.agchart.Main(
+  agChart2 = new M.agchart.Main(
     config:
       style:
         label:
@@ -117,8 +117,8 @@ exp.run = ->
         padding: [50,50]
         scale: x: nice: true
         label:
-          x: text: "Months"
-          y: text: "Values"
+          x: text: "Months2"
+          y: text: "Values2"
       logo:
         position:
           x: 'right'
@@ -140,4 +140,4 @@ exp.run = ->
       pluginsIconsFolder: "icons"
     series: series
   )
-  agChart.render()
+  agChart2.render()
