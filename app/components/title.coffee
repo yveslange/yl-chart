@@ -1,7 +1,7 @@
 # Render the title of the chart with specific parameters
 module.exports = exp = {}
 M = {
-  style : require 'agchart/utils/style'
+  style : require 'ylchart/utils/style'
 }
 
 exp.Main = class Main

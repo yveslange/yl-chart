@@ -1,7 +1,7 @@
 module.exports = exp = {}
 
 M = {
-  logo: require 'agchart/components/logo'
+  logo: require 'ylchart/components/logo'
 }
 
 exp.onClick = (context, selector, conf) ->
@@ -48,7 +48,7 @@ exp.onClick = (context, selector, conf) ->
   else
     a = document.createElement('a')
     a.href = img
-    a.download = "agflow.png"
+    a.download = "your-logo.png"
     $("body").append(a)
     a.click()
 

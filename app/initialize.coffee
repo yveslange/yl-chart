@@ -1,8 +1,8 @@
 module.exports = exp = {}
 
 M = {
-  agchart: require 'agchart/app'
-  time:    require 'agchart/utils/time'
+  ylchart: require 'ylchart/app'
+  time:    require 'ylchart/utils/time'
 }
 
 # Just for the purpose of the example
@@ -50,15 +50,16 @@ exp.run = ->
   tooltipMode = "multipleVertical"
   #tooltipMode = "singlePoint"
 
-  agChart = new M.agchart.Main(
+  ylchart = new M.ylchart.Main(
     config:
       style:
         label:
           x:
             "font-size": 25
         logo:
-          "xlink:href": "agflow-logo.svg"
+          "xlink:href": "your-logo.svg"
           height: 30
+          width: 30
       canvas:
         render: 'dotline' # dot, line, dotline
         width: 900.0
@@ -83,14 +84,14 @@ exp.run = ->
         r:           4
         mode:        'fill'
         onMouseover: "multipleVerticalInverted"
-        color:       'agflow' # Color or palette name
+        color:       'light' # Color or palette name
         stroke:      {width: 1, color: null}
       axis:
         y: orient: "right"
       pluginsIconsFolder: "icons"
     series: series
   )
-  agChart.render()
+  ylchart.render()
 
   series.push {
     name: "Serie 2"
@@ -100,15 +101,16 @@ exp.run = ->
       stroke: {width: 1}
   }
 
-  agChart2 = new M.agchart.Main(
+  ylchart2 = new M.ylchart.Main(
     config:
       style:
         label:
           x:
             "font-size": 25
         logo:
-          "xlink:href": "agflow-logo.svg"
+          "xlink:href": "your-logo.svg"
           height: 30
+          width: 30
       canvas:
         render: 'dotline' # dot, line, dotline
         width: 900.0
@@ -133,11 +135,11 @@ exp.run = ->
         r:           4
         mode:        'fill'
         onMouseover: "multipleVerticalInverted"
-        color:       'agflow' # Color or palette name
+        color:       'light' # Color or palette name
         stroke:      {width: 1, color: null}
       axis:
         y: orient: "right"
       pluginsIconsFolder: "icons"
     series: series
   )
-  agChart2.render()
+  ylchart2.render()

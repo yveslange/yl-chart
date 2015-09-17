@@ -10,7 +10,7 @@
   color: #990000;
 }
 
-.agchart_tooltip {
+.ylchart_tooltip {
   font-family: arial;
   font-size: 14px;
   position: absolute;
@@ -25,14 +25,14 @@
   /* Trick when the tooltip was moved above other points */
 
 }
-.agchart_tooltip h1 {
+.ylchart_tooltip h1 {
   margin: 2px;
   font-size: 16px;
   text-align: center;
   font-weight: bold;
   color: #2f2f2f;
 }
-.agchart_tooltip .swatch {
+.ylchart_tooltip .swatch {
   float: right;
   width: 10px;
   height: 10px;
@@ -42,4 +42,4 @@
 }
 
 
-/*# sourceMappingURL=agchart.css.map*/
+/*# sourceMappingURL=ylchart.css.map*/

@@ -36,7 +36,7 @@ exp.Main = class Main
           title: PARAMS.confPlugins[plugin].displayName
         }).appendTo(pluginsMenu)
         icon.css({cursor: "pointer"})
-        pluginModule = require 'agchart/plugins/'+plugin
+        pluginModule = require 'ylchart/plugins/'+plugin
         context = PARAMS.context
         # Note: i don't get why we need to bind it here but
         # it's not working without it if you have more than one chart
@@ -44,4 +44,3 @@ exp.Main = class Main
           confCanvas.selector, PARAMS.confPlugins[plugin])
         icon.click( -> callback() )
         @_PLUGINSDOM[plugin] = icon
-

@@ -1,42 +1,59 @@
-(function(/*! Brunch !*/) {
+(function() {
   'use strict';
 
-  var globals = typeof window !== 'undefined' ? window : global;
+  var globals = typeof window === 'undefined' ? global : window;
   if (typeof globals.require === 'function') return;
 
   var modules = {};
   var cache = {};
+  var has = ({}).hasOwnProperty;
 
-  var has = function(object, name) {
-    return ({}).hasOwnProperty.call(object, name);
+  var aliases = {};
+
+  var endsWith = function(str, suffix) {
+    return str.indexOf(suffix, str.length - suffix.length) !== -1;
   };
 
-  var expand = function(root, name) {
-    var results = [], parts, part;
-    if (/^\.\.?(\/|$)/.test(name)) {
-      parts = [root, name].join('/').split('/');
-    } else {
-      parts = name.split('/');
-    }
-    for (var i = 0, length = parts.length; i < length; i++) {
-      part = parts[i];
-      if (part === '..') {
-        results.pop();
-      } else if (part !== '.' && part !== '') {
-        results.push(part);
+  var unalias = function(alias, loaderPath) {
+    var start = 0;
+    if (loaderPath) {
+      if (loaderPath.indexOf('components/' === 0)) {
+        start = 'components/'.length;
+      }
+      if (loaderPath.indexOf('/', start) > 0) {
+        loaderPath = loaderPath.substring(start, loaderPath.indexOf('/', start));
       }
     }
-    return results.join('/');
+    var result = aliases[alias + '/index.js'] || aliases[loaderPath + '/deps/' + alias + '/index.js'];
+    if (result) {
+      return 'components/' + result.substring(0, result.length - '.js'.length);
+    }
+    return alias;
   };
 
+  var expand = (function() {
+    var reg = /^\.\.?(\/|$)/;
+    return function(root, name) {
+      var results = [], parts, part;
+      parts = (reg.test(name) ? root + '/' + name : name).split('/');
+      for (var i = 0, length = parts.length; i < length; i++) {
+        part = parts[i];
+        if (part === '..') {
+          results.pop();
+        } else if (part !== '.' && part !== '') {
+          results.push(part);
+        }
+      }
+      return results.join('/');
+    };
+  })();
   var dirname = function(path) {
     return path.split('/').slice(0, -1).join('/');
   };
 
   var localRequire = function(path) {
     return function(name) {
-      var dir = dirname(path);
-      var absolute = expand(dir, name);
+      var absolute = expand(dirname(path), name);
       return globals.require(absolute, path);
     };
   };
@@ -51,21 +68,26 @@
   var require = function(name, loaderPath) {
     var path = expand(name, '.');
     if (loaderPath == null) loaderPath = '/';
+    path = unalias(name, loaderPath);
 
-    if (has(cache, path)) return cache[path].exports;
-    if (has(modules, path)) return initModule(path, modules[path]);
+    if (has.call(cache, path)) return cache[path].exports;
+    if (has.call(modules, path)) return initModule(path, modules[path]);
 
     var dirIndex = expand(path, './index');
-    if (has(cache, dirIndex)) return cache[dirIndex].exports;
-    if (has(modules, dirIndex)) return initModule(dirIndex, modules[dirIndex]);
+    if (has.call(cache, dirIndex)) return cache[dirIndex].exports;
+    if (has.call(modules, dirIndex)) return initModule(dirIndex, modules[dirIndex]);
 
     throw new Error('Cannot find module "' + name + '" from '+ '"' + loaderPath + '"');
   };
 
-  var define = function(bundle, fn) {
+  require.alias = function(from, to) {
+    aliases[to] = from;
+  };
+
+  require.register = require.define = function(bundle, fn) {
     if (typeof bundle === 'object') {
       for (var key in bundle) {
-        if (has(bundle, key)) {
+        if (has.call(bundle, key)) {
           modules[key] = bundle[key];
         }
       }
@@ -74,44 +96,41 @@
     }
   };
 
-  var list = function() {
+  require.list = function() {
     var result = [];
     for (var item in modules) {
-      if (has(modules, item)) {
+      if (has.call(modules, item)) {
         result.push(item);
       }
     }
     return result;
   };
 
+  require.brunch = true;
   globals.require = require;
-  globals.require.define = define;
-  globals.require.register = define;
-  globals.require.list = list;
-  globals.require.brunch = true;
 })();
-require.register("agchart/app", function(exports, require, module) {
+require.register("ylchart/app", function(exports, require, module) {
 var M, Main, exp;
 
 module.exports = exp = {};
 
 M = {
-  config: require('agchart/config'),
-  tools: require('agchart/utils/tools'),
-  scale: require('agchart/utils/scale'),
-  domain: require('agchart/utils/domain'),
-  palette: require('agchart/utils/palette'),
-  design: require('agchart/utils/design'),
-  effectsPoint: require('agchart/effects/point'),
-  title: require('agchart/components/title'),
-  tooltip: require('agchart/components/tooltip'),
-  logo: require('agchart/components/logo'),
-  legend: require('agchart/components/legend'),
-  cross: require('agchart/components/cross'),
-  axis: require('agchart/components/axis'),
-  grid: require('agchart/components/grid'),
-  label: require('agchart/components/label'),
-  plugin: require('agchart/components/plugin')
+  config: require('ylchart/config'),
+  tools: require('ylchart/utils/tools'),
+  scale: require('ylchart/utils/scale'),
+  domain: require('ylchart/utils/domain'),
+  palette: require('ylchart/utils/palette'),
+  design: require('ylchart/utils/design'),
+  effectsPoint: require('ylchart/effects/point'),
+  title: require('ylchart/components/title'),
+  tooltip: require('ylchart/components/tooltip'),
+  logo: require('ylchart/components/logo'),
+  legend: require('ylchart/components/legend'),
+  cross: require('ylchart/components/cross'),
+  axis: require('ylchart/components/axis'),
+  grid: require('ylchart/components/grid'),
+  label: require('ylchart/components/label'),
+  plugin: require('ylchart/components/plugin')
 };
 
 exp.Main = Main = (function() {
@@ -380,13 +399,13 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("agchart/components/axis", function(exports, require, module) {
+;require.register("ylchart/components/axis", function(exports, require, module) {
 var M, Main, exp;
 
 module.exports = exp = {};
 
 M = {
-  style: require('agchart/utils/style')
+  style: require('ylchart/utils/style')
 };
 
 exp.Main = Main = (function() {
@@ -424,13 +443,13 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("agchart/components/cross", function(exports, require, module) {
+;require.register("ylchart/components/cross", function(exports, require, module) {
 var M, Main, exp;
 
 module.exports = exp = {};
 
 M = {
-  style: require('agchart/utils/style')
+  style: require('ylchart/utils/style')
 };
 
 exp.Main = Main = (function() {
@@ -493,7 +512,7 @@ exp.Main = Main = (function() {
     box = this._VALUE.append("rect");
     new M.style.Main(box).apply(style.background);
     text = this._VALUE.append("text");
-    new M.style.Main(text).apply(style.text).text("AgChartPile");
+    new M.style.Main(text).apply(style.text).text("YLChartPile");
     textDim = text.node().getBBox();
     if (params.confCrossV.x.show) {
       timeoutUnmoved = null;
@@ -542,13 +561,13 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("agchart/components/grid", function(exports, require, module) {
+;require.register("ylchart/components/grid", function(exports, require, module) {
 var M, Main, exp;
 
 module.exports = exp = {};
 
 M = {
-  style: require('agchart/utils/style')
+  style: require('ylchart/utils/style')
 };
 
 exp.Main = Main = (function() {
@@ -613,13 +632,13 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("agchart/components/label", function(exports, require, module) {
+;require.register("ylchart/components/label", function(exports, require, module) {
 var M, Main, exp;
 
 module.exports = exp = {};
 
 M = {
-  style: require('agchart/utils/style')
+  style: require('ylchart/utils/style')
 };
 
 exp.Main = Main = (function() {
@@ -666,7 +685,7 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("agchart/components/legend", function(exports, require, module) {
+;require.register("ylchart/components/legend", function(exports, require, module) {
 var Main, exp;
 
 module.exports = exp = {};
@@ -781,13 +800,13 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("agchart/components/logo", function(exports, require, module) {
+;require.register("ylchart/components/logo", function(exports, require, module) {
 var M, Main, exp;
 
 module.exports = exp = {};
 
 M = {
-  style: require("agchart/utils/style")
+  style: require("ylchart/utils/style")
 };
 
 exp.Main = Main = (function() {
@@ -828,7 +847,7 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("agchart/components/plugin", function(exports, require, module) {
+;require.register("ylchart/components/plugin", function(exports, require, module) {
 var Main, exp;
 
 module.exports = exp = {};
@@ -883,7 +902,7 @@ exp.Main = Main = (function() {
         icon.css({
           cursor: "pointer"
         });
-        pluginModule = require('agchart/plugins/' + plugin);
+        pluginModule = require('ylchart/plugins/' + plugin);
         context = PARAMS.context;
         callback = pluginModule.onClick.bind(this, context, confCanvas.selector, PARAMS.confPlugins[plugin]);
         icon.click(function() {
@@ -902,13 +921,13 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("agchart/components/title", function(exports, require, module) {
+;require.register("ylchart/components/title", function(exports, require, module) {
 var M, Main, exp;
 
 module.exports = exp = {};
 
 M = {
-  style: require('agchart/utils/style')
+  style: require('ylchart/utils/style')
 };
 
 exp.Main = Main = (function() {
@@ -953,7 +972,7 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("agchart/components/tooltip", function(exports, require, module) {
+;require.register("ylchart/components/tooltip", function(exports, require, module) {
 var Main, exp;
 
 module.exports = exp = {};
@@ -961,7 +980,7 @@ module.exports = exp = {};
 exp.Main = Main = (function() {
   function Main(selector) {
     if (this._TOOLTIP == null) {
-      this._TOOLTIP = d3.select(selector).append("div").attr('class', 'agchart_tooltip').style('opacity', 0).style('left', 0).style('top', 0).attr('id', 'agchart_tooltip');
+      this._TOOLTIP = d3.select(selector).append("div").attr('class', 'ylchart_tooltip').style('opacity', 0).style('left', 0).style('top', 0).attr('id', 'ylchart_tooltip');
     }
   }
 
@@ -1060,13 +1079,13 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("agchart/config", function(exports, require, module) {
+;require.register("ylchart/config", function(exports, require, module) {
 var M, Main, exp;
 
 module.exports = exp = {};
 
 M = {
-  tools: require('agchart/utils/tools')
+  tools: require('ylchart/utils/tools')
 };
 
 exp.Main = Main = (function() {
@@ -1099,13 +1118,6 @@ exp.Main = Main = (function() {
           "class": "y",
           "stroke-width": 1
         }
-      },
-      logo: {
-        id: "logo",
-        "xlink:href": "agflow-logo.svg",
-        width: 100,
-        height: 50,
-        opacity: 0.5
       },
       grid: {
         x: {
@@ -1216,10 +1228,10 @@ exp.Main = Main = (function() {
         "class": "title",
         texts: [
           {
-            text: "AgChart Example",
+            text: "YLChart Example",
             interline: -4.9
           }, {
-            text: "The agflow interactive library",
+            text: "The interactive chart library",
             interline: -4.9
           }, {
             text: "Play with datas !"
@@ -1353,7 +1365,7 @@ exp.Main = Main = (function() {
         displayName: "Download chart",
         enable: true,
         copyright: {
-          text: "(c) AgFlow 2014",
+          text: "(c) Yves Lange 2015",
           color: "#9f9f9f",
           fontSize: 12
         }
@@ -1366,7 +1378,7 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("agchart/effects/point", function(exports, require, module) {
+;require.register("ylchart/effects/point", function(exports, require, module) {
 var exp;
 
 module.exports = exp = {};
@@ -1439,14 +1451,14 @@ exp.multipleVerticalInverted = {
 };
 });
 
-;require.register("agchart/initialize", function(exports, require, module) {
+;require.register("ylchart/initialize", function(exports, require, module) {
 var M, exp, genData, genDataFunc;
 
 module.exports = exp = {};
 
 M = {
-  agchart: require('agchart/app'),
-  time: require('agchart/utils/time')
+  ylchart: require('ylchart/app'),
+  time: require('ylchart/utils/time')
 };
 
 genData = function(len, inter) {
@@ -1480,7 +1492,7 @@ genDataFunc = function(len, inter, func) {
 };
 
 exp.run = function() {
-  var agChart, agChart2, series, t, tooltipMode;
+  var series, t, tooltipMode, ylchart, ylchart2;
   t = new M.time.Main({
     lang: 'en'
   });
@@ -1505,7 +1517,7 @@ exp.run = function() {
     }
   });
   tooltipMode = "multipleVertical";
-  agChart = new M.agchart.Main({
+  ylchart = new M.ylchart.Main({
     config: {
       style: {
         label: {
@@ -1514,8 +1526,9 @@ exp.run = function() {
           }
         },
         logo: {
-          "xlink:href": "agflow-logo.svg",
-          height: 30
+          "xlink:href": "your-logo.svg",
+          height: 30,
+          width: 30
         }
       },
       canvas: {
@@ -1558,7 +1571,7 @@ exp.run = function() {
         r: 4,
         mode: 'fill',
         onMouseover: "multipleVerticalInverted",
-        color: 'agflow',
+        color: 'light',
         stroke: {
           width: 1,
           color: null
@@ -1573,7 +1586,7 @@ exp.run = function() {
     },
     series: series
   });
-  agChart.render();
+  ylchart.render();
   series.push({
     name: "Serie 2",
     data: genDataFunc(24 * 3600 * 120, 36 * 3600 * 2, Math.tan),
@@ -1584,7 +1597,7 @@ exp.run = function() {
       }
     }
   });
-  agChart2 = new M.agchart.Main({
+  ylchart2 = new M.ylchart.Main({
     config: {
       style: {
         label: {
@@ -1593,8 +1606,9 @@ exp.run = function() {
           }
         },
         logo: {
-          "xlink:href": "agflow-logo.svg",
-          height: 30
+          "xlink:href": "your-logo.svg",
+          height: 30,
+          width: 30
         }
       },
       canvas: {
@@ -1637,7 +1651,7 @@ exp.run = function() {
         r: 4,
         mode: 'fill',
         onMouseover: "multipleVerticalInverted",
-        color: 'agflow',
+        color: 'light',
         stroke: {
           width: 1,
           color: null
@@ -1652,17 +1666,17 @@ exp.run = function() {
     },
     series: series
   });
-  return agChart2.render();
+  return ylchart2.render();
 };
 });
 
-;require.register("agchart/plugins/exportation", function(exports, require, module) {
+;require.register("ylchart/plugins/exportation", function(exports, require, module) {
 var M, exp;
 
 module.exports = exp = {};
 
 M = {
-  logo: require('agchart/components/logo')
+  logo: require('ylchart/components/logo')
 };
 
 exp.onClick = function(context, selector, conf) {
@@ -1695,7 +1709,7 @@ exp.onClick = function(context, selector, conf) {
   } else {
     a = document.createElement('a');
     a.href = img;
-    a.download = "agflow.png";
+    a.download = "your-logo.png";
     $("body").append(a);
     a.click();
   }
@@ -1711,7 +1725,7 @@ exp.onClick = function(context, selector, conf) {
 };
 });
 
-;require.register("agchart/utils/design", function(exports, require, module) {
+;require.register("ylchart/utils/design", function(exports, require, module) {
 var computePadding, exp;
 
 module.exports = exp = {};
@@ -1723,7 +1737,7 @@ exp.computePadding = computePadding = function(confPoint) {
 };
 });
 
-;require.register("agchart/utils/domain", function(exports, require, module) {
+;require.register("ylchart/utils/domain", function(exports, require, module) {
 var exp, fixDomain, getDomain;
 
 module.exports = exp = {};
@@ -1774,7 +1788,7 @@ exp.fixDomain = fixDomain = function(args) {
 };
 });
 
-;require.register("agchart/utils/palette", function(exports, require, module) {
+;require.register("ylchart/utils/palette", function(exports, require, module) {
 var Main, exp;
 
 module.exports = exp = {};
@@ -1832,7 +1846,7 @@ exp.Main = Main = (function() {
     schemes.cool = ['#5e9d2f', '#73c03a', '#4682b4', '#7bc3b8', '#a9884e', '#c1b266', '#a47493', '#c09fb5'];
     schemes.munin = ['#00cc00', '#0066b3', '#ff8000', '#ffcc00', '#330099', '#990099', '#ccff00', '#ff0000', '#808080', '#008f00', '#00487d', '#b35a00', '#b38f00', '#6b006b', '#8fb300', '#b30000', '#bebebe', '#80ff80', '#80c9ff', '#ffc080', '#ffe680', '#aa80ff', '#ee00cc', '#ff8080', '#666600', '#ffbfff', '#00ffcc', '#cc6699', '#999900'];
     schemes.paired = ["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928"];
-    schemes.agflow = ["#0099ef", "#ff009d", "#56b501", "#ffee52", "#a34100", "#0018ef", "#ff89d2", "#6ee801", "#ef0018", "#ffa468", "#00efd7", "#b3006e", "#aefe66", "#ed7446", "#572200", "#0010a3", "#326901"];
+    schemes.light = ["#0099ef", "#ff009d", "#56b501", "#ffee52", "#a34100", "#0018ef", "#ff89d2", "#6ee801", "#ef0018", "#ffa468", "#00efd7", "#b3006e", "#aefe66", "#ed7446", "#572200", "#0010a3", "#326901"];
     return schemes;
   };
 
@@ -1841,13 +1855,13 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("agchart/utils/scale", function(exports, require, module) {
+;require.register("ylchart/utils/scale", function(exports, require, module) {
 var M, computeScales, exp;
 
 module.exports = exp = {};
 
 M = {
-  domain: require('agchart/utils/domain')
+  domain: require('ylchart/utils/domain')
 };
 
 exp.computeScales = computeScales = function(args) {
@@ -1879,7 +1893,7 @@ exp.computeScales = computeScales = function(args) {
 };
 });
 
-;require.register("agchart/utils/style", function(exports, require, module) {
+;require.register("ylchart/utils/style", function(exports, require, module) {
 var Main, exp;
 
 module.exports = exp = {};
@@ -1903,7 +1917,7 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("agchart/utils/time", function(exports, require, module) {
+;require.register("ylchart/utils/time", function(exports, require, module) {
 var Main, exp;
 
 module.exports = exp = {};
@@ -1959,7 +1973,7 @@ exp.Main = Main = (function() {
 })();
 });
 
-;require.register("agchart/utils/tools", function(exports, require, module) {
+;require.register("ylchart/utils/tools", function(exports, require, module) {
 var exp, prepareSeries, updateObject;
 
 module.exports = exp = {};
@@ -2043,4 +2057,4 @@ exp.prepareSeries = prepareSeries = function(args) {
 });
 
 ;
-//# sourceMappingURL=agchart.js.map
+//# sourceMappingURL=ylchart.js.map

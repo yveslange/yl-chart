@@ -1,26 +1,26 @@
 module.exports = exp = {}
 M = {
   # Init
-  config  : require 'agchart/config'
-  tools   : require 'agchart/utils/tools'
-  scale   : require 'agchart/utils/scale'
-  domain  : require 'agchart/utils/domain'
-  palette : require 'agchart/utils/palette'
-  design  : require 'agchart/utils/design'
-  effectsPoint : require 'agchart/effects/point'
+  config  : require 'ylchart/config'
+  tools   : require 'ylchart/utils/tools'
+  scale   : require 'ylchart/utils/scale'
+  domain  : require 'ylchart/utils/domain'
+  palette : require 'ylchart/utils/palette'
+  design  : require 'ylchart/utils/design'
+  effectsPoint : require 'ylchart/effects/point'
 
   # Components
-  title:    require 'agchart/components/title'
-  tooltip:  require 'agchart/components/tooltip'
-  logo:     require 'agchart/components/logo'
-  legend:   require 'agchart/components/legend'
-  cross:    require 'agchart/components/cross'
-  axis:     require 'agchart/components/axis'
-  grid:     require 'agchart/components/grid'
-  label:    require 'agchart/components/label'
+  title:    require 'ylchart/components/title'
+  tooltip:  require 'ylchart/components/tooltip'
+  logo:     require 'ylchart/components/logo'
+  legend:   require 'ylchart/components/legend'
+  cross:    require 'ylchart/components/cross'
+  axis:     require 'ylchart/components/axis'
+  grid:     require 'ylchart/components/grid'
+  label:    require 'ylchart/components/label'
 
   # Plugins
-  plugin:   require 'agchart/components/plugin'
+  plugin:   require 'ylchart/components/plugin'
 }
 
 exp.Main = class Main
@@ -306,4 +306,3 @@ exp.Main = class Main
       confPlugins:  @_CONF.plugins
       style: @_CONF.style.plugins
     )
-

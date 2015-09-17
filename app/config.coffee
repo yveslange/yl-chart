@@ -1,6 +1,6 @@
 module.exports = exp = {}
 M = {
-  tools: require 'agchart/utils/tools'
+  tools: require 'ylchart/utils/tools'
 }
 
 exp.Main = class Main
@@ -9,7 +9,7 @@ exp.Main = class Main
   # Get the configuration object
   get: () -> @defaultConfig
 
-  # Default configuration for agchart
+  # Default configuration for ylchart
   defaultConfig:
     style:
       plugins:
@@ -27,12 +27,12 @@ exp.Main = class Main
           stroke: "#2b2e33"
           class: "y"
           "stroke-width": 1
-      logo:
-        id: "logo"
-        "xlink:href": "agflow-logo.svg"
-        width: 100
-        height: 50
-        opacity: 0.5
+      # logo:
+      #   id: "logo"
+      #   "xlink:href": "your-logo.svg"
+      #   width: 100
+      #   height: 50
+      #   opacity: 0.5
       grid:
         x:
           class: "x"
@@ -108,8 +108,8 @@ exp.Main = class Main
         position: {x: 20, y: 3}
         class: "title"
         texts: [
-          {text: "AgChart Example", interline: -4.9}
-          {text: "The agflow interactive library", interline: -4.9}
+          {text: "YLChart Example", interline: -4.9}
+          {text: "The interactive chart library", interline: -4.9}
           {text: "Play with datas !"}
         ]
       label:
@@ -202,6 +202,6 @@ exp.Main = class Main
         displayName: "Download chart"
         enable: true
         copyright:
-          text: "(c) AgFlow 2014"
+          text: "(c) Yves Lange 2015"
           color: "#9f9f9f"
           fontSize: 12

@@ -1,7 +1,7 @@
 {
-  "name": "AgChart",
+  "name": "ylchart",
   "version": "0.1.0",
-  "main": "public/js/agchart.js",
+  "main": "public/js/ylchart.js",
   "dependencies": {
     "d3": "~3.3",
     "jquery": "~2.1.1"

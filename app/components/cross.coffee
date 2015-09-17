@@ -1,6 +1,6 @@
 module.exports = exp = {}
 M = {
-  style : require 'agchart/utils/style'
+  style : require 'ylchart/utils/style'
 }
 
 exp.Main = class Main
@@ -73,7 +73,7 @@ exp.Main = class Main
 
     text = @_VALUE.append("text")
     new M.style.Main(text).apply(style.text)
-      .text("AgChartPile")
+      .text("YLChartPile")
     textDim = text.node().getBBox()
 
     if params.confCrossV.x.show

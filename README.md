@@ -1,8 +1,8 @@
-agChart
+YL-Chart
 =======
 Chart librairie for Web application with interactive options.
 
-![Screenshot of AgChart](https://bytebucket.org/agflow/agchart/wiki/images/screenshot.png)
+![Screenshot of YLChart](https://bytebucket.org/agflow/agchart/wiki/images/screenshot.png)
 
 ## Features
 * Cross lines to help comparing values
@@ -44,24 +44,24 @@ Assuming you already installed brunch, go to the `app` folder and run:
 # Usage in production
 * Everything your need is located into the `release` folder.
 * Import `vendor.js` file that contains the dependencies (*don't do this if you already imported d3js or jquery manually*)
-* Import the CSS file `agchart.css` and the agchart library called `agchart.js`. This should be done in the headers of you HTML file (normally between `<head>` and `</head>`).
+* Import the CSS file `ylchart.css` and the ylchart library called `ylchart.js`. This should be done in the headers of you HTML file (normally between `<head>` and `</head>`).
 
 Here is an example of what you should write in the header section of your HTML file (eg: `index.html`):
 ```HTML
-<link rel="stylesheet" type="text/css" href="css/agchart.min.css" media="screen">
+<link rel="stylesheet" type="text/css" href="css/ylchart.min.css" media="screen">
 <script src="vendor.js" charset="utf-8"></script>
-<script src="js/agchart.min.js" charset="utf-8"></script>
+<script src="js/ylchart.min.js" charset="utf-8"></script>
 ```
 
-*Don't forget that `vendor.js` (or dependencies files) should be imported before importing agchart library*
+*Don't forget that `vendor.js` (or dependencies files) should be imported before importing ylchart library*
 
 ** You can also import the none minified files by removing the `.min` suffixes **
 
 Then you should be able to call the library like that:
 
 ```Javascript
-agChart = new agChart.Main()
-agChart.render()
+chart = new ylchart.Main()
+chart.render()
 ```
 
 or with a specific configuration
@@ -75,24 +75,24 @@ SERIES = [
   }
 ]
 CONFIG ={
-  canvas: {selector: "#agchart"}
+  canvas: {selector: "#ylchart"}
 }
 
-agChart = new agChart.Main({
+chart = new ylchart.Main({
   config: CONFIG
   series: SERIES
 })
-agChart.render()
+chart.render()
 ```
 
 The final step is to add a container that will contains the generated chart. You can add this between `<body>` and `</body>` in your HTML file for the purpose of this example:
 
 ```HTML
-<div id='agchart'></div>
+<div id='ylchart'></div>
 ```
 
 ## Configuration
-To configure the chart, it should be done when calling the agChart library. It's a simple JavaScript object that contains options.
+To configure the chart, it should be done when calling the ylchart library. It's a simple JavaScript object that contains options.
 
 ### Basic configuration
 Here is a example of a simple configuration:
@@ -100,11 +100,11 @@ Here is a example of a simple configuration:
 CONFIG = {
   canvas:
     render: 'dotline'
-    selector: '#agchart'
+    selector: '#ylchart'
 }
 ```
 
-This simple and basic configuration should be passed to agChart and will render a simple chart without any data.
+This simple and basic configuration should be passed to ylchart and will render a simple chart without any data.
 
 ### Some datas
 In this example we are going to create a chart with two series of datas.
@@ -113,7 +113,7 @@ In this example we are going to create a chart with two series of datas.
 CONFIG = {
   canvas:
     render: 'dotline'
-    selector: '#agchart'
+    selector: '#ylchart'
 }
 serie1 = {
   name: "Serie 1"
@@ -128,20 +128,14 @@ serie2 = {
   config: {width: 1}
 }
 SERIES = [serie1, serie2]
-agChart = new agChart.Main({
+chart = new ylchart.Main({
   config: CONFIG
   series: SERIES
 })
-agChart.render()
+chart.render()
 ```
 
-For more informations, please check the full configuration explanation located here:
-[WIKI: Configuration](https://bitbucket.org/agflow/agchart/wiki/Configuration)
-
 And voila !
-
-# More information
-For more information you can check the [WIKI](https://bitbucket.org/agflow/agchart/wiki) page of that project.
 
 #TODO
 * Remove window.brunch.server for watcher in production

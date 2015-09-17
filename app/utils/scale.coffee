@@ -1,6 +1,6 @@
 module.exports = exp = {}
 M = {
-  domain: require 'agchart/utils/domain'
+  domain: require 'ylchart/utils/domain'
 }
 
 # Computes D3JS Scales for X and Y
@@ -23,4 +23,3 @@ exp.computeScales = computeScales = (args)->
   scales.y.nice()if _canvas.scale.y.nice
 
   return scales
-

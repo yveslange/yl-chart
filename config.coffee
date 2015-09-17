@@ -12,6 +12,6 @@ exports.config =
     javascripts:
       joinTo:
         'js/vendor.js': /^vendor/
-        'js/agchart.js': /^app/
+        'js/ylchart.js': /^app/
     stylesheets:
-      joinTo: 'css/agchart.css': /^app\/styles\//
+      joinTo: 'css/ylchart.css': /^app\/styles\//

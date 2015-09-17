@@ -1,6 +1,6 @@
 module.exports = exp = {}
 M = {
-  style: require "agchart/utils/style"
+  style: require "ylchart/utils/style"
 }
 
 exp.Main = class Main
