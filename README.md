@@ -2,7 +2,7 @@ YL-Chart
 =======
 Chart librairie for Web application with interactive options.
 
-![Screenshot of YLChart](yl-chart.jpg)
+![Screenshot of YL-Chart](https://raw.githubusercontent.com/yveslange/yl-chart/master/yl-chart.png)
 
 ## Features
 * Cross lines to help comparing values
