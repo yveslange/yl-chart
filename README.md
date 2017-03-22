@@ -2,7 +2,7 @@ YL-Chart
 =======
 Chart librairie for Web application with interactive options.
 
-![Screenshot of YLChart](https://bytebucket.org/agflow/agchart/wiki/images/screenshot.png)
+![Screenshot of YLChart](yl-chart.jpg)
 
 ## Features
 * Cross lines to help comparing values
